@@ -2,6 +2,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Beaker, ClipboardList, Dumbbell, FileText, MessageSquare, Pill, Salad, StickyNote, ImageIcon, CalendarCheck, ChevronRight } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStore, getClientPanels } from "@/data/store";
+import type { Client } from "@/lib/types";
 import { BloodPanelDashboard } from "@/components/blood/BloodPanelDashboard";
 import { Button } from "@/components/ui/button";
 
@@ -89,7 +90,7 @@ function Mini({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Overview({ client, panelsCount }: { client: any; panelsCount: number }) {
+function Overview({ client, panelsCount }: { client: Client; panelsCount: number }) {
   return (
     <div className="grid lg:grid-cols-3 gap-4">
       <div className="lab-card-glow p-5 lg:col-span-2 space-y-4">

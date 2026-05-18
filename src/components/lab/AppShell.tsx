@@ -25,7 +25,7 @@ export function AppShell() {
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.end as any}
+              end={item.end}
               className={({ isActive }) => cn(
                 "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
                 isActive

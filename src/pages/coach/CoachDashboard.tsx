@@ -3,6 +3,8 @@ import { Activity, AlertTriangle, ArrowUpRight, Beaker, FlaskConical, Plus, Shie
 import { Button } from "@/components/ui/button";
 import { useStore, getClientPanels } from "@/data/store";
 import { BIOMARKER_MAP, getStatus, STATUS_META } from "@/lib/biomarkers";
+import type { BiomarkerStatus } from "@/lib/types";
+import type { LucideIcon } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 export default function CoachDashboard() {
@@ -95,7 +97,7 @@ export default function CoachDashboard() {
                   <div className="text-sm truncate">{a.marker}</div>
                   <div className="text-[11px] text-muted-foreground truncate">{a.client}</div>
                 </div>
-                <span className={`text-[10px] font-bold uppercase ${STATUS_META[a.status as any].color}`}>{a.status}</span>
+                <span className={`text-[10px] font-bold uppercase ${STATUS_META[a.status as BiomarkerStatus].color}`}>{a.status}</span>
               </Link>
             ))}
           </div>
@@ -151,7 +153,7 @@ export default function CoachDashboard() {
   );
 }
 
-function MetricCard({ icon: Icon, label, value, sub, tone = "default" }: { icon: any; label: string; value: string | number; sub?: string; tone?: "default" | "good" | "warn" }) {
+function MetricCard({ icon: Icon, label, value, sub, tone = "default" }: { icon: LucideIcon; label: string; value: string | number; sub?: string; tone?: "default" | "good" | "warn" }) {
   const toneCls = tone === "good" ? "text-status-optimal" : tone === "warn" ? "text-status-above" : "text-foreground";
   return (
     <div className="lab-card-glow p-4">

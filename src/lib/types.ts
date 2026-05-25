@@ -74,3 +74,36 @@ export interface Coach {
   email: string;
   initials: string;
 }
+
+export interface CheckIn {
+  id: string;
+  clientId: string;
+  date: string;
+  bodyWeightKg: number;
+  energyScore: number;
+  sleepQuality: number;
+  moodScore: number;
+  stressScore: number;
+  trainingAdherence: number;
+  nutritionAdherence: number;
+  digestionNotes: string;
+  winsThisWeek: string;
+  strugglesThisWeek: string;
+  questionForCoach: string;
+}
+
+export interface ExerciseLog {
+  id: string;
+  clientId: string;
+  date: string;
+  exerciseName: string;
+  completedSets: boolean[];
+}
+
+export interface SupplementLog {
+  id: string;
+  clientId: string;
+  date: string;
+  supplementName: string;
+  completed: boolean;
+}

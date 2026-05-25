@@ -8,10 +8,46 @@ type State = {
   panels: BloodPanel[];
 };
 
-let state: State = { coach: COACH, clients: [...CLIENTS], panels: [...PANELS] };
+const LOCAL_STORAGE_KEY = "mad-scientist-lab-state";
+
+const loadInitialState = (): State => {
+  const defaultState: State = { coach: COACH, clients: [...CLIENTS], panels: [...PANELS] };
+  try {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed.clients && parsed.panels) {
+        return {
+          coach: COACH,
+          clients: parsed.clients,
+          panels: parsed.panels
+        };
+      }
+    }
+  } catch (e) {
+    console.error("Failed to load state from localStorage:", e);
+  }
+  return defaultState;
+};
+
+let state: State = loadInitialState();
 const listeners = new Set<() => void>();
 
-const emit = () => listeners.forEach((l) => l());
+const saveState = (newState: State) => {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
+      clients: newState.clients,
+      panels: newState.panels
+    }));
+  } catch (e) {
+    console.error("Failed to save state to localStorage:", e);
+  }
+};
+
+const emit = () => {
+  saveState(state);
+  listeners.forEach((l) => l());
+};
 const subscribe = (l: () => void) => { listeners.add(l); return () => listeners.delete(l); };
 const getSnapshot = () => state;
 
@@ -49,6 +85,15 @@ export const actions = {
     emit();
     return id;
   },
+  resetStore() {
+    state = { coach: COACH, clients: [...CLIENTS], panels: [...PANELS] };
+    try {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+    } catch (e) {
+      console.error("Failed to remove state from localStorage:", e);
+    }
+    emit();
+  }
 };
 
 export function getClient(id: string) {

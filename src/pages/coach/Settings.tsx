@@ -1,10 +1,19 @@
+import { useState } from "react";
 import { Logo } from "@/components/lab/Logo";
+import { FeaturePlannedDialog } from "@/components/lab/FeaturePlannedDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { COACH } from "@/data/mock";
+import { actions } from "@/data/store";
+import { toast } from "sonner";
 
 export default function Settings() {
+  const [open, setOpen] = useState(false);
+  const handleReset = () => {
+    actions.resetStore();
+    toast.success("Demo data reset to default seed values");
+  };
   return (
     <div className="space-y-5 animate-fade-in max-w-3xl">
       <div>
@@ -26,8 +35,20 @@ export default function Settings() {
       <div className="lab-card-glow p-5 space-y-3">
         <div className="text-sm font-semibold">Backend</div>
         <p className="text-xs text-muted-foreground">Lovable Cloud integration is not yet enabled. Connect Cloud to power authentication, role-based access, blood panel persistence, and file storage.</p>
-        <Button variant="neon">Connect Lovable Cloud (placeholder)</Button>
+        <Button variant="neon" onClick={() => setOpen(true)}>Connect Lovable Cloud (placeholder)</Button>
       </div>
+      <div className="lab-card-glow p-5 space-y-3">
+        <div className="text-sm font-semibold">Demo Control</div>
+        <p className="text-xs text-muted-foreground">Reset the workspace to the default mock clients and blood panels. This will overwrite any additions made during the demo.</p>
+        <Button variant="outline" className="border-destructive/40 hover:bg-destructive/10 text-destructive" onClick={handleReset}>Reset Demo Data</Button>
+      </div>
+      {open && (
+        <FeaturePlannedDialog
+          isOpen={open}
+          onOpenChange={setOpen}
+          featureName="Backend Cloud Sync"
+        />
+      )}
     </div>
   );
 }

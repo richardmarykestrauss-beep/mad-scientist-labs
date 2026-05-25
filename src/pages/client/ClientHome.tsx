@@ -45,7 +45,7 @@ export default function ClientHome() {
             <Beaker className="h-4 w-4 text-primary" />
             <h2 className="font-display text-xl font-bold">Your Blood Panel</h2>
           </div>
-          <BloodPanelDashboard clientId={id} panels={panels} />
+          <BloodPanelDashboard clientId={id} panels={panels} readOnly={true} />
         </div>
       </main>
     </div>

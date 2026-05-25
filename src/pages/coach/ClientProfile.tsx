@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
+import { FeaturePlannedDialog } from "@/components/lab/FeaturePlannedDialog";
 import { ArrowLeft, Beaker, ClipboardList, Dumbbell, FileText, MessageSquare, Pill, Salad, StickyNote, ImageIcon, CalendarCheck, ChevronRight } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStore, getClientPanels } from "@/data/store";
@@ -61,7 +63,7 @@ export default function ClientProfile() {
           <Overview client={client} panelsCount={panels.length} />
         </TabsContent>
         <TabsContent value="blood" className="mt-5">
-          <BloodPanelDashboard clientId={id} panels={panels} />
+          <BloodPanelDashboard clientId={id} panels={panels} readOnly={false} />
         </TabsContent>
         <TabsContent value="training" className="mt-5"><Scaffold title="Training Program" desc="Build periodized programs, assign weekly workouts, and track exercise compliance." cta="Open Program Builder" /></TabsContent>
         <TabsContent value="nutrition" className="mt-5"><Scaffold title="Nutrition Plan" desc="Macro targets, meal sections, food lists, and weekly adherence review." cta="Build Diet Plan" /></TabsContent>
@@ -133,15 +135,25 @@ function Overview({ client, panelsCount }: { client: Client; panelsCount: number
 }
 
 function Scaffold({ title, desc, cta }: { title: string; desc: string; cta: string }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div className="lab-card-glow p-10 text-center">
-      <div className="mx-auto h-12 w-12 rounded-2xl bg-primary/10 border border-primary/30 grid place-items-center mb-3">
-        <Beaker className="h-5 w-5 text-primary" />
+    <>
+      <div className="lab-card-glow p-10 text-center">
+        <div className="mx-auto h-12 w-12 rounded-2xl bg-primary/10 border border-primary/30 grid place-items-center mb-3">
+          <Beaker className="h-5 w-5 text-primary" />
+        </div>
+        <h3 className="font-display text-xl font-bold">{title}</h3>
+        <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">{desc}</p>
+        <div className="mt-4"><Button variant="neon" onClick={() => setOpen(true)}>{cta}</Button></div>
+        <div className="mt-3 text-[11px] text-muted-foreground">Module scaffold — full builder ships in v2.</div>
       </div>
-      <h3 className="font-display text-xl font-bold">{title}</h3>
-      <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">{desc}</p>
-      <div className="mt-4"><Button variant="neon">{cta}</Button></div>
-      <div className="mt-3 text-[11px] text-muted-foreground">Module scaffold — full builder ships in v2.</div>
-    </div>
+      {open && (
+        <FeaturePlannedDialog
+          isOpen={open}
+          onOpenChange={setOpen}
+          featureName={title}
+        />
+      )}
+    </>
   );
 }

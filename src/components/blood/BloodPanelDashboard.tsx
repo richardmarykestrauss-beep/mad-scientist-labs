@@ -16,9 +16,10 @@ import { cn } from "@/lib/utils";
 interface Props {
   clientId: string;
   panels: BloodPanel[];
+  readOnly?: boolean;
 }
 
-export function BloodPanelDashboard({ clientId, panels }: Props) {
+export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Props) {
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [selected, setSelected] = useState<string | null>(null);
 
@@ -50,7 +51,7 @@ export function BloodPanelDashboard({ clientId, panels }: Props) {
         <Beaker className="h-10 w-10 mx-auto text-primary mb-3" />
         <div className="font-semibold">No blood panels yet</div>
         <div className="text-sm text-muted-foreground mt-1">Add the client's first panel to begin tracking biomarker trends.</div>
-        <div className="mt-4 inline-block"><AddPanelDialog clientId={clientId} /></div>
+        {!readOnly && <div className="mt-4 inline-block"><AddPanelDialog clientId={clientId} /></div>}
       </div>
     );
   }
@@ -107,7 +108,7 @@ export function BloodPanelDashboard({ clientId, panels }: Props) {
             </button>
           ))}
         </div>
-        <AddPanelDialog clientId={clientId} />
+        {!readOnly && <AddPanelDialog clientId={clientId} />}
       </div>
 
       {/* Biomarker table */}

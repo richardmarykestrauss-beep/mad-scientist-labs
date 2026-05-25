@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { FeaturePlannedDialog } from "@/components/lab/FeaturePlannedDialog";
 import { Activity, AlertTriangle, ArrowUpRight, Beaker, FlaskConical, Plus, ShieldAlert, TrendingUp, UserPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStore, getClientPanels } from "@/data/store";
@@ -8,6 +10,7 @@ import type { LucideIcon } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 export default function CoachDashboard() {
+  const [plannedFeature, setPlannedFeature] = useState<string | null>(null);
   const { clients, panels } = useStore();
   const review = clients.filter((c) => c.status === "review").length;
   const recentPanels = [...panels].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4);
@@ -43,9 +46,9 @@ export default function CoachDashboard() {
           <p className="text-muted-foreground mt-1">{clients.length} active clients · {panels.length} blood panels on file · {alerts.length} biomarker alerts</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="hero"><UserPlus className="h-4 w-4" /> Add Client</Button>
-          <Button variant="neon"><Plus className="h-4 w-4" /> Create Program</Button>
-          <Button variant="outline"><Beaker className="h-4 w-4" /> Upload Panel</Button>
+          <Button variant="hero" onClick={() => setPlannedFeature("Add Client")}><UserPlus className="h-4 w-4" /> Add Client</Button>
+          <Button variant="neon" onClick={() => setPlannedFeature("Create Program")}><Plus className="h-4 w-4" /> Create Program</Button>
+          <Button variant="outline" onClick={() => setPlannedFeature("Upload Panel")}><Beaker className="h-4 w-4" /> Upload Panel</Button>
         </div>
       </div>
 
@@ -149,6 +152,13 @@ export default function CoachDashboard() {
           </div>
         </div>
       </div>
+      {plannedFeature && (
+        <FeaturePlannedDialog
+          isOpen={!!plannedFeature}
+          onOpenChange={(open) => !open && setPlannedFeature(null)}
+          featureName={plannedFeature}
+        />
+      )}
     </div>
   );
 }

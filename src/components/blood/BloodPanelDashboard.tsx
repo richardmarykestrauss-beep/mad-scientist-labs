@@ -4,11 +4,13 @@ import type { BloodPanel, BiomarkerStatus } from "@/lib/types";
 import { StatusBadge } from "@/components/lab/StatusBadge";
 import { StatGauge } from "@/components/lab/StatGauge";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceArea } from "recharts";
-import { ArrowDown, ArrowRight, ArrowUp, Beaker, ChevronRight, Info, Plus } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUp, Beaker, ChevronRight, Info, Plus, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { BloodReportUploadFlow } from "@/components/blood/BloodReportUploadFlow";
 import { actions } from "@/data/store";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -22,6 +24,7 @@ interface Props {
 export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Props) {
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [selected, setSelected] = useState<string | null>(null);
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
 
   const latest = panels[panels.length - 1];
   const previous = panels[panels.length - 2];
@@ -51,7 +54,34 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
         <Beaker className="h-10 w-10 mx-auto text-primary mb-3" />
         <div className="font-semibold">No blood panels yet</div>
         <div className="text-sm text-muted-foreground mt-1">Add the client's first panel to begin tracking biomarker trends.</div>
-        {!readOnly && <div className="mt-4 inline-block"><AddPanelDialog clientId={clientId} /></div>}
+        {!readOnly && (
+          <div className="mt-5 flex gap-2 justify-center">
+            <Button
+              variant="neon"
+              className="border-primary/60 bg-primary/10 text-primary hover:bg-primary/15"
+              onClick={() => setIsUploadOpen(true)}
+            >
+              <Upload className="h-4 w-4 mr-1.5" /> Upload Blood Report
+            </Button>
+            <AddPanelDialog clientId={clientId} />
+          </div>
+        )}
+
+        <Sheet open={isUploadOpen} onOpenChange={setIsUploadOpen}>
+          <SheetContent className="bg-card border-l border-border sm:max-w-3xl overflow-y-auto flex flex-col h-full z-50">
+            <SheetHeader className="pb-4 border-b border-border/80">
+              <SheetTitle className="text-xl font-bold font-display tracking-tight text-glow text-primary flex items-center gap-2">
+                <Beaker className="h-5 w-5" /> Blood Report Upload Intelligence
+              </SheetTitle>
+              <SheetDescription className="text-xs text-muted-foreground">
+                Simulate OCR extraction and generate AI-assisted analysis for coach review.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto py-4">
+              <BloodReportUploadFlow clientId={clientId} onComplete={() => setIsUploadOpen(false)} />
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     );
   }
@@ -108,7 +138,18 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
             </button>
           ))}
         </div>
-        {!readOnly && <AddPanelDialog clientId={clientId} />}
+        {!readOnly && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="neon"
+              className="border-primary/60 bg-primary/10 text-primary hover:bg-primary/15"
+              onClick={() => setIsUploadOpen(true)}
+            >
+              <Upload className="h-4 w-4 mr-1.5" /> Upload Blood Report
+            </Button>
+            <AddPanelDialog clientId={clientId} />
+          </div>
+        )}
       </div>
 
       {/* Biomarker table */}
@@ -164,6 +205,22 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
       <DisclaimerCard />
 
       {selected && <BiomarkerDetailDialog markerKey={selected} panels={panels} onClose={() => setSelected(null)} />}
+
+      <Sheet open={isUploadOpen} onOpenChange={setIsUploadOpen}>
+        <SheetContent className="bg-card border-l border-border sm:max-w-3xl overflow-y-auto flex flex-col h-full z-50">
+          <SheetHeader className="pb-4 border-b border-border/80">
+            <SheetTitle className="text-xl font-bold font-display tracking-tight text-glow text-primary flex items-center gap-2">
+              <Beaker className="h-5 w-5" /> Blood Report Upload Intelligence
+            </SheetTitle>
+            <SheetDescription className="text-xs text-muted-foreground">
+              Simulate OCR extraction and generate AI-assisted analysis for coach review.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="flex-1 overflow-y-auto py-4">
+            <BloodReportUploadFlow clientId={clientId} onComplete={() => setIsUploadOpen(false)} />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

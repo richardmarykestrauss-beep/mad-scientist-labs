@@ -117,15 +117,15 @@ export function ClientRadarGrid() {
   }, [filteredTiles]);
 
   return (
-    <div className="lab-card-glow p-5 flex flex-col h-full space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
+    <div className="lab-card-glow p-3.5 px-4 flex flex-col h-full space-y-3.5 border border-border/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-border/60">
         <div>
-          <h3 className="text-sm font-semibold">Client Radar Grid</h3>
-          <p className="text-[10px] text-muted-foreground uppercase font-mono mt-0.5">
+          <h3 className="text-xs font-semibold">Client Radar Grid</h3>
+          <p className="text-[9px] text-muted-foreground uppercase font-mono mt-0.5">
             Mock 250-client radar · Live database planned
           </p>
         </div>
-        <div className="text-[10px] font-mono text-muted-foreground bg-secondary/40 border border-border/80 px-2 py-0.5 rounded-full shrink-0">
+        <div className="text-[9px] font-mono text-muted-foreground bg-secondary/40 border border-border/80 px-2 py-0.5 rounded-full shrink-0">
           Showing {displayTiles.length} of {filteredTiles.length}
         </div>
       </div>
@@ -143,7 +143,7 @@ export function ClientRadarGrid() {
             key={chip.id}
             onClick={() => setActiveFilter(chip.id as "all" | "alerts" | "due" | "adherence" | "review")}
             className={cn(
-              "px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider transition border",
+              "px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wider transition border",
               activeFilter === chip.id
                 ? "bg-primary/10 text-primary border-primary/30"
                 : "text-muted-foreground hover:text-foreground border-transparent hover:bg-secondary/40"
@@ -155,42 +155,42 @@ export function ClientRadarGrid() {
       </div>
 
       {/* Grid container */}
-      <div className="grid grid-cols-10 sm:grid-cols-12 md:grid-cols-15 lg:grid-cols-15 gap-1.5 py-2 max-h-[220px] overflow-y-auto scrollbar-thin pr-1">
+      <div className="grid grid-cols-[repeat(10,minmax(0,1fr))] sm:grid-cols-[repeat(15,minmax(0,1fr))] md:grid-cols-[repeat(18,minmax(0,1fr))] lg:grid-cols-[repeat(25,minmax(0,1fr))] gap-1 py-1 max-h-[110px] overflow-y-auto scrollbar-thin pr-1">
         {displayTiles.map((tile) => (
           <div
             key={tile.id}
             onClick={() => navigate(`/coach/clients/${tile.id}`)}
             className={cn(
-              "aspect-square rounded-md cursor-pointer transition relative group overflow-hidden border",
+              "aspect-square rounded-[3px] cursor-pointer transition relative group overflow-hidden border",
               tile.color === "green" 
-                ? "bg-status-optimal/10 border-status-optimal/30 hover:border-status-optimal hover:shadow-[0_0_8px_rgba(0,255,128,0.4)]" 
+                ? "bg-status-optimal/10 border-status-optimal/30 hover:border-status-optimal hover:shadow-[0_0_6px_rgba(0,255,128,0.25)]" 
                 : tile.color === "amber"
-                  ? "bg-amber-500/10 border-amber-500/30 hover:border-amber-500 hover:shadow-[0_0_8px_rgba(245,158,11,0.4)]"
+                  ? "bg-amber-500/10 border-amber-500/30 hover:border-amber-500 hover:shadow-[0_0_6px_rgba(245,158,11,0.25)]"
                   : tile.color === "red"
-                    ? "bg-status-high/10 border-status-high/30 hover:border-status-high hover:shadow-[0_0_8px_rgba(239,68,68,0.4)] animate-pulse-glow"
+                    ? "bg-status-high/10 border-status-high/30 hover:border-status-high hover:shadow-[0_0_6px_rgba(239,68,68,0.25)] animate-pulse-glow"
                     : "bg-secondary/40 border-border/80 hover:border-muted-foreground"
             )}
           >
             {/* Tile Tooltip overlay */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-background/95 z-10 text-[9px] font-bold font-mono">
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-background/95 z-10 text-[8px] font-bold font-mono">
               {tile.initials}
             </div>
 
             {/* Glowing dot */}
             <span className={cn(
-              "absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full",
-              tile.color === "green" && "bg-status-optimal shadow-[0_0_4px_#00ff80]",
-              tile.color === "amber" && "bg-amber-500 shadow-[0_0_4px_#f59e0b]",
-              tile.color === "red" && "bg-status-high shadow-[0_0_4px_#ef4444]",
+              "absolute bottom-0.5 right-0.5 h-1 w-1 rounded-full",
+              tile.color === "green" && "bg-status-optimal shadow-[0_0_3px_#00ff80]",
+              tile.color === "amber" && "bg-amber-500 shadow-[0_0_3px_#f59e0b]",
+              tile.color === "red" && "bg-status-high shadow-[0_0_3px_#ef4444]",
               tile.color === "gray" && "bg-muted-foreground"
             )} />
 
             {/* Hover Tooltip tooltip node */}
-            <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:flex flex-col bg-popover border border-border p-2 rounded-lg shadow-xl w-32 z-20 text-[10px] space-y-0.5">
+            <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col bg-popover/95 border border-border p-2 rounded shadow-2xl w-36 z-20 text-[9.5px] space-y-0.5">
               <span className="font-semibold text-foreground truncate">{tile.name}</span>
               <span className="text-muted-foreground">Compliance: {tile.compliance}%</span>
               <span className={cn(
-                "font-mono text-[9px] uppercase",
+                "font-mono text-[8.5px] uppercase font-bold",
                 tile.color === "green" && "text-status-optimal",
                 tile.color === "amber" && "text-amber-500",
                 tile.color === "red" && "text-status-high",
@@ -204,12 +204,12 @@ export function ClientRadarGrid() {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-between text-[9px] font-mono text-muted-foreground border-t border-border/40 pt-2 flex-wrap gap-2">
+      <div className="flex items-center justify-between text-[8px] font-mono text-muted-foreground border-t border-border/40 pt-1.5 flex-wrap gap-2">
         <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-status-optimal" /> Stable</span>
-          <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> Watch</span>
-          <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-status-high" /> Alert</span>
-          <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-muted-foreground" /> Inactive</span>
+          <span className="flex items-center gap-1"><span className="h-1 w-1 rounded-full bg-status-optimal" /> Stable</span>
+          <span className="flex items-center gap-1"><span className="h-1 w-1 rounded-full bg-amber-500" /> Watch</span>
+          <span className="flex items-center gap-1"><span className="h-1 w-1 rounded-full bg-status-high" /> Alert</span>
+          <span className="flex items-center gap-1"><span className="h-1 w-1 rounded-full bg-muted-foreground" /> Inactive</span>
         </div>
         <span>Hover for info · Click to open</span>
       </div>

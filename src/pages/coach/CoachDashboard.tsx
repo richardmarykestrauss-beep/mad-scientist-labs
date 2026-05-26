@@ -123,12 +123,12 @@ export default function CoachDashboard() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in pb-12">
+    <div className="space-y-4.5 animate-fade-in pb-8">
       {/* Top Header & Search and Actions row */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-border/40 pb-4">
         <div>
           <div className="chip mb-2"><FlaskConical className="h-3 w-3 text-primary" /> Bio-Performance Command Center</div>
-          <h1 className="font-display text-3xl font-bold tracking-tight text-glow text-primary flex items-center gap-2">
+          <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-glow text-primary flex items-center gap-2">
             Coach Console <span className="text-xs font-mono text-muted-foreground font-normal bg-secondary/40 border border-border/80 px-2 py-0.5 rounded-full">v1.2 Active</span>
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
@@ -138,22 +138,22 @@ export default function CoachDashboard() {
         <div className="flex flex-wrap gap-2">
           <Button 
             variant="neon" 
-            className="border-primary/60 bg-primary/10 text-primary hover:bg-primary/15 font-semibold text-xs h-9" 
+            className="border-purple-500/30 bg-purple-500/5 text-purple-300 hover:bg-purple-500/10 font-mono text-[10px] uppercase tracking-wider h-8 hover:shadow-[0_0_8px_rgba(168,85,247,0.2)] transition duration-300" 
             onClick={() => setIsBriefingOpen(true)}
           >
-            <Brain className="h-4 w-4 mr-1.5" /> Review Intelligence Brief
+            <Brain className="h-3.5 w-3.5 mr-1" /> AI Briefing
           </Button>
           <Button 
             variant="neon" 
-            className="border-primary/60 bg-primary/10 text-primary hover:bg-primary/15 font-semibold text-xs h-9" 
+            className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 font-mono text-[10px] uppercase tracking-wider h-8 hover:shadow-[0_0_8px_rgba(0,255,128,0.2)] transition duration-300" 
             onClick={() => setIsUploadSelectOpen(true)}
           >
-            <Upload className="h-4 w-4 mr-1.5" /> Upload Blood Report
+            <Upload className="h-3.5 w-3.5 mr-1" /> Upload Report
           </Button>
           <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
             <DialogTrigger asChild>
-              <Button variant="hero" className="font-semibold text-xs h-9">
-                <Plus className="h-4 w-4 mr-1.5" /> Add Client
+              <Button variant="hero" className="font-mono text-[10px] uppercase tracking-wider h-8">
+                <Plus className="h-3.5 w-3.5 mr-1" /> Add Client
               </Button>
             </DialogTrigger>
             <DialogContent className="bg-card border-border sm:max-w-md">
@@ -219,74 +219,74 @@ export default function CoachDashboard() {
       <ClientRadarGrid />
 
       {/* Three-Column Command Panel */}
-      <div className="grid lg:grid-cols-3 gap-4">
+      <div className="grid lg:grid-cols-3 gap-3.5">
         {/* Column 1: Attention Queue */}
-        <div className="h-[480px] overflow-hidden">
+        <div className="h-[420px] overflow-hidden">
           <AttentionQueue />
         </div>
 
         {/* Column 2: AI Coach Briefing Card */}
-        <div className="lab-card-glow p-5 flex flex-col h-[480px] border border-border/80">
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
+        <div className="lab-card-glow p-4 flex flex-col h-[420px] border border-border/80">
+          <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-border/60">
             <div>
-              <div className="text-sm font-semibold flex items-center gap-2">
-                <Brain className="h-4 w-4 text-purple-400 animate-pulse" />
+              <div className="text-xs font-semibold flex items-center gap-1.5">
+                <Brain className="h-3.5 w-3.5 text-purple-400 animate-pulse" />
                 AI Coach Briefing
               </div>
-              <p className="text-[10px] text-purple-400/80 uppercase font-mono mt-0.5 tracking-wider font-semibold">
+              <p className="text-[9px] text-purple-400/80 uppercase font-mono mt-0.5 tracking-wider font-semibold">
                 For coach review only
               </p>
             </div>
-            <span className="chip border-purple-500/30 bg-purple-500/10 text-purple-400 font-mono text-[9px] uppercase">
+            <span className="chip border-purple-500/30 bg-purple-500/10 text-purple-400 font-mono text-[8px] uppercase">
               Assisted
             </span>
           </div>
 
-          <div className="flex-1 space-y-4 overflow-y-auto scrollbar-thin pr-1 text-xs">
+          <div className="flex-1 space-y-3 overflow-y-auto scrollbar-thin pr-1 text-xs">
             {/* Coaching Summary */}
-            <div className="space-y-2">
-              <h4 className="font-mono text-[10px] uppercase text-muted-foreground tracking-wider font-bold">Today's Coaching Summary</h4>
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between p-2 rounded-lg border border-border/60 bg-background/25">
-                  <span className="text-muted-foreground">Critical lab alerts</span>
-                  <span className="font-bold text-status-above">2 clients</span>
+            <div className="space-y-1.5">
+              <h4 className="font-mono text-[9px] uppercase text-muted-foreground tracking-wider font-bold">Today's Coaching Summary</h4>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between p-1.5 rounded-lg border border-border/60 bg-background/25">
+                  <span className="text-muted-foreground text-[11px]">Critical lab alerts</span>
+                  <span className="font-bold text-status-above text-[11px]">2 clients</span>
                 </div>
-                <div className="flex items-center justify-between p-2 rounded-lg border border-border/60 bg-background/25">
-                  <span className="text-muted-foreground">Low adherence trends</span>
-                  <span className="font-bold text-amber-500">5 clients</span>
+                <div className="flex items-center justify-between p-1.5 rounded-lg border border-border/60 bg-background/25">
+                  <span className="text-muted-foreground text-[11px]">Low adherence trends</span>
+                  <span className="font-bold text-amber-500 text-[11px]">5 clients</span>
                 </div>
-                <div className="flex items-center justify-between p-2 rounded-lg border border-border/60 bg-background/25">
-                  <span className="text-muted-foreground">Check-ins submitted for review</span>
-                  <span className="font-bold text-primary">3 clients</span>
+                <div className="flex items-center justify-between p-1.5 rounded-lg border border-border/60 bg-background/25">
+                  <span className="text-muted-foreground text-[11px]">Check-ins for review</span>
+                  <span className="font-bold text-primary text-[11px]">3 clients</span>
                 </div>
-                <div className="flex items-center justify-between p-2 rounded-lg border border-border/60 bg-background/25">
-                  <span className="text-muted-foreground">Check-ins due this week</span>
-                  <span className="font-mono font-semibold">31 clients</span>
+                <div className="flex items-center justify-between p-1.5 rounded-lg border border-border/60 bg-background/25">
+                  <span className="text-muted-foreground text-[11px]">Check-ins due this week</span>
+                  <span className="font-mono font-semibold text-[11px]">31 clients</span>
                 </div>
               </div>
             </div>
 
             {/* Suggested Focus */}
-            <div className="space-y-2">
-              <h4 className="font-mono text-[10px] uppercase text-muted-foreground tracking-wider font-bold">Suggested Focus</h4>
-              <div className="flex flex-wrap gap-1.5 pt-1">
+            <div className="space-y-1.5">
+              <h4 className="font-mono text-[9px] uppercase text-muted-foreground tracking-wider font-bold">Suggested Focus</h4>
+              <div className="flex flex-wrap gap-1 pt-0.5">
                 {["Thyroid Health", "Recovery Telemetry", "Nutrient Gaps", "Androgen Output"].map(tag => (
-                  <span key={tag} className="border border-purple-500/25 bg-purple-500/5 text-purple-400 px-2 py-0.5 rounded text-[10px] font-mono font-semibold">
+                  <span key={tag} className="border border-purple-500/25 bg-purple-500/5 text-purple-400 px-1.5 py-0.5 rounded text-[9px] font-mono font-semibold">
                     {tag}
                   </span>
                 ))}
               </div>
             </div>
 
-            <div className="p-3 rounded-lg border border-purple-500/20 bg-purple-500/5 text-muted-foreground text-[11px] leading-relaxed">
+            <div className="p-2.5 rounded-lg border border-purple-500/20 bg-purple-500/5 text-muted-foreground text-[10.5px] leading-relaxed">
               Ensure you review Sora Nakamura's thyroid panel and Marcus Reign's androgen compliance during today's workout review.
             </div>
           </div>
 
-          <div className="pt-4 mt-auto">
+          <div className="pt-3 mt-auto">
             <Button 
               variant="neon" 
-              className="w-full border-purple-500/40 bg-purple-500/10 text-purple-300 hover:bg-purple-500/15 font-semibold text-xs h-9 uppercase tracking-wider" 
+              className="w-full border-purple-500/40 bg-purple-500/10 text-purple-300 hover:bg-purple-500/15 font-mono text-[9px] h-8 uppercase tracking-wider font-semibold" 
               onClick={() => setIsBriefingOpen(true)}
             >
               Open AI Briefing
@@ -295,13 +295,13 @@ export default function CoachDashboard() {
         </div>
 
         {/* Column 3: Daily Actions */}
-        <div className="h-[480px] overflow-hidden">
+        <div className="h-[420px] overflow-hidden">
           <CoachWorkQueue />
         </div>
       </div>
 
       {/* 250-Client Roster Command Table */}
-      <div className="lab-card-glow p-5 space-y-4">
+      <div className="lab-card-glow p-4 space-y-3.5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
           <div>
             <h3 className="text-sm font-semibold">250-Client Roster Command Table</h3>
@@ -322,16 +322,16 @@ export default function CoachDashboard() {
 
         <div className="overflow-hidden rounded-xl border border-border">
           <table className="w-full text-xs">
-            <thead className="bg-secondary/40 text-[10px] uppercase tracking-wider text-muted-foreground">
+            <thead className="bg-secondary/40 text-[9px] uppercase tracking-wider text-muted-foreground font-mono">
               <tr>
-                <th className="text-left px-4 py-2.5">Client</th>
-                <th className="text-left px-3 py-2.5">Primary Goal</th>
-                <th className="text-left px-3 py-2.5">Status</th>
-                <th className="text-right px-3 py-2.5">Training</th>
-                <th className="text-right px-3 py-2.5">Nutrition</th>
-                <th className="text-left px-3 py-2.5">Next Check-In</th>
-                <th className="text-center px-3 py-2.5">Lab Alerts</th>
-                <th className="text-right px-3 py-2.5">Actions</th>
+                <th className="text-left px-3 py-2">Client</th>
+                <th className="text-left px-2.5 py-2">Primary Goal</th>
+                <th className="text-left px-2.5 py-2">Status</th>
+                <th className="text-right px-2.5 py-2">Training</th>
+                <th className="text-right px-2.5 py-2">Nutrition</th>
+                <th className="text-left px-2.5 py-2">Next Check-In</th>
+                <th className="text-center px-2.5 py-2">Lab Alerts</th>
+                <th className="text-right px-3 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -351,19 +351,19 @@ export default function CoachDashboard() {
 
                 return (
                   <tr key={c.id} className="border-t border-border hover:bg-secondary/20 transition">
-                    <td className="px-4 py-2.5 font-medium flex items-center gap-2">
-                      <div className={`grid h-6 w-6 place-items-center rounded bg-gradient-to-br ${c.avatarColor} text-background font-bold text-[9px]`}>
+                    <td className="px-3 py-1.5 font-medium flex items-center gap-2">
+                      <div className={`grid h-5.5 w-5.5 place-items-center rounded-md bg-gradient-to-br ${c.avatarColor} text-background font-bold text-[8px]`}>
                         {c.initials}
                       </div>
                       <div>
-                        <div>{c.name}</div>
-                        <div className="text-[10px] text-muted-foreground font-mono">{c.email}</div>
+                        <div className="text-[11.5px] font-semibold text-foreground">{c.name}</div>
+                        <div className="text-[9px] text-muted-foreground/80 font-mono mt-0.5">{c.email}</div>
                       </div>
                     </td>
-                    <td className="px-3 py-2.5 text-muted-foreground truncate max-w-[200px]">{c.goal}</td>
-                    <td className="px-3 py-2.5">
+                    <td className="px-2.5 py-1.5 text-muted-foreground text-[11px] truncate max-w-[180px]">{c.goal}</td>
+                    <td className="px-2.5 py-1.5">
                       <span className={cn(
-                        "chip py-0.5 px-2 text-[9px] uppercase tracking-wider",
+                        "chip py-0.5 px-1.5 text-[8px] uppercase tracking-wider font-semibold",
                         c.status === "review" 
                           ? "text-status-above border-status-above/30 bg-status-above/10" 
                           : c.status === "inactive"
@@ -373,24 +373,24 @@ export default function CoachDashboard() {
                         {c.status}
                       </span>
                     </td>
-                    <td className="px-3 py-2.5 text-right font-mono-data font-semibold">{c.trainingCompliance}%</td>
-                    <td className="px-3 py-2.5 text-right font-mono-data font-semibold text-muted-foreground">{c.nutritionCompliance}%</td>
-                    <td className="px-3 py-2.5 text-muted-foreground font-mono">{c.nextCheckIn}</td>
-                    <td className="px-3 py-2.5 text-center">
+                    <td className="px-2.5 py-1.5 text-right font-mono-data font-semibold text-[11px]">{c.trainingCompliance}%</td>
+                    <td className="px-2.5 py-1.5 text-right font-mono-data font-semibold text-muted-foreground text-[11px]">{c.nutritionCompliance}%</td>
+                    <td className="px-2.5 py-1.5 text-muted-foreground font-mono text-[10.5px]">{c.nextCheckIn}</td>
+                    <td className="px-2.5 py-1.5 text-center">
                       {alertCount > 0 ? (
-                        <span className="font-mono font-bold text-status-above bg-status-above/10 border border-status-above/30 rounded px-1.5 py-0.5 text-[10px]">{alertCount}</span>
+                        <span className="font-mono font-bold text-status-above bg-status-above/10 border border-status-above/30 rounded px-1.5 py-0.5 text-[9px]">{alertCount}</span>
                       ) : (
-                        <span className="text-muted-foreground font-mono">—</span>
+                        <span className="text-muted-foreground font-mono text-[10px]">—</span>
                       )}
                     </td>
-                    <td className="px-3 py-2.5 text-right">
+                    <td className="px-3 py-1.5 text-right">
                       <Button 
                         size="sm" 
                         variant="ghost" 
-                        className="h-7 text-[10px] hover:text-primary border border-transparent hover:border-border hover:bg-secondary/40"
+                        className="h-6.5 text-[9.5px] px-2 hover:text-primary border border-transparent hover:border-border hover:bg-secondary/40"
                         onClick={() => navigate(`/coach/clients/${c.id}`)}
                       >
-                        Open Profile <ChevronRight className="h-3 w-3 ml-1" />
+                        Open Profile <ChevronRight className="h-3 w-3 ml-0.5" />
                       </Button>
                     </td>
                   </tr>
@@ -512,17 +512,17 @@ export default function CoachDashboard() {
 }
 
 function MetricCard({ icon: Icon, label, value, sub, tone = "default" }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string | number; sub?: string; tone?: "default" | "good" | "warn" }) {
-  const toneCls = tone === "good" ? "text-status-optimal" : tone === "warn" ? "text-status-above" : "text-foreground";
-  const borderGlow = tone === "good" ? "border-status-optimal/20 shadow-[0_0_12px_rgba(0,255,128,0.05)]" : tone === "warn" ? "border-status-above/20 shadow-[0_0_12px_rgba(245,158,11,0.05)]" : "border-border/80";
+  const toneCls = tone === "good" ? "text-status-optimal text-glow" : tone === "warn" ? "text-status-above text-glow" : "text-foreground";
+  const borderGlow = tone === "good" ? "border-status-optimal/20 shadow-[0_0_10px_rgba(0,255,128,0.03)]" : tone === "warn" ? "border-status-above/20 shadow-[0_0_10px_rgba(245,158,11,0.03)]" : "border-border/80";
 
   return (
-    <div className={cn("lab-card-glow p-4 border transition duration-300", borderGlow)}>
+    <div className={cn("lab-card-glow p-3 px-3.5 border transition duration-300", borderGlow)}>
       <div className="flex items-center justify-between text-muted-foreground">
-        <span className="text-[11px] uppercase tracking-wider font-semibold">{label}</span>
-        <Icon className={cn("h-4 w-4", tone === "good" ? "text-status-optimal" : tone === "warn" ? "text-status-above" : "text-primary")} />
+        <span className="text-[10px] uppercase tracking-wider font-semibold">{label}</span>
+        <Icon className={cn("h-3.5 w-3.5", tone === "good" ? "text-status-optimal" : tone === "warn" ? "text-status-above" : "text-primary")} />
       </div>
-      <div className={`mt-2 font-display text-2xl md:text-3xl font-bold ${toneCls}`}>{value}</div>
-      {sub && <div className="text-[11px] text-muted-foreground mt-1">{sub}</div>}
+      <div className={`mt-1.5 font-display text-xl md:text-2xl font-bold tracking-tight ${toneCls}`}>{value}</div>
+      {sub && <div className="text-[9px] text-muted-foreground/80 font-mono mt-0.5 truncate">{sub}</div>}
     </div>
   );
 }

@@ -178,17 +178,17 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
       </div>
 
       {/* Biomarker Constellation View Grid (Section 4) */}
-      <div className="lab-card-glow p-5 border border-border/80 space-y-4">
+      <div className="lab-card-glow p-4 border border-border/80 space-y-3.5">
         <div>
-          <h3 className="text-xs font-semibold text-primary uppercase font-mono tracking-wider flex items-center gap-1.5">
-            <Sparkles className="h-4 w-4" /> Biomarker Constellation View
+          <h3 className="text-[11.5px] font-semibold text-primary uppercase font-mono tracking-wider flex items-center gap-1.5">
+            <Sparkles className="h-3.5 w-3.5" /> Biomarker Constellation View
           </h3>
-          <p className="text-[10px] text-muted-foreground uppercase font-mono mt-0.5">
+          <p className="text-[9px] text-muted-foreground uppercase font-mono mt-0.5">
             Interact with lenses to filter diagnostic categories
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-3 pt-1">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-2.5 pt-0.5">
           {[
             { key: "Hormones", label: "Hormones", desc: "Testosterone, LH, FSH" },
             { key: "Thyroid", label: "Thyroid", desc: "TSH, Free T3, Free T4" },
@@ -204,25 +204,25 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
                 key={cat.key}
                 onClick={() => setActiveCategory(isActive ? "All" : cat.key)}
                 className={cn(
-                  "p-3 rounded-xl border bg-background/25 text-left transition duration-300 group flex flex-col justify-between hover:shadow-[0_0_12px_rgba(0,255,128,0.03)]",
+                  "p-2 px-2.5 rounded-lg border bg-background/25 text-left transition duration-300 group flex flex-col justify-between hover:shadow-[0_0_10px_rgba(0,255,128,0.02)]",
                   isActive 
                     ? "border-primary bg-primary/5" 
                     : "border-border/80 hover:border-primary/40 hover:bg-secondary/15"
                 )}
               >
                 <div className="flex justify-between items-center w-full">
-                  <span className="text-[10px] font-bold font-mono text-muted-foreground uppercase tracking-wide group-hover:text-primary transition">{cat.label}</span>
+                  <span className="text-[9px] font-bold font-mono text-muted-foreground uppercase tracking-wide group-hover:text-primary transition">{cat.label}</span>
                   <span className={cn(
-                    "h-2 w-2 rounded-full",
-                    result.status === "optimal" && "bg-status-optimal shadow-[0_0_6px_#00ff80]",
-                    result.status === "watch" && "bg-amber-500 shadow-[0_0_6px_#f59e0b]",
-                    result.status === "alert" && "bg-status-high shadow-[0_0_6px_#ef4444] animate-pulse",
+                    "h-1.5 w-1.5 rounded-full",
+                    result.status === "optimal" && "bg-status-optimal shadow-[0_0_4px_#00ff80]",
+                    result.status === "watch" && "bg-amber-500 shadow-[0_0_4px_#f59e0b]",
+                    result.status === "alert" && "bg-status-high shadow-[0_0_4px_#ef4444] animate-pulse",
                     result.status === "untested" && "bg-secondary"
                   )} />
                 </div>
-                <div className="mt-2">
-                  <div className="text-[10px] text-foreground font-semibold truncate">{cat.desc}</div>
-                  <div className="text-[9px] font-mono text-muted-foreground mt-0.5">{result.count} markers loaded</div>
+                <div className="mt-1.5">
+                  <div className="text-[9.5px] text-foreground font-semibold truncate">{cat.desc}</div>
+                  <div className="text-[8px] font-mono text-muted-foreground mt-0.5">{result.count} markers loaded</div>
                 </div>
               </button>
             );
@@ -265,17 +265,17 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
       {/* Biomarker table */}
       <div className="lab-card-glow overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-secondary/40 text-[10px] uppercase tracking-wider text-muted-foreground">
+          <table className="w-full text-xs">
+            <thead className="bg-secondary/40 text-[9px] uppercase tracking-wider text-muted-foreground font-mono">
               <tr>
-                <th className="text-left px-4 py-3">Biomarker</th>
-                <th className="text-left px-3 py-3">Category</th>
-                <th className="text-right px-3 py-3">Current</th>
-                <th className="text-right px-3 py-3">Previous</th>
-                <th className="text-right px-3 py-3">Δ</th>
-                <th className="text-left px-3 py-3 w-[28%]">Range</th>
-                <th className="text-left px-3 py-3">Status</th>
-                <th className="px-2 py-3"></th>
+                <th className="text-left px-3.5 py-2">Biomarker</th>
+                <th className="text-left px-3 py-2">Category</th>
+                <th className="text-right px-3 py-2">Current</th>
+                <th className="text-right px-3 py-2">Previous</th>
+                <th className="text-right px-3 py-2">Δ</th>
+                <th className="text-left px-3 py-2 w-[28%]">Range</th>
+                <th className="text-left px-3 py-2">Status</th>
+                <th className="px-2 py-2"></th>
               </tr>
             </thead>
             <tbody>
@@ -287,23 +287,23 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
                 const dir = delta == null ? null : delta > 0.5 ? "up" : delta < -0.5 ? "down" : "flat";
                 return (
                   <tr key={r.key} className="border-t border-border hover:bg-secondary/20 cursor-pointer" onClick={() => setSelected(r.key)}>
-                    <td className="px-4 py-3 font-medium">{def.name}</td>
-                    <td className="px-3 py-3 text-xs text-muted-foreground">{def.category}</td>
-                    <td className="px-3 py-3 text-right font-mono-data">{r.value}<span className="text-muted-foreground text-[11px] ml-1">{def.unit}</span></td>
-                    <td className="px-3 py-3 text-right font-mono-data text-muted-foreground">{prev ?? "—"}</td>
-                    <td className="px-3 py-3 text-right font-mono-data">
+                    <td className="px-3.5 py-2 font-medium text-[11.5px] text-foreground">{def.name}</td>
+                    <td className="px-3 py-2 text-xs text-muted-foreground">{def.category}</td>
+                    <td className="px-3 py-2 text-right font-mono-data text-xs">{r.value}<span className="text-muted-foreground text-[10px] ml-1">{def.unit}</span></td>
+                    <td className="px-3 py-2 text-right font-mono-data text-muted-foreground text-xs">{prev ?? "—"}</td>
+                    <td className="px-3 py-2 text-right font-mono-data text-xs">
                       {delta == null ? "—" : (
-                        <span className={cn("inline-flex items-center gap-1 text-xs", dir === "up" ? "text-status-above" : dir === "down" ? "text-status-low" : "text-muted-foreground")}>
-                          {dir === "up" && <ArrowUp className="h-3 w-3" />}
-                          {dir === "down" && <ArrowDown className="h-3 w-3" />}
-                          {dir === "flat" && <ArrowRight className="h-3 w-3" />}
+                        <span className={cn("inline-flex items-center gap-1 text-[11px]", dir === "up" ? "text-status-above" : dir === "down" ? "text-status-low" : "text-muted-foreground")}>
+                          {dir === "up" && <ArrowUp className="h-2.5 w-2.5" />}
+                          {dir === "down" && <ArrowDown className="h-2.5 w-2.5" />}
+                          {dir === "flat" && <ArrowRight className="h-2.5 w-2.5" />}
                           {delta > 0 ? "+" : ""}{delta.toFixed(1)}%
                         </span>
                       )}
                     </td>
-                    <td className="px-3 py-3"><StatGauge def={def} value={r.value} /></td>
-                    <td className="px-3 py-3"><StatusBadge status={status} /></td>
-                    <td className="px-2 py-3 text-muted-foreground"><ChevronRight className="h-4 w-4" /></td>
+                    <td className="px-3 py-2"><StatGauge def={def} value={r.value} /></td>
+                    <td className="px-3 py-2"><StatusBadge status={status} /></td>
+                    <td className="px-2 py-2 text-muted-foreground"><ChevronRight className="h-3.5 w-3.5" /></td>
                   </tr>
                 );
               })}

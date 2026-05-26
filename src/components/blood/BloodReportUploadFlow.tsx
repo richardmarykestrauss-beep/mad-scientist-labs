@@ -276,9 +276,9 @@ Coach Warren`;
   }, [newPanel, clientPanels, client]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4.5">
       {/* Stepper progress */}
-      <div className="flex items-center justify-between px-2 py-3 rounded-xl border border-border/60 bg-background/20">
+      <div className="flex items-center justify-between px-3 py-1.5 rounded-lg border border-border/60 bg-background/20 font-mono">
         {[
           { label: "Upload", s: 1 },
           { label: "Scan Report", s: 2 },
@@ -286,8 +286,8 @@ Coach Warren`;
           { label: "Findings", s: 4 }
         ].map((item, idx, arr) => (
           <div key={item.s} className="flex items-center flex-1 last:flex-initial">
-            <div className="flex items-center gap-2">
-              <div className={`grid h-6 w-6 place-items-center rounded-full text-xs font-mono font-bold border transition ${
+            <div className="flex items-center gap-1.5">
+              <div className={`grid h-4.5 w-4.5 place-items-center rounded-full text-[10px] font-mono font-bold border transition ${
                 step === item.s 
                   ? "bg-primary/20 text-primary border-primary" 
                   : step > item.s
@@ -296,14 +296,14 @@ Coach Warren`;
               }`}>
                 {item.s}
               </div>
-              <span className={`text-xs font-medium ${
-                step === item.s ? "text-primary font-bold" : "text-muted-foreground"
+              <span className={`text-[10px] uppercase tracking-wider font-semibold ${
+                step === item.s ? "text-primary text-glow font-bold" : "text-muted-foreground/80"
               }`}>
                 {item.label}
               </span>
             </div>
             {idx < arr.length - 1 && (
-              <ChevronRight className="h-4 w-4 text-muted-foreground/30 mx-auto" />
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/20 mx-auto" />
             )}
           </div>
         ))}
@@ -312,20 +312,21 @@ Coach Warren`;
       {/* Step 1: Upload Card */}
       {step === 1 && (
         <div className="space-y-4">
-          <div className="lab-card-glow p-8 border-dashed border-2 border-border/80 flex flex-col items-center justify-center text-center hover:border-primary/40 transition group py-12">
-            <div className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/20 grid place-items-center mb-4 group-hover:scale-105 transition duration-200">
-              <Upload className="h-5 w-5 text-primary" />
+          <div className="lab-card-glow p-5 py-8 border-dashed border border-border/80 flex flex-col items-center justify-center text-center hover:border-primary/40 transition-all duration-300 group relative overflow-hidden bg-gradient-to-b from-secondary/10 to-background/5 rounded-xl">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,255,128,0.02),transparent)] pointer-events-none" />
+            <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 grid place-items-center mb-3 group-hover:border-primary/40 group-hover:bg-primary/25 transition-all duration-300">
+              <Upload className="h-4 w-4 text-primary group-hover:scale-110 transition duration-300" />
             </div>
-            <h3 className="font-display font-bold text-sm text-foreground">Drag and drop blood report</h3>
-            <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+            <h3 className="font-display font-semibold text-xs text-foreground tracking-wide">DRAG & DROP BLOOD REPORT</h3>
+            <p className="text-[10px] text-muted-foreground/80 mt-1 max-w-xs leading-normal">
               Supports scanned PDFs, JPG, or PNG formats from HelixLabs or standard clinics.
             </p>
-            <div className="mt-5">
-              <Button variant="neon" className="h-9 px-6 font-bold" onClick={handleSimulateUpload}>
+            <div className="mt-4">
+              <Button variant="neon" className="h-7.5 px-4 text-[10.5px] uppercase font-bold tracking-wider font-mono shadow-[0_0_10px_rgba(0,255,128,0.1)]" onClick={handleSimulateUpload}>
                 Simulate Report Upload
               </Button>
             </div>
-            <span className="text-[10px] text-muted-foreground/60 uppercase font-mono tracking-widest mt-4">
+            <span className="text-[8.5px] text-muted-foreground/40 uppercase font-mono tracking-widest mt-3.5">
               Prototype scan — no real file stored
             </span>
           </div>
@@ -334,69 +335,69 @@ Coach Warren`;
 
       {/* Step 2: Simulated Scan progress */}
       {step === 2 && (
-        <div className="lab-card-glow p-8 flex flex-col items-center justify-center py-16 text-center space-y-5 animate-pulse-glow">
-          <RefreshCw className="h-8 w-8 text-primary animate-spin mb-1" />
+        <div className="lab-card-glow p-6 flex flex-col items-center justify-center py-10 text-center space-y-4 animate-pulse-glow rounded-xl">
+          <RefreshCw className="h-6 w-6 text-primary animate-spin mb-1 text-glow" />
           <div className="space-y-1">
-            <h3 className="font-semibold text-sm">Simulated OCR Scanning...</h3>
-            <p className="text-xs text-primary font-mono font-medium">
+            <h3 className="font-semibold text-xs tracking-wider uppercase font-mono">Simulated OCR Scanning...</h3>
+            <p className="text-[10px] text-primary font-mono font-medium tracking-wide">
               {SCAN_MESSAGES[scanMessageIndex]}
             </p>
           </div>
           <div className="w-full max-w-xs">
-            <Progress value={scanProgress} className="h-2" />
-            <div className="text-[10px] text-muted-foreground mt-1 text-right font-mono">{scanProgress}%</div>
+            <Progress value={scanProgress} className="h-1 bg-secondary/30" />
+            <div className="text-[9px] text-muted-foreground mt-1 text-right font-mono">{scanProgress}%</div>
           </div>
         </div>
       )}
 
       {/* Step 3: Review Table */}
       {step === 3 && (
-        <div className="space-y-5">
-          <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
+        <div className="space-y-4.5">
+          <div className="flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center">
             <div>
-              <h3 className="text-sm font-semibold">Review Extracted Biomarkers</h3>
-              <p className="text-[10px] text-muted-foreground uppercase font-mono mt-0.5">
+              <h3 className="text-xs font-semibold uppercase tracking-wider">Review Extracted Biomarkers</h3>
+              <p className="text-[9px] text-muted-foreground/80 uppercase font-mono mt-0.5">
                 Verify confidence index and units before importing
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <div className="flex items-center gap-1.5">
-                <Label htmlFor="panel-date" className="text-[10px] font-mono text-muted-foreground uppercase">Draw Date</Label>
+                <Label htmlFor="panel-date" className="text-[9px] font-mono text-muted-foreground uppercase">Draw Date</Label>
                 <Input 
                   id="panel-date" 
                   type="date" 
                   value={panelDate} 
                   onChange={(e) => setPanelDate(e.target.value)} 
-                  className="w-32 bg-background/50 text-xs h-8 py-1 px-2 border-border"
+                  className="w-28 bg-background/40 text-[10px] h-6.5 py-0.5 px-2 border-border font-mono rounded"
                 />
               </div>
               <div className="flex items-center gap-1.5">
-                <Label htmlFor="panel-label" className="text-[10px] font-mono text-muted-foreground uppercase">Label</Label>
+                <Label htmlFor="panel-label" className="text-[9px] font-mono text-muted-foreground uppercase">Label</Label>
                 <Input 
                   id="panel-label" 
                   type="text" 
                   value={panelLabel} 
                   onChange={(e) => setPanelLabel(e.target.value)} 
-                  className="w-36 bg-background/50 text-xs h-8 py-1 px-2 border-border"
+                  className="w-28 bg-background/40 text-[10px] h-6.5 py-0.5 px-2 border-border font-mono rounded"
                 />
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4.5">
             {/* Table Column */}
             <div className="lg:col-span-2 space-y-3">
-              <div className="overflow-hidden rounded-xl border border-border">
-                <table className="w-full text-xs">
-                  <thead className="bg-secondary/40 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <div className="overflow-hidden rounded-lg border border-border/80 bg-background/10">
+                <table className="w-full text-[10.5px]">
+                  <thead className="bg-secondary/40 text-[8.5px] uppercase tracking-wider text-muted-foreground font-mono">
                     <tr>
-                      <th className="text-left px-3 py-2.5">Biomarker</th>
-                      <th className="text-right px-3 py-2.5">Value</th>
-                      <th className="text-left px-3 py-2.5">Unit</th>
-                      <th className="text-right px-3 py-2.5">Conf.</th>
-                      <th className="text-left px-3 py-2.5">Mapped Key</th>
-                      <th className="text-left px-3 py-2.5">Status</th>
-                      <th className="text-center px-3 py-2.5">Actions</th>
+                      <th className="text-left px-2.5 py-1.5">Biomarker</th>
+                      <th className="text-right px-2 py-1.5">Value</th>
+                      <th className="text-left px-2 py-1.5">Unit</th>
+                      <th className="text-right px-2 py-1.5">Conf.</th>
+                      <th className="text-left px-2 py-1.5 font-mono">Mapped Key</th>
+                      <th className="text-left px-2 py-1.5">Status</th>
+                      <th className="text-center px-2 py-1.5">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -404,7 +405,7 @@ Coach Warren`;
                       const def = BIOMARKERS.find(b => b.key === row.key);
                       const isIgnored = row.status === "ignored";
                       
-                      let statusNode = <span className="text-muted-foreground font-mono">—</span>;
+                      let statusNode = <span className="text-muted-foreground/60 font-mono">—</span>;
                       if (!isIgnored && def) {
                         const status = getStatus(def, row.value);
                         const meta = STATUS_META[status];
@@ -414,38 +415,38 @@ Coach Warren`;
                       return (
                         <tr 
                           key={row.key} 
-                          className={`border-t border-border/80 hover:bg-secondary/10 transition ${
-                            isIgnored ? "opacity-40" : ""
+                          className={`border-t border-border/60 hover:bg-secondary/15 transition ${
+                            isIgnored ? "opacity-30" : ""
                           }`}
                         >
-                          <td className="px-3 py-2.5 font-medium">{row.name}</td>
-                          <td className="px-3 py-2.5 text-right font-mono-data">
+                          <td className="px-2.5 py-1.5 font-semibold text-foreground text-[11px]">{row.name}</td>
+                          <td className="px-2 py-1.5 text-right font-mono-data text-[11px]">
                             {row.isEditing ? (
                               <input 
                                 type="text" 
                                 value={row.editValue} 
                                 onChange={(e) => handleEditValueChange(row.key, e.target.value)}
-                                className="bg-background border border-border rounded px-1.5 py-0.5 text-right w-16 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                                className="bg-background border border-border rounded px-1 py-0.5 text-right w-14 text-[10.5px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary font-mono"
                               />
                             ) : (
                               row.value
                             )}
                           </td>
-                          <td className="px-3 py-2.5 text-muted-foreground font-mono">{row.unit}</td>
-                          <td className="px-3 py-2.5 text-right">
-                            <span className={`font-mono font-bold ${
+                          <td className="px-2 py-1.5 text-muted-foreground/80 font-mono text-[9.5px]">{row.unit}</td>
+                          <td className="px-2 py-1.5 text-right">
+                            <span className={`font-mono font-bold text-[9.5px] ${
                               row.confidence >= 95 ? "text-status-optimal" : "text-amber-500"
                             }`}>{row.confidence}%</span>
                           </td>
-                          <td className="px-3 py-2.5 text-muted-foreground font-mono">{row.key}</td>
-                          <td className="px-3 py-2.5">{statusNode}</td>
-                          <td className="px-3 py-2.5 text-center">
-                            <div className="flex items-center justify-center gap-1.5">
+                          <td className="px-2 py-1.5 text-muted-foreground/75 font-mono text-[9.5px]">{row.key}</td>
+                          <td className="px-2 py-1.5 font-mono text-[9.5px]">{statusNode}</td>
+                          <td className="px-2 py-1.5 text-center">
+                            <div className="flex items-center justify-center gap-1">
                               {row.isEditing ? (
                                 <Button 
                                   size="sm" 
                                   variant="neon" 
-                                  className="h-6 px-2 text-[10px] rounded" 
+                                  className="h-5 px-1.5 text-[8.5px] rounded font-mono font-bold uppercase tracking-wider" 
                                   onClick={() => handleSaveRow(row.key)}
                                 >
                                   Save
@@ -453,10 +454,10 @@ Coach Warren`;
                               ) : (
                                 <button 
                                   onClick={() => handleEditRow(row.key)}
-                                  className="p-1 hover:text-primary text-muted-foreground transition"
+                                  className="p-0.5 hover:text-primary text-muted-foreground/80 transition"
                                   title="Edit value"
                                 >
-                                  <Edit3 className="h-3.5 w-3.5" />
+                                  <Edit3 className="h-3 w-3" />
                                 </button>
                               )}
 
@@ -464,7 +465,7 @@ Coach Warren`;
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="h-6 px-2 text-[10px] text-primary hover:text-primary rounded border border-transparent hover:border-border hover:bg-secondary/40"
+                                  className="h-5 px-1.5 text-[8.5px] text-primary hover:text-primary rounded border border-transparent hover:border-border hover:bg-secondary/40 font-mono font-bold uppercase tracking-wider"
                                   onClick={() => handleAcceptRow(row.key)}
                                 >
                                   Accept
@@ -472,10 +473,10 @@ Coach Warren`;
                               ) : (
                                 <button
                                   onClick={() => handleIgnoreRow(row.key)}
-                                  className="p-1 hover:text-status-above text-muted-foreground transition"
+                                  className="p-0.5 hover:text-status-above text-muted-foreground/80 transition"
                                   title="Ignore biomarker"
                                 >
-                                  <Trash2 className="h-3.5 w-3.5" />
+                                  <Trash2 className="h-3 w-3" />
                                 </button>
                               )}
                             </div>
@@ -489,69 +490,69 @@ Coach Warren`;
             </div>
 
             {/* Confidence Card Column */}
-            <div className="lg:col-span-1 space-y-4">
-              <div className="lab-card-glow p-5 border border-border/80 space-y-5">
-                <h4 className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Extraction Confidence</h4>
+            <div className="lg:col-span-1 space-y-3.5">
+              <div className="lab-card-glow p-4 border border-border/85 space-y-4 rounded-xl">
+                <h4 className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Extraction Confidence</h4>
                 
                 {/* Circular Gauge mockup */}
-                <div className="flex flex-col items-center py-4">
-                  <div className="relative h-28 w-28 rounded-full border-4 border-dashed border-status-optimal/30 flex items-center justify-center shadow-[inset_0_0_20px_rgba(0,255,128,0.05)] animate-pulse-glow">
-                    <span className="absolute h-24 w-24 rounded-full border border-status-optimal/20" />
+                <div className="flex flex-col items-center py-1">
+                  <div className="relative h-20 w-20 rounded-full border-2 border-dashed border-status-optimal/30 flex items-center justify-center shadow-[inset_0_0_15px_rgba(0,255,128,0.04)] animate-pulse-glow">
+                    <span className="absolute h-17 w-17 rounded-full border border-status-optimal/15" />
                     <div className="text-center">
-                      <div className="text-3xl font-display font-bold text-glow text-status-optimal">97%</div>
-                      <div className="text-[9px] font-mono text-muted-foreground uppercase font-semibold">Optical Conf.</div>
+                      <div className="text-xl font-display font-bold text-glow text-status-optimal">97%</div>
+                      <div className="text-[8px] font-mono text-muted-foreground/80 uppercase font-semibold">Optical</div>
                     </div>
                   </div>
-                  <span className="mt-3 text-xs font-bold text-status-optimal uppercase tracking-wide">High Confidence</span>
-                  <span className="text-[10px] text-muted-foreground mt-0.5 font-mono">10 markers parsed</span>
+                  <span className="mt-2.5 text-[10px] font-bold text-status-optimal uppercase tracking-wide font-mono">High Confidence</span>
+                  <span className="text-[9px] text-muted-foreground/75 font-mono">10 markers parsed</span>
                 </div>
 
                 {/* Score breakdown list */}
-                <div className="space-y-2 text-xs border-t border-border/40 pt-4">
+                <div className="space-y-1.5 text-[10.5px] border-t border-border/30 pt-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-status-optimal" /> High (&gt;95%):
+                    <span className="text-muted-foreground/90 flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-status-optimal" /> High (&gt;95%):
                     </span>
                     <span className="font-bold font-mono">8 markers</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-amber-500" /> Medium (80-94%):
+                    <span className="text-muted-foreground/90 flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> Medium (80-94%):
                     </span>
                     <span className="font-bold font-mono">2 markers</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-status-high" /> Low (&lt;80%):
+                    <span className="text-muted-foreground/90 flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-status-high" /> Low (&lt;80%):
                     </span>
-                    <span className="font-bold font-mono text-muted-foreground">0 markers</span>
+                    <span className="font-bold font-mono text-muted-foreground/50">0 markers</span>
                   </div>
                 </div>
 
                 {/* File summary info box */}
-                <div className="flex items-center gap-2.5 p-3 rounded-xl border border-border/80 bg-background/40">
-                  <FileText className="h-5 w-5 text-primary shrink-0" />
+                <div className="flex items-center gap-2 p-2 rounded-lg border border-border/80 bg-background/40">
+                  <FileText className="h-4 w-4 text-primary shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <div className="text-[11px] font-semibold truncate text-foreground">lab_report_chemistry.pdf</div>
-                    <div className="text-[9px] text-muted-foreground font-mono">1.2 MB · Verified Structure</div>
+                    <div className="text-[10px] font-semibold truncate text-foreground">lab_report_chemistry.pdf</div>
+                    <div className="text-[8px] text-muted-foreground/75 font-mono">1.2 MB · Verified</div>
                   </div>
-                  <CheckCircle className="h-4.5 w-4.5 text-status-optimal shrink-0" />
+                  <CheckCircle className="h-4 w-4 text-status-optimal shrink-0" />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="flex justify-end gap-2.5 pt-3">
+          <div className="flex justify-end gap-2 pt-2">
             <Button 
               variant="outline" 
-              className="h-9 px-5 text-muted-foreground" 
+              className="h-7 px-4 text-muted-foreground text-[10.5px] font-mono font-bold uppercase tracking-wider rounded" 
               onClick={() => setStep(1)}
             >
               Back
             </Button>
             <Button 
               variant="hero" 
-              className="h-9 px-6 font-bold uppercase tracking-wider" 
+              className="h-7 px-5 font-bold uppercase tracking-wider text-[10.5px] font-mono shadow-[0_0_10px_rgba(0,255,128,0.1)] rounded" 
               onClick={handleImport}
             >
               Approve & Import Labs
@@ -562,37 +563,37 @@ Coach Warren`;
 
       {/* Step 4: Coach Findings Summary */}
       {step === 4 && findings && (
-        <div className="space-y-6">
+        <div className="space-y-4.5">
           {/* Health Disclaimer */}
-          <div className="flex items-start gap-3 p-3.5 rounded-xl border border-status-above/30 bg-status-above/5">
-            <AlertTriangle className="h-5 w-5 text-status-above shrink-0 mt-0.5" />
-            <div className="text-xs text-muted-foreground leading-relaxed">
+          <div className="flex items-start gap-2.5 p-2.5 rounded-lg border border-status-above/30 bg-status-above/5">
+            <AlertTriangle className="h-4 w-4 text-status-above shrink-0 mt-0.5" />
+            <div className="text-[10.5px] text-muted-foreground leading-relaxed">
               <span className="font-semibold text-status-above">AI-assisted lab review</span> — for coach review only. Not medical advice. Wording is structured strictly for coaching support; consider referral or discussion with a qualified medical professional where appropriate.
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-3 gap-3.5">
             {/* Out of Optimal & Trends */}
-            <div className="md:col-span-2 space-y-4">
+            <div className="md:col-span-2 space-y-3.5">
               {/* Anomalies Card */}
-              <div className="lab-card p-4 space-y-2">
-                <h4 className="text-xs font-semibold text-primary uppercase font-mono tracking-wider flex items-center gap-1.5">
-                  <AlertTriangle className="h-4 w-4" /> Priority Findings (Outside Optimal Range)
+              <div className="lab-card p-3.5 space-y-2 rounded-xl">
+                <h4 className="text-[10.5px] font-semibold text-primary uppercase font-mono tracking-wider flex items-center gap-1.5">
+                  <AlertTriangle className="h-3.5 w-3.5" /> Priority Findings (Outside Optimal Range)
                 </h4>
-                <div className="space-y-2 pt-2">
+                <div className="space-y-2 pt-1">
                   {findings.outOfOptimal.length === 0 ? (
-                    <div className="text-xs text-status-optimal flex items-center gap-1.5">
-                      <CheckCircle className="h-4 w-4" /> All imported biomarkers fall within optimal ranges.
+                    <div className="text-[11px] text-status-optimal flex items-center gap-1.5 font-mono">
+                      <CheckCircle className="h-3.5 w-3.5" /> All imported biomarkers fall within optimal ranges.
                     </div>
                   ) : (
                     <div className="grid sm:grid-cols-2 gap-2">
                       {findings.outOfOptimal.map((o) => (
-                        <div key={o.name} className="p-2.5 rounded-lg border border-border/80 bg-background/20 flex justify-between items-center text-xs">
+                        <div key={o.name} className="p-2 rounded-md border border-border/80 bg-background/20 flex justify-between items-center text-[11px]">
                           <div>
-                            <div className="font-medium text-foreground">{o.name}</div>
-                            <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{o.value} {o.unit}</div>
+                            <div className="font-semibold text-foreground">{o.name}</div>
+                            <div className="text-[9.5px] text-muted-foreground/80 font-mono mt-0.5">{o.value} {o.unit}</div>
                           </div>
-                          <span className={`font-semibold uppercase tracking-wider text-[9px] border px-1.5 py-0.5 rounded ${o.statusColor}`}>
+                          <span className={`font-semibold uppercase tracking-wider text-[8px] border px-1.5 py-0.5 rounded ${o.statusColor}`}>
                             {o.statusLabel}
                           </span>
                         </div>
@@ -603,16 +604,16 @@ Coach Warren`;
               </div>
 
               {/* Trends Card */}
-              <div className="lab-card p-4 space-y-2">
-                <h4 className="text-xs font-semibold text-primary uppercase font-mono tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="h-4 w-4" /> Telemetry Trend Analysis
+              <div className="lab-card p-3.5 space-y-2 rounded-xl">
+                <h4 className="text-[10.5px] font-semibold text-primary uppercase font-mono tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5" /> Telemetry Trend Analysis
                 </h4>
-                <div className="space-y-2 text-xs pt-1.5 text-muted-foreground leading-relaxed">
+                <div className="space-y-1.5 text-[11px] pt-1 text-muted-foreground leading-normal font-mono">
                   {findings.trendNotes.length === 0 ? (
                     <div>No significant biomarker delta shifts detected or no previous panel on file.</div>
                   ) : (
                     findings.trendNotes.map((note, idx) => (
-                      <div key={idx} className="flex items-start gap-2">
+                      <div key={idx} className="flex items-start gap-1.5">
                         <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                         <span>{note}</span>
                       </div>
@@ -623,15 +624,15 @@ Coach Warren`;
             </div>
 
             {/* Next Actions & Discussion points */}
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               {/* Discussion Points */}
-              <div className="lab-card p-4 space-y-2">
-                <h4 className="text-xs font-semibold text-primary uppercase font-mono tracking-wider flex items-center gap-1.5">
-                  <HelpCircle className="h-4 w-4" /> Coach Discussion Points
+              <div className="lab-card p-3.5 space-y-2 rounded-xl">
+                <h4 className="text-[10.5px] font-semibold text-primary uppercase font-mono tracking-wider flex items-center gap-1.5">
+                  <HelpCircle className="h-3.5 w-3.5" /> Coach Discussion Points
                 </h4>
-                <div className="space-y-2.5 pt-1.5 text-xs text-muted-foreground leading-normal">
+                <div className="space-y-2 pt-1 text-[11px] text-muted-foreground leading-normal">
                   {findings.questions.map((q, idx) => (
-                    <div key={idx} className="flex gap-2">
+                    <div key={idx} className="flex gap-1.5">
                       <span className="text-primary font-mono font-bold">{idx + 1}.</span>
                       <p>{q}</p>
                     </div>
@@ -640,13 +641,13 @@ Coach Warren`;
               </div>
 
               {/* Next Actions */}
-              <div className="lab-card p-4 space-y-2">
-                <h4 className="text-xs font-semibold text-primary uppercase font-mono tracking-wider flex items-center gap-1.5">
-                  <ArrowRight className="h-4 w-4" /> Suggested Next Actions
+              <div className="lab-card p-3.5 space-y-2 rounded-xl">
+                <h4 className="text-[10.5px] font-semibold text-primary uppercase font-mono tracking-wider flex items-center gap-1.5">
+                  <ArrowRight className="h-3.5 w-3.5" /> Suggested Next Actions
                 </h4>
-                <div className="space-y-2.5 pt-1.5 text-xs text-muted-foreground leading-normal">
+                <div className="space-y-2 pt-1 text-[11px] text-muted-foreground leading-normal">
                   {findings.nextActions.map((act, idx) => (
-                    <div key={idx} className="flex gap-2">
+                    <div key={idx} className="flex gap-1.5">
                       <span className="text-primary font-bold">•</span>
                       <p>{act}</p>
                     </div>
@@ -657,15 +658,15 @@ Coach Warren`;
           </div>
 
           {/* Draft Message copy card */}
-          <div className="lab-card p-4 space-y-3">
+          <div className="lab-card p-3.5 space-y-2.5 rounded-xl">
             <div className="flex justify-between items-center">
-              <h4 className="text-xs font-semibold text-primary uppercase font-mono tracking-wider flex items-center gap-1.5">
-                <FileText className="h-4 w-4" /> Client-Safe Summary Draft (Warren's Review Required)
+              <h4 className="text-[10.5px] font-semibold text-primary uppercase font-mono tracking-wider flex items-center gap-1.5">
+                <FileText className="h-3.5 w-3.5" /> Client-Safe Summary Draft (Warren's Review Required)
               </h4>
               <Button 
                 size="sm" 
                 variant="neon" 
-                className="h-7 text-[10px] font-semibold"
+                className="h-6.5 text-[9.5px] px-2.5 font-bold font-mono uppercase tracking-wider shadow-[0_0_8px_rgba(0,255,128,0.05)]"
                 onClick={() => handleCopySummary(findings.draftMessage)}
               >
                 <Copy className="h-3 w-3 mr-1" /> Copy Draft
@@ -674,15 +675,15 @@ Coach Warren`;
             <textarea
               readOnly
               value={findings.draftMessage}
-              className="w-full h-44 bg-background/40 border border-border rounded-xl p-3 text-xs leading-relaxed font-mono text-muted-foreground select-all focus:outline-none"
+              className="w-full h-36 bg-background/40 border border-border rounded-lg p-2.5 text-[11px] leading-relaxed font-mono text-muted-foreground select-all focus:outline-none"
             />
           </div>
 
           {/* Finish Button */}
-          <div className="flex justify-end pt-2">
+          <div className="flex justify-end pt-1">
             <Button 
               variant="hero" 
-              className="h-10 px-8 font-bold uppercase tracking-wider" 
+              className="h-8 px-5 font-bold uppercase tracking-wider text-[11px] font-mono shadow-[0_0_10px_rgba(0,255,128,0.1)] rounded" 
               onClick={onComplete}
             >
               Complete Lab Review

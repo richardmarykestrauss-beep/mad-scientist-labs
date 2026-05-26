@@ -89,34 +89,34 @@ export function CoachWorkQueue() {
   const completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
-    <div className="lab-card-glow p-5 flex flex-col h-full">
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
+    <div className="lab-card-glow p-4 flex flex-col h-full border border-border/80">
+      <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-border/60">
         <div>
-          <div className="text-sm font-semibold flex items-center gap-2">
-            <ListTodo className="h-4 w-4 text-primary" />
+          <div className="text-xs font-semibold flex items-center gap-1.5">
+            <ListTodo className="h-3.5 w-3.5 text-primary" />
             Daily Coach Actions
           </div>
-          <p className="text-[10px] text-muted-foreground mt-0.5 uppercase tracking-wider font-mono">
+          <p className="text-[9px] text-muted-foreground mt-0.5 uppercase tracking-wider font-mono">
             Local Daily Checklist · Mock Workspace
           </p>
         </div>
         <button
           onClick={handleReset}
-          className="text-xs text-muted-foreground hover:text-primary transition flex items-center gap-1.5 font-mono"
+          className="text-[10px] text-muted-foreground hover:text-primary transition flex items-center gap-1 font-mono"
           title="Reset back to seed tasks"
         >
-          <RotateCcw className="h-3 w-3" /> Reset
+          <RotateCcw className="h-2.5 w-2.5" /> Reset
         </button>
       </div>
 
       {/* Progress Section */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">
+      <div className="mb-3.5">
+        <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5">
           <span>Completion Gauge</span>
           <span className="text-primary font-bold">{completionPercentage}%</span>
         </div>
-        <Progress value={completionPercentage} className="h-1.5" />
-        <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
+        <Progress value={completionPercentage} className="h-1" />
+        <div className="flex justify-between text-[9px] text-muted-foreground mt-1.5">
           <span>{completedCount} of {totalCount} actions resolved</span>
           {completionPercentage === 100 && (
             <span className="text-status-optimal font-bold animate-pulse">Console Clear!</span>
@@ -125,7 +125,7 @@ export function CoachWorkQueue() {
       </div>
 
       {/* Checklist */}
-      <div className="space-y-2 flex-1 overflow-y-auto scrollbar-thin pr-1 max-h-[220px] mb-4">
+      <div className="space-y-2 flex-1 overflow-y-auto scrollbar-thin pr-1 max-h-[160px] mb-3">
         {tasks.length === 0 ? (
           <div className="text-center py-6 text-xs text-muted-foreground">
             No daily tasks. Use the input below to add actions.

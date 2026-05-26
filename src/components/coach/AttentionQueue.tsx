@@ -115,33 +115,33 @@ export function AttentionQueue() {
   };
 
   return (
-    <div className="lab-card-glow p-5 flex flex-col h-full">
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
+    <div className="lab-card-glow p-4 flex flex-col h-full border border-border/80">
+      <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-border/60">
         <div>
-          <div className="text-sm font-semibold flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+          <div className="text-xs font-semibold flex items-center gap-1.5">
+            <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
             Attention Queue
           </div>
-          <p className="text-[10px] text-muted-foreground mt-0.5 uppercase tracking-wider font-mono">
+          <p className="text-[9px] text-muted-foreground mt-0.5 uppercase tracking-wider font-mono">
             Prototype attention queue · Live database planned
           </p>
         </div>
-        <span className="chip text-status-above border-status-above/30 bg-status-above/10">
+        <span className="chip text-status-above border-status-above/30 bg-status-above/10 text-[8px] px-1.5 py-0.5">
           {attentionList.length} Action{attentionList.length !== 1 ? "s" : ""}
         </span>
       </div>
 
-      <div className="space-y-3 flex-1 overflow-y-auto scrollbar-thin pr-1 max-h-[360px]">
+      <div className="space-y-2.5 flex-1 overflow-y-auto scrollbar-thin pr-1 max-h-[300px]">
         {attentionList.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center text-xs text-muted-foreground">
-            <CheckCircle className="h-8 w-8 text-status-optimal mb-2 opacity-60" />
+            <CheckCircle className="h-6 w-6 text-status-optimal mb-1.5 opacity-60" />
             No immediate client attention actions. Roster is fully aligned.
           </div>
         ) : (
           attentionList.slice(0, 5).map((item) => (
             <div
               key={item.clientId}
-              className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 rounded-xl border border-border/80 bg-background/40 hover:border-primary/30 transition group"
+              className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2.5 rounded-xl border border-border/80 bg-background/40 hover:border-primary/30 transition group"
             >
               <div className="flex items-start gap-3 min-w-0">
                 <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${item.avatarColor} text-background font-bold text-xs`}>
@@ -173,16 +173,16 @@ export function AttentionQueue() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0 md:self-center self-end mt-1 md:mt-0">
+              <div className="flex items-center gap-1.5 shrink-0 md:self-center self-end mt-1 md:mt-0">
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-8 text-xs gap-1 hover:text-primary hover:bg-secondary/40 border border-transparent hover:border-border"
+                  className="h-7 text-[10px] px-2 gap-1 hover:text-primary hover:bg-secondary/40 border border-transparent hover:border-border"
                   asChild
                 >
                   <Link to={`/coach/clients/${item.clientId}`}>
-                    <Eye className="h-3.5 w-3.5" />
-                    Open Profile
+                    <Eye className="h-3 w-3" />
+                    Open
                   </Link>
                 </Button>
                 
@@ -190,10 +190,10 @@ export function AttentionQueue() {
                   <Button
                     size="sm"
                     variant="neon"
-                    className="h-8 text-xs font-semibold"
+                    className="h-7 text-[10px] px-2 font-semibold"
                     onClick={() => handleMarkReviewed(item.clientId, item.name)}
                   >
-                    <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                    <CheckCircle className="h-3 w-3 mr-0.5" />
                     Resolve
                   </Button>
                 )}

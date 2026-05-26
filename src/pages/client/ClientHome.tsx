@@ -111,51 +111,82 @@ export default function ClientHome() {
       <main className="max-w-5xl w-full mx-auto p-4 md:p-6 flex-1">
         {activeTab === "home" && (
           <div className="space-y-5 animate-fade-in">
-            {/* Greeting & Focus */}
-            <div className="lab-card-glow p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+            {/* Today's Focus Card */}
+            <div className="lab-card-glow p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-border/80">
               <div>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-primary">Lab Connected</span>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-primary">Lab Connected · Athlete OS</span>
                 <h1 className="font-display text-3xl font-bold mt-0.5">Welcome back, {client.name.split(" ")[0]}</h1>
-                <p className="text-sm text-muted-foreground mt-1">Goal: {client.goal}</p>
+                <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+                  <span>Goal: {client.goal}</span>
+                  <span>•</span>
+                  <span className="text-primary font-mono font-semibold">Coach Warren Germishuizen</span>
+                </div>
               </div>
-              <div className="chip border-primary/40 text-primary font-mono text-xs">
-                Coach: Warren Germishuizen
+              <div className="w-full md:w-auto p-4 rounded-xl border border-primary/20 bg-primary/5 flex flex-col sm:flex-row justify-between sm:items-center gap-3 shrink-0">
+                <div>
+                  <span className="text-[9px] font-mono uppercase text-muted-foreground">Today's Focus</span>
+                  <div className="text-sm font-bold text-foreground">Pull Strength + Recovery</div>
+                </div>
+                <Button 
+                  size="sm" 
+                  variant="hero" 
+                  className="text-[10px] font-bold h-7 px-3.5"
+                  onClick={() => { setActiveTab("program"); setProgramSubTab("workout"); }}
+                >
+                  View Today's Plan
+                </Button>
               </div>
             </div>
 
-            {/* Compliance Quick Dashboard */}
+            {/* Compliance Quick Dashboard / Progress Cards */}
             <div className="grid grid-cols-2 gap-4">
               <div 
                 onClick={() => { setActiveTab("program"); setProgramSubTab("workout"); }}
-                className="lab-card-glow p-4 cursor-pointer hover:border-primary/40 transition"
+                className="lab-card-glow p-5 cursor-pointer border border-border/80 hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,255,128,0.02)] transition flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between text-muted-foreground">
-                  <span className="text-[10px] font-mono uppercase tracking-wider">Today's Training</span>
-                  <Dumbbell className="h-4 w-4 text-primary" />
+                <div>
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span className="text-[10px] font-mono uppercase tracking-wider font-semibold">Training Adherence</span>
+                    <Dumbbell className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="mt-4 flex items-baseline gap-1.5">
+                    <div className="font-display text-3xl font-bold text-primary text-glow">{client.trainingCompliance}%</div>
+                    <span className="text-[9px] text-muted-foreground uppercase font-mono">workouts completed</span>
+                  </div>
                 </div>
-                <div className="mt-2 flex items-baseline gap-1.5">
-                  <div className="font-display text-2xl font-bold">{client.trainingCompliance}%</div>
-                  <span className="text-[9px] text-muted-foreground uppercase font-mono">adherence</span>
-                </div>
-                <div className="mt-2.5 h-1.5 rounded-full bg-secondary overflow-hidden">
-                  <div className="h-full bg-gradient-primary" style={{ width: `${client.trainingCompliance}%` }} />
+                <div className="mt-4">
+                  <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                    <div className="h-full bg-gradient-primary" style={{ width: `${client.trainingCompliance}%` }} />
+                  </div>
+                  <div className="flex justify-between text-[9px] text-muted-foreground mt-1.5 font-mono">
+                    <span>Target: 85%+</span>
+                    <span className="text-primary font-bold">ACTIVE</span>
+                  </div>
                 </div>
               </div>
 
               <div 
                 onClick={() => { setActiveTab("program"); setProgramSubTab("supplements"); }}
-                className="lab-card-glow p-4 cursor-pointer hover:border-primary/40 transition"
+                className="lab-card-glow p-5 cursor-pointer border border-border/80 hover:border-primary/40 hover:shadow-[0_0_12px_rgba(0,255,128,0.02)] transition flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between text-muted-foreground">
-                  <span className="text-[10px] font-mono uppercase tracking-wider">Supplement Protocol</span>
-                  <Pill className="h-4 w-4 text-primary" />
+                <div>
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span className="text-[10px] font-mono uppercase tracking-wider font-semibold">Supplement Protocol</span>
+                    <Pill className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="mt-4 flex items-baseline gap-1.5">
+                    <div className="font-display text-3xl font-bold text-primary text-glow">{client.nutritionCompliance}%</div>
+                    <span className="text-[9px] text-muted-foreground uppercase font-mono">taken today</span>
+                  </div>
                 </div>
-                <div className="mt-2 flex items-baseline gap-1.5">
-                  <div className="font-display text-2xl font-bold">{client.nutritionCompliance}%</div>
-                  <span className="text-[9px] text-muted-foreground uppercase font-mono">taken</span>
-                </div>
-                <div className="mt-2.5 h-1.5 rounded-full bg-secondary overflow-hidden">
-                  <div className="h-full bg-gradient-primary" style={{ width: `${client.nutritionCompliance}%` }} />
+                <div className="mt-4">
+                  <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                    <div className="h-full bg-gradient-primary" style={{ width: `${client.nutritionCompliance}%` }} />
+                  </div>
+                  <div className="flex justify-between text-[9px] text-muted-foreground mt-1.5 font-mono">
+                    <span>Target: 100%</span>
+                    <span className="text-primary font-bold">ACTIVE</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -165,14 +196,14 @@ export default function ClientHome() {
               {/* Lab Snapshot */}
               <div 
                 onClick={() => setActiveTab("labs")}
-                className="lab-card-glow p-5 md:col-span-2 cursor-pointer hover:border-primary/40 transition flex flex-col justify-between"
+                className="lab-card-glow p-5 md:col-span-2 cursor-pointer border border-border/80 hover:border-primary/40 transition flex flex-col justify-between"
               >
                 <div>
-                  <h3 className="font-display text-base font-bold flex items-center gap-1.5 mb-2">
+                  <h3 className="font-display text-base font-bold flex items-center gap-2 mb-2">
                     <Beaker className="h-4 w-4 text-primary" /> Blood Chemistry Snapshot
                   </h3>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    Your biology score is calculated from metabolic, lipid, and hormone markers.
+                  <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+                    Your biology score represents overall metabolic, hormone, and cardiovascular biomarker health.
                   </p>
                 </div>
                 <div className="flex items-center justify-between bg-background/40 border border-border/40 p-4 rounded-xl">
@@ -182,7 +213,7 @@ export default function ClientHome() {
                   </div>
                   <div className="text-right">
                     <span className="text-[9px] font-mono uppercase text-muted-foreground">Panel Date</span>
-                    <div className="font-mono text-sm font-semibold text-foreground mt-1">{latestPanel ? latestPanel.date : "—"}</div>
+                    <div className="font-mono text-xs font-semibold text-foreground mt-1.5 bg-secondary/40 border border-border/80 px-2 py-0.5 rounded-full">{latestPanel ? latestPanel.date : "None"}</div>
                   </div>
                 </div>
               </div>
@@ -190,21 +221,21 @@ export default function ClientHome() {
               {/* Check-in status card */}
               <div 
                 onClick={() => setActiveTab("checkin")}
-                className="lab-card-glow p-5 cursor-pointer hover:border-primary/40 transition flex flex-col justify-between"
+                className="lab-card-glow p-5 cursor-pointer border border-border/80 hover:border-primary/40 transition flex flex-col justify-between"
               >
                 <div>
-                  <h3 className="font-display text-base font-bold flex items-center gap-1.5 mb-2">
+                  <h3 className="font-display text-base font-bold flex items-center gap-2 mb-2">
                     <ClipboardCheck className="h-4 w-4 text-primary" /> Check-in Status
                   </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Weekly feedback drives biological coaching adjustments.
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Weekly reviews guide adjustments to your supplement and training limits.
                   </p>
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-border/40 text-center">
                   {hasCheckedInToday ? (
                     <div className="rounded-lg bg-primary/10 border border-primary/20 p-2 text-xs text-primary font-semibold flex items-center justify-center gap-1.5">
-                      <Check className="h-4 w-4" /> Check-in Submitted Today
+                      <Check className="h-4 w-4" /> Check-in Submitted
                     </div>
                   ) : (
                     <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-2 text-xs text-status-high font-semibold">
@@ -212,7 +243,7 @@ export default function ClientHome() {
                     </div>
                   )}
                   <p className="text-[10px] text-muted-foreground mt-2 font-mono">
-                    Last: {checkIns[0] ? checkIns[0].date : "None"}
+                    Last check-in: {checkIns[0] ? checkIns[0].date : "None"}
                   </p>
                 </div>
               </div>
@@ -221,16 +252,16 @@ export default function ClientHome() {
             {/* Coach Note Overview */}
             <div 
               onClick={() => setActiveTab("notes")}
-              className="lab-card-glow p-5 cursor-pointer hover:border-primary/40 transition border-l-4 border-l-primary"
+              className="lab-card-glow p-5 cursor-pointer border border-border/80 hover:border-primary/40 transition border-l-4 border-l-primary"
             >
-              <h3 className="font-display text-base font-bold flex items-center gap-1.5 mb-2">
+              <h3 className="font-display text-base font-bold flex items-center gap-2 mb-2">
                 <StickyNote className="h-4 w-4 text-primary" /> Latest Note from Coach Warren
               </h3>
-              <p className="text-sm text-foreground italic">
-                "{client.notes || "Keep up the great compliance. Keep an eye on hydration and focus on quality sleep."}"
+              <p className="text-xs text-foreground italic leading-relaxed">
+                "{client.notes || "Focus on hitting the correct tempos on your training splits. Digestion was reported as bloated in the evenings, let's keep hydration elevated and see if sleep improves."}"
               </p>
-              <div className="mt-3 text-[10px] text-muted-foreground font-mono flex items-center justify-between">
-                <span>Updated 2 days ago</span>
+              <div className="mt-3.5 text-[9px] text-muted-foreground font-mono flex items-center justify-between">
+                <span>Updated recently</span>
                 <span className="text-primary hover:underline flex items-center gap-0.5">Read details & respond →</span>
               </div>
             </div>

@@ -4,7 +4,7 @@ import type { BloodPanel, BiomarkerStatus } from "@/lib/types";
 import { StatusBadge } from "@/components/lab/StatusBadge";
 import { StatGauge } from "@/components/lab/StatGauge";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceArea } from "recharts";
-import { ArrowDown, ArrowRight, ArrowUp, Beaker, ChevronRight, Info, Plus, Upload } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUp, Beaker, ChevronRight, Info, Plus, Upload, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -43,9 +43,66 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
   const total = latest?.results.length ?? 0;
   const score = total ? Math.round(((counts.optimal + counts["below-optimal"] * 0.6 + counts["above-optimal"] * 0.6) / total) * 100) : 0;
 
+  // Dynamic Biomarker Constellation category status calculations
+  const constellationStatuses = useMemo(() => {
+    const categoriesMapping: Record<string, string[]> = {
+      Hormones: ["Hormones"],
+      Thyroid: ["Thyroid"],
+      Lipids: ["Lipids"],
+      Liver: ["Liver & Gallbladder"],
+      Nutrients: ["Vitamins", "Iron", "Minerals"],
+      Inflammation: ["Inflammation"]
+    };
+
+    const statusResults: Record<string, { status: "optimal" | "watch" | "alert" | "untested"; count: number }> = {};
+
+    Object.entries(categoriesMapping).forEach(([catKey, subCats]) => {
+      if (!latest) {
+        statusResults[catKey] = { status: "untested", count: 0 };
+        return;
+      }
+
+      const catResults = latest.results.filter(r => {
+        const def = BIOMARKER_MAP[r.key];
+        return def && subCats.includes(def.category);
+      });
+
+      if (catResults.length === 0) {
+        statusResults[catKey] = { status: "untested", count: 0 };
+        return;
+      }
+
+      let hasAlert = false;
+      let hasWatch = false;
+
+      catResults.forEach(r => {
+        const def = BIOMARKER_MAP[r.key];
+        if (!def) return;
+        const s = getStatus(def, r.value);
+        if (s === "high" || s === "low") hasAlert = true;
+        if (s === "below-optimal" || s === "above-optimal") hasWatch = true;
+      });
+
+      let status: "optimal" | "watch" | "alert" | "untested" = "optimal";
+      if (hasAlert) status = "alert";
+      else if (hasWatch) status = "watch";
+
+      statusResults[catKey] = { status, count: catResults.length };
+    });
+
+    return statusResults;
+  }, [latest]);
+
   const filteredMarkers = (latest?.results ?? []).filter((r) => {
     const def = BIOMARKER_MAP[r.key]; if (!def) return false;
-    return activeCategory === "All" || def.category === activeCategory;
+    if (activeCategory === "All") return true;
+    if (activeCategory === "Nutrients") {
+      return def.category === "Vitamins" || def.category === "Iron" || def.category === "Minerals";
+    }
+    if (activeCategory === "Liver") {
+      return def.category === "Liver & Gallbladder";
+    }
+    return def.category === activeCategory;
   });
 
   if (!latest) {
@@ -90,8 +147,8 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
     <div className="space-y-5">
       {/* Header summary */}
       <div className="grid lg:grid-cols-3 gap-4">
-        <div className="lab-card-glow p-5 lg:col-span-1">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Overall Blood Health Score</div>
+        <div className="lab-card-glow p-5 lg:col-span-1 border border-border/80">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-mono">Overall Biology Score</div>
           <div className="mt-2 flex items-end gap-3">
             <div className="font-display text-5xl font-bold text-glow text-primary">{score}</div>
             <div className="text-sm text-muted-foreground mb-2">/ 100</div>
@@ -99,11 +156,11 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
           <div className="mt-3 h-2 rounded-full bg-secondary overflow-hidden">
             <div className="h-full bg-gradient-primary" style={{ width: `${score}%` }} />
           </div>
-          <div className="mt-3 text-xs text-muted-foreground">Latest panel: <span className="text-foreground font-mono">{latest.date}</span> · {latest.label}</div>
+          <div className="mt-3 text-xs text-muted-foreground">Latest draw date: <span className="text-foreground font-mono font-semibold">{latest.date}</span></div>
         </div>
 
-        <div className="lab-card-glow p-5 lg:col-span-2">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-3">Marker Distribution</div>
+        <div className="lab-card-glow p-5 lg:col-span-2 border border-border/80">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-3 font-mono">Marker Distribution</div>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             <Stat label="Optimal" count={counts.optimal} status="optimal" />
             <Stat label="Below Optimal" count={counts["below-optimal"]} status="below-optimal" />
@@ -112,23 +169,76 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
             <Stat label="High" count={counts.high} status="high" />
           </div>
           {latest.coachSummary && (
-            <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-3 text-sm">
-              <div className="text-[10px] font-mono uppercase tracking-wider text-primary mb-1">Coach Summary</div>
+            <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-3 text-xs text-muted-foreground">
+              <span className="font-bold text-primary font-mono text-[9px] uppercase block mb-1">Coach Intake Log</span>
               {latest.coachSummary}
             </div>
           )}
         </div>
       </div>
 
+      {/* Biomarker Constellation View Grid (Section 4) */}
+      <div className="lab-card-glow p-5 border border-border/80 space-y-4">
+        <div>
+          <h3 className="text-xs font-semibold text-primary uppercase font-mono tracking-wider flex items-center gap-1.5">
+            <Sparkles className="h-4 w-4" /> Biomarker Constellation View
+          </h3>
+          <p className="text-[10px] text-muted-foreground uppercase font-mono mt-0.5">
+            Interact with lenses to filter diagnostic categories
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-3 pt-1">
+          {[
+            { key: "Hormones", label: "Hormones", desc: "Testosterone, LH, FSH" },
+            { key: "Thyroid", label: "Thyroid", desc: "TSH, Free T3, Free T4" },
+            { key: "Lipids", label: "Lipids", desc: "Cholesterol, LDL, HDL" },
+            { key: "Liver", label: "Liver & Gall", desc: "ALT, AST, ALP, GGT" },
+            { key: "Nutrients", label: "Nutrients", desc: "Vitamin D, B12, Iron" },
+            { key: "Inflammation", label: "Inflammation", desc: "NLR, PLR ratios" }
+          ].map((cat) => {
+            const result = constellationStatuses[cat.key] || { status: "untested", count: 0 };
+            const isActive = activeCategory === cat.key;
+            return (
+              <button
+                key={cat.key}
+                onClick={() => setActiveCategory(isActive ? "All" : cat.key)}
+                className={cn(
+                  "p-3 rounded-xl border bg-background/25 text-left transition duration-300 group flex flex-col justify-between hover:shadow-[0_0_12px_rgba(0,255,128,0.03)]",
+                  isActive 
+                    ? "border-primary bg-primary/5" 
+                    : "border-border/80 hover:border-primary/40 hover:bg-secondary/15"
+                )}
+              >
+                <div className="flex justify-between items-center w-full">
+                  <span className="text-[10px] font-bold font-mono text-muted-foreground uppercase tracking-wide group-hover:text-primary transition">{cat.label}</span>
+                  <span className={cn(
+                    "h-2 w-2 rounded-full",
+                    result.status === "optimal" && "bg-status-optimal shadow-[0_0_6px_#00ff80]",
+                    result.status === "watch" && "bg-amber-500 shadow-[0_0_6px_#f59e0b]",
+                    result.status === "alert" && "bg-status-high shadow-[0_0_6px_#ef4444] animate-pulse",
+                    result.status === "untested" && "bg-secondary"
+                  )} />
+                </div>
+                <div className="mt-2">
+                  <div className="text-[10px] text-foreground font-semibold truncate">{cat.desc}</div>
+                  <div className="text-[9px] font-mono text-muted-foreground mt-0.5">{result.count} markers loaded</div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Action bar */}
-      <div className="flex flex-wrap items-center gap-2 justify-between">
+      <div className="flex flex-wrap items-center gap-2 justify-between pt-2">
         <div className="flex flex-wrap gap-1.5">
-          {["All", ...CATEGORIES.map((c) => c.key)].map((c) => (
+          {["All", "Hormones", "Thyroid", "Lipids", "Liver", "Nutrients", "Inflammation", "Glucose", "Renal", "Proteins"].map((c) => (
             <button
               key={c}
               onClick={() => setActiveCategory(c)}
               className={cn(
-                "rounded-full border px-3 py-1 text-[11px] font-medium transition",
+                "rounded-full border px-3 py-1 text-[11px] font-semibold transition uppercase tracking-wider font-mono",
                 activeCategory === c
                   ? "border-primary/60 bg-primary/10 text-primary"
                   : "border-border bg-card/40 text-muted-foreground hover:text-foreground"
@@ -142,7 +252,7 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
           <div className="flex items-center gap-2">
             <Button
               variant="neon"
-              className="border-primary/60 bg-primary/10 text-primary hover:bg-primary/15"
+              className="border-primary/60 bg-primary/10 text-primary hover:bg-primary/15 text-xs font-semibold h-8"
               onClick={() => setIsUploadOpen(true)}
             >
               <Upload className="h-4 w-4 mr-1.5" /> Upload Blood Report

@@ -383,105 +383,162 @@ Coach Warren`;
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-border">
-            <table className="w-full text-xs">
-              <thead className="bg-secondary/40 text-[10px] uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="text-left px-3 py-2.5">Biomarker</th>
-                  <th className="text-right px-3 py-2.5">Value</th>
-                  <th className="text-left px-3 py-2.5">Unit</th>
-                  <th className="text-right px-3 py-2.5">Conf.</th>
-                  <th className="text-left px-3 py-2.5">Mapped Key</th>
-                  <th className="text-left px-3 py-2.5">Status</th>
-                  <th className="text-center px-3 py-2.5">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => {
-                  const def = BIOMARKERS.find(b => b.key === row.key);
-                  const isIgnored = row.status === "ignored";
-                  
-                  let statusNode = <span className="text-muted-foreground font-mono">—</span>;
-                  if (!isIgnored && def) {
-                    const status = getStatus(def, row.value);
-                    const meta = STATUS_META[status];
-                    statusNode = <span className={`font-semibold ${meta.color}`}>{meta.label}</span>;
-                  }
-
-                  return (
-                    <tr 
-                      key={row.key} 
-                      className={`border-t border-border/80 hover:bg-secondary/10 transition ${
-                        isIgnored ? "opacity-40" : ""
-                      }`}
-                    >
-                      <td className="px-3 py-2.5 font-medium">{row.name}</td>
-                      <td className="px-3 py-2.5 text-right font-mono-data">
-                        {row.isEditing ? (
-                          <input 
-                            type="text" 
-                            value={row.editValue} 
-                            onChange={(e) => handleEditValueChange(row.key, e.target.value)}
-                            className="bg-background border border-border rounded px-1.5 py-0.5 text-right w-16 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                          />
-                        ) : (
-                          row.value
-                        )}
-                      </td>
-                      <td className="px-3 py-2.5 text-muted-foreground font-mono">{row.unit}</td>
-                      <td className="px-3 py-2.5 text-right">
-                        <span className={`font-mono font-bold ${
-                          row.confidence >= 95 ? "text-status-optimal" : "text-amber-500"
-                        }`}>{row.confidence}%</span>
-                      </td>
-                      <td className="px-3 py-2.5 text-muted-foreground font-mono">{row.key}</td>
-                      <td className="px-3 py-2.5">{statusNode}</td>
-                      <td className="px-3 py-2.5 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          {row.isEditing ? (
-                            <Button 
-                              size="sm" 
-                              variant="neon" 
-                              className="h-6 px-2 text-[10px] rounded" 
-                              onClick={() => handleSaveRow(row.key)}
-                            >
-                              Save
-                            </Button>
-                          ) : (
-                            <button 
-                              onClick={() => handleEditRow(row.key)}
-                              className="p-1 hover:text-primary text-muted-foreground transition"
-                              title="Edit value"
-                            >
-                              <Edit3 className="h-3.5 w-3.5" />
-                            </button>
-                          )}
-
-                          {isIgnored ? (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-6 px-2 text-[10px] text-primary hover:text-primary rounded border border-transparent hover:border-border hover:bg-secondary/40"
-                              onClick={() => handleAcceptRow(row.key)}
-                            >
-                              Accept
-                            </Button>
-                          ) : (
-                            <button
-                              onClick={() => handleIgnoreRow(row.key)}
-                              className="p-1 hover:text-status-above text-muted-foreground transition"
-                              title="Ignore biomarker"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            {/* Table Column */}
+            <div className="lg:col-span-2 space-y-3">
+              <div className="overflow-hidden rounded-xl border border-border">
+                <table className="w-full text-xs">
+                  <thead className="bg-secondary/40 text-[10px] uppercase tracking-wider text-muted-foreground">
+                    <tr>
+                      <th className="text-left px-3 py-2.5">Biomarker</th>
+                      <th className="text-right px-3 py-2.5">Value</th>
+                      <th className="text-left px-3 py-2.5">Unit</th>
+                      <th className="text-right px-3 py-2.5">Conf.</th>
+                      <th className="text-left px-3 py-2.5">Mapped Key</th>
+                      <th className="text-left px-3 py-2.5">Status</th>
+                      <th className="text-center px-3 py-2.5">Actions</th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody>
+                    {rows.map((row) => {
+                      const def = BIOMARKERS.find(b => b.key === row.key);
+                      const isIgnored = row.status === "ignored";
+                      
+                      let statusNode = <span className="text-muted-foreground font-mono">—</span>;
+                      if (!isIgnored && def) {
+                        const status = getStatus(def, row.value);
+                        const meta = STATUS_META[status];
+                        statusNode = <span className={`font-semibold ${meta.color}`}>{meta.label}</span>;
+                      }
+
+                      return (
+                        <tr 
+                          key={row.key} 
+                          className={`border-t border-border/80 hover:bg-secondary/10 transition ${
+                            isIgnored ? "opacity-40" : ""
+                          }`}
+                        >
+                          <td className="px-3 py-2.5 font-medium">{row.name}</td>
+                          <td className="px-3 py-2.5 text-right font-mono-data">
+                            {row.isEditing ? (
+                              <input 
+                                type="text" 
+                                value={row.editValue} 
+                                onChange={(e) => handleEditValueChange(row.key, e.target.value)}
+                                className="bg-background border border-border rounded px-1.5 py-0.5 text-right w-16 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                              />
+                            ) : (
+                              row.value
+                            )}
+                          </td>
+                          <td className="px-3 py-2.5 text-muted-foreground font-mono">{row.unit}</td>
+                          <td className="px-3 py-2.5 text-right">
+                            <span className={`font-mono font-bold ${
+                              row.confidence >= 95 ? "text-status-optimal" : "text-amber-500"
+                            }`}>{row.confidence}%</span>
+                          </td>
+                          <td className="px-3 py-2.5 text-muted-foreground font-mono">{row.key}</td>
+                          <td className="px-3 py-2.5">{statusNode}</td>
+                          <td className="px-3 py-2.5 text-center">
+                            <div className="flex items-center justify-center gap-1.5">
+                              {row.isEditing ? (
+                                <Button 
+                                  size="sm" 
+                                  variant="neon" 
+                                  className="h-6 px-2 text-[10px] rounded" 
+                                  onClick={() => handleSaveRow(row.key)}
+                                >
+                                  Save
+                                </Button>
+                              ) : (
+                                <button 
+                                  onClick={() => handleEditRow(row.key)}
+                                  className="p-1 hover:text-primary text-muted-foreground transition"
+                                  title="Edit value"
+                                >
+                                  <Edit3 className="h-3.5 w-3.5" />
+                                </button>
+                              )}
+
+                              {isIgnored ? (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-6 px-2 text-[10px] text-primary hover:text-primary rounded border border-transparent hover:border-border hover:bg-secondary/40"
+                                  onClick={() => handleAcceptRow(row.key)}
+                                >
+                                  Accept
+                                </Button>
+                              ) : (
+                                <button
+                                  onClick={() => handleIgnoreRow(row.key)}
+                                  className="p-1 hover:text-status-above text-muted-foreground transition"
+                                  title="Ignore biomarker"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Confidence Card Column */}
+            <div className="lg:col-span-1 space-y-4">
+              <div className="lab-card-glow p-5 border border-border/80 space-y-5">
+                <h4 className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Extraction Confidence</h4>
+                
+                {/* Circular Gauge mockup */}
+                <div className="flex flex-col items-center py-4">
+                  <div className="relative h-28 w-28 rounded-full border-4 border-dashed border-status-optimal/30 flex items-center justify-center shadow-[inset_0_0_20px_rgba(0,255,128,0.05)] animate-pulse-glow">
+                    <span className="absolute h-24 w-24 rounded-full border border-status-optimal/20" />
+                    <div className="text-center">
+                      <div className="text-3xl font-display font-bold text-glow text-status-optimal">97%</div>
+                      <div className="text-[9px] font-mono text-muted-foreground uppercase font-semibold">Optical Conf.</div>
+                    </div>
+                  </div>
+                  <span className="mt-3 text-xs font-bold text-status-optimal uppercase tracking-wide">High Confidence</span>
+                  <span className="text-[10px] text-muted-foreground mt-0.5 font-mono">10 markers parsed</span>
+                </div>
+
+                {/* Score breakdown list */}
+                <div className="space-y-2 text-xs border-t border-border/40 pt-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-status-optimal" /> High (&gt;95%):
+                    </span>
+                    <span className="font-bold font-mono">8 markers</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-amber-500" /> Medium (80-94%):
+                    </span>
+                    <span className="font-bold font-mono">2 markers</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-status-high" /> Low (&lt;80%):
+                    </span>
+                    <span className="font-bold font-mono text-muted-foreground">0 markers</span>
+                  </div>
+                </div>
+
+                {/* File summary info box */}
+                <div className="flex items-center gap-2.5 p-3 rounded-xl border border-border/80 bg-background/40">
+                  <FileText className="h-5 w-5 text-primary shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[11px] font-semibold truncate text-foreground">lab_report_chemistry.pdf</div>
+                    <div className="text-[9px] text-muted-foreground font-mono">1.2 MB · Verified Structure</div>
+                  </div>
+                  <CheckCircle className="h-4.5 w-4.5 text-status-optimal shrink-0" />
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="flex justify-end gap-2.5 pt-3">

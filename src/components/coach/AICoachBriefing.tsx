@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useStore, actions, getClientPanels, getClientCheckIns } from "@/data/store";
 import { BIOMARKER_MAP, getStatus, STATUS_META, pctChange } from "@/lib/biomarkers";
 import type { BiomarkerStatus, Client } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { FeaturePlannedDialog } from "@/components/lab/FeaturePlannedDialog";
 import { 
   Brain, 
   Sparkles, 
@@ -26,6 +28,8 @@ interface Props {
 }
 
 export function AICoachBriefing({ clientId }: Props) {
+  const navigate = useNavigate();
+  const [isNoteFeatureOpen, setIsNoteFeatureOpen] = useState(false);
   const { clients } = useStore();
   const [selectedClientId, setSelectedClientId] = useState<string>(
     clientId || clients.find((c) => c.status === "review")?.id || clients[0]?.id || ""
@@ -278,11 +282,29 @@ export function AICoachBriefing({ clientId }: Props) {
               <p className="text-xs text-muted-foreground mt-1">Goal: {activeClient.goal}</p>
             </div>
             
-            {activeClient.status === "review" && (
-              <Button variant="neon" size="sm" onClick={handleMarkReviewed} className="w-full sm:w-auto">
-                <ThumbsUp className="h-3.5 w-3.5" /> Mark Reviewed
+            <div className="flex flex-wrap gap-1.5 w-full sm:w-auto mt-2 sm:mt-0">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => navigate(`/coach/clients/${activeClientId}`)} 
+                className="text-xs h-8 border-border"
+              >
+                Open Profile
               </Button>
-            )}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setIsNoteFeatureOpen(true)} 
+                className="text-xs h-8 border-border"
+              >
+                Create Coach Note
+              </Button>
+              {activeClient.status === "review" && (
+                <Button variant="neon" size="sm" onClick={handleMarkReviewed} className="text-xs h-8 font-semibold">
+                  <ThumbsUp className="h-3.5 w-3.5 mr-1" /> Mark Reviewed
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
@@ -468,9 +490,15 @@ export function AICoachBriefing({ clientId }: Props) {
               </div>
             )}
           </div>
-
         </div>
       </div>
+      {isNoteFeatureOpen && (
+        <FeaturePlannedDialog
+          isOpen={isNoteFeatureOpen}
+          onOpenChange={setIsNoteFeatureOpen}
+          featureName="Create Coach Note"
+        />
+      )}
     </div>
   );
 }

@@ -288,6 +288,97 @@ function AddPanelDialog({ clientId }: { clientId: string }) {
           <div className="space-y-1.5"><Label>Date</Label><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
           <div className="space-y-1.5 sm:col-span-2"><Label>Label</Label><Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Q3 Recheck" /></div>
         </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Autofill Demo Presets</Label>
+          <div className="flex flex-wrap gap-1.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="text-[11px] h-7 px-2 border-primary/20 hover:border-primary hover:bg-primary/5"
+              onClick={() => {
+                setLabel("Lipid Panel");
+                setValues({
+                  total_cholesterol: "185",
+                  ldl: "95",
+                  hdl: "58",
+                  triglycerides: "80",
+                  vldl: "16",
+                  non_hdl: "127",
+                  tc_hdl_ratio: "3.2",
+                  tg_hdl_ratio: "1.4",
+                  ldl_hdl_ratio: "1.6"
+                });
+                setActiveCat("Lipids");
+              }}
+            >
+              Lipid Panel
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="text-[11px] h-7 px-2 border-primary/20 hover:border-primary hover:bg-primary/5"
+              onClick={() => {
+                setLabel("Thyroid Panel");
+                setValues({
+                  tsh: "1.6",
+                  free_t4: "1.3",
+                  free_t3: "3.5",
+                  ft3_ft4_ratio: "2.7"
+                });
+                setActiveCat("Thyroid");
+              }}
+            >
+              Thyroid Panel
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="text-[11px] h-7 px-2 border-primary/20 hover:border-primary hover:bg-primary/5"
+              onClick={() => {
+                setLabel("Complete Blood Count");
+                setValues({
+                  wbc: "6.2",
+                  rbc: "4.8",
+                  hemoglobin: "15.1",
+                  hematocrit: "44.5",
+                  platelets: "250",
+                  mcv: "90",
+                  mch: "29",
+                  mchc: "34",
+                  rdw: "13.0"
+                });
+                setActiveCat("Red Blood Cells");
+              }}
+            >
+              Complete Blood Count
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="text-[11px] h-7 px-2 border-primary/20 hover:border-primary hover:bg-primary/5"
+              onClick={() => {
+                setLabel("Hormone Snapshot");
+                setValues({
+                  total_test: "720",
+                  free_test: "175",
+                  estradiol: "24",
+                  prolactin: "7.8",
+                  lh: "4.5",
+                  fsh: "3.2",
+                  bio_test: "380"
+                });
+                setActiveCat("Hormones");
+              }}
+            >
+              Hormone Snapshot
+            </Button>
+          </div>
+        </div>
         <div className="flex flex-wrap gap-1.5">
           {CATEGORIES.map((c) => (
             <button key={c.key} onClick={() => setActiveCat(c.key)} className={cn("rounded-full border px-2.5 py-1 text-[11px] transition", activeCat === c.key ? "border-primary/60 bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground")}>{c.label}</button>

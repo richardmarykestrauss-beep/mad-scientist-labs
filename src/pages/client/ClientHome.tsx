@@ -59,7 +59,7 @@ export default function ClientHome() {
 
   const handleAcknowledge = () => {
     setIsAcknowledged(true);
-    toast.success("Coach note acknowledged. Notification sent to Coach Vance!");
+    toast.success("Coach note acknowledged. Notification sent to Coach Warren!");
   };
 
   const handleSendReply = (e: React.FormEvent) => {
@@ -119,7 +119,7 @@ export default function ClientHome() {
                 <p className="text-sm text-muted-foreground mt-1">Goal: {client.goal}</p>
               </div>
               <div className="chip border-primary/40 text-primary font-mono text-xs">
-                Coach: Dr. Helix Vance
+                Coach: Warren Germishuizen
               </div>
             </div>
 
@@ -224,7 +224,7 @@ export default function ClientHome() {
               className="lab-card-glow p-5 cursor-pointer hover:border-primary/40 transition border-l-4 border-l-primary"
             >
               <h3 className="font-display text-base font-bold flex items-center gap-1.5 mb-2">
-                <StickyNote className="h-4 w-4 text-primary" /> Latest Note from Coach Vance
+                <StickyNote className="h-4 w-4 text-primary" /> Latest Note from Coach Warren
               </h3>
               <p className="text-sm text-foreground italic">
                 "{client.notes || "Keep up the great compliance. Keep an eye on hydration and focus on quality sleep."}"
@@ -299,7 +299,7 @@ export default function ClientHome() {
             <div className="lab-card-glow p-5 space-y-4 border-l-4 border-l-primary">
               <div className="flex items-center justify-between border-b border-border/40 pb-3">
                 <h3 className="font-display text-lg font-bold flex items-center gap-1.5">
-                  <StickyNote className="h-5 w-5 text-primary" /> Coach Prescription Notes
+                  <StickyNote className="h-5 w-5 text-primary" /> Coach Protocol Notes
                 </h3>
                 <span className="chip border-primary/40 text-primary font-mono text-[9px] uppercase">
                   ACTIVE
@@ -310,7 +310,7 @@ export default function ClientHome() {
                   "{client.notes || "Focus on hitting the correct tempos on your training splits. Digestion was reported as bloated in the evenings, let's keep hydration elevated and see if sleep improves."}"
                 </p>
                 <div className="text-[10px] text-muted-foreground font-mono">
-                  Prescribed by Dr. Helix Vance on 2026-05-23
+                  Recommended by Coach Warren Germishuizen on 2026-05-23
                 </div>
               </div>
 
@@ -327,7 +327,7 @@ export default function ClientHome() {
                       <Check className="h-4 w-4 mr-2" /> Acknowledged by Athlete
                     </>
                   ) : (
-                    "Acknowledge Prescription"
+                    "Acknowledge Protocol"
                   )}
                 </Button>
               </div>
@@ -343,7 +343,7 @@ export default function ClientHome() {
               <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
                 {/* Seed messages */}
                 <div className="bg-secondary/40 rounded-xl p-3 max-w-[85%] self-start border border-border/20">
-                  <span className="block text-[8px] font-mono text-primary uppercase font-bold mb-1">Coach Vance</span>
+                  <span className="block text-[8px] font-mono text-primary uppercase font-bold mb-1">Coach Warren</span>
                   <p className="text-xs text-foreground">Marcus, let's push the incline DB press this week. How is your shoulder feeling on the concentric phase?</p>
                 </div>
                 

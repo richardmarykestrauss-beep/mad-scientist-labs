@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FeaturePlannedDialog } from "@/components/lab/FeaturePlannedDialog";
-import { Activity, AlertTriangle, ArrowUpRight, Beaker, FlaskConical, Plus, ShieldAlert, TrendingUp, UserPlus, Users } from "lucide-react";
+import { Activity, AlertTriangle, ArrowUpRight, Beaker, FlaskConical, Plus, ShieldAlert, TrendingUp, UserPlus, Users, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AICoachBriefing } from "@/components/coach/AICoachBriefing";
 import { useStore, getClientPanels } from "@/data/store";
 import { BIOMARKER_MAP, getStatus, STATUS_META } from "@/lib/biomarkers";
 import type { BiomarkerStatus } from "@/lib/types";
@@ -11,6 +12,7 @@ import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianG
 
 export default function CoachDashboard() {
   const [plannedFeature, setPlannedFeature] = useState<string | null>(null);
+  const [isBriefingOpen, setIsBriefingOpen] = useState(false);
   const { clients, panels } = useStore();
   const review = clients.filter((c) => c.status === "review").length;
   const recentPanels = [...panels].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4);
@@ -42,10 +44,13 @@ export default function CoachDashboard() {
       <div className="flex flex-col md:flex-row md:items-end gap-4 justify-between">
         <div>
           <div className="chip mb-3"><FlaskConical className="h-3 w-3 text-primary" /> Coach Lab Console</div>
-          <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">Welcome back, Dr. Vance</h1>
+          <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">Welcome back, Coach Warren</h1>
           <p className="text-muted-foreground mt-1">{clients.length} active clients · {panels.length} blood panels on file · {alerts.length} biomarker alerts</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button variant="neon" className="border-primary/60 bg-primary/10 text-primary hover:bg-primary/15" onClick={() => setIsBriefingOpen(true)}>
+            <Brain className="h-4 w-4" /> Open AI Briefing
+          </Button>
           <Button variant="hero" onClick={() => setPlannedFeature("Add Client")}><UserPlus className="h-4 w-4" /> Add Client</Button>
           <Button variant="neon" onClick={() => setPlannedFeature("Create Program")}><Plus className="h-4 w-4" /> Create Program</Button>
           <Button variant="outline" onClick={() => setPlannedFeature("Upload Panel")}><Beaker className="h-4 w-4" /> Upload Panel</Button>
@@ -158,6 +163,35 @@ export default function CoachDashboard() {
           onOpenChange={(open) => !open && setPlannedFeature(null)}
           featureName={plannedFeature}
         />
+      )}
+
+      {/* Slide-over AI Briefing Drawer */}
+      {isBriefingOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden">
+          {/* overlay background */}
+          <div 
+            className="absolute inset-0 bg-background/80 backdrop-blur-sm transition-opacity" 
+            onClick={() => setIsBriefingOpen(false)} 
+          />
+          
+          <div className="fixed inset-y-0 right-0 flex max-w-full pl-10">
+            <div className="w-screen max-w-4xl transform bg-card border-l border-border p-6 shadow-2xl transition-all flex flex-col h-full z-10">
+              <div className="flex items-center justify-between pb-4 border-b border-border mb-4">
+                <div className="flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-primary animate-pulse-glow" />
+                  <h2 className="font-display text-lg font-bold">Roster AI Briefing</h2>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => setIsBriefingOpen(false)}>
+                  Close Panel
+                </Button>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto pr-1">
+                <AICoachBriefing />
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

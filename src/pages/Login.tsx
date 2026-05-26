@@ -54,7 +54,7 @@ export default function Login() {
             >
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="helix@madscientist.lab" defaultValue="helix@madscientist.lab" className="bg-background/60" />
+                <Input id="email" type="email" placeholder="warren@madscientist.lab" defaultValue="warren@madscientist.lab" className="bg-background/60" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>

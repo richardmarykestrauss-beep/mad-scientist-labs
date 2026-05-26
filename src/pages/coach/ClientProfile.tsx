@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { FeaturePlannedDialog } from "@/components/lab/FeaturePlannedDialog";
-import { ArrowLeft, Beaker, ClipboardList, Dumbbell, FileText, MessageSquare, Pill, Salad, StickyNote, ImageIcon, CalendarCheck, ChevronRight } from "lucide-react";
+import { ArrowLeft, Beaker, ClipboardList, Dumbbell, FileText, MessageSquare, Pill, Salad, StickyNote, ImageIcon, CalendarCheck, ChevronRight, Brain } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStore, getClientPanels } from "@/data/store";
 import type { Client } from "@/lib/types";
 import { BloodPanelDashboard } from "@/components/blood/BloodPanelDashboard";
 import { Button } from "@/components/ui/button";
+import { AICoachBriefing } from "@/components/coach/AICoachBriefing";
 
 export default function ClientProfile() {
   const { id = "" } = useParams();
@@ -43,6 +44,7 @@ export default function ClientProfile() {
         <TabsList className="bg-card/40 border border-border h-auto p-1 flex flex-wrap gap-1 justify-start">
           {[
             { v: "overview", l: "Overview", i: ClipboardList },
+            { v: "ai-briefing", l: "AI Briefing", i: Brain },
             { v: "blood", l: "Blood Panel", i: Beaker },
             { v: "training", l: "Training", i: Dumbbell },
             { v: "nutrition", l: "Nutrition", i: Salad },
@@ -61,6 +63,9 @@ export default function ClientProfile() {
 
         <TabsContent value="overview" className="mt-5">
           <Overview client={client} panelsCount={panels.length} />
+        </TabsContent>
+        <TabsContent value="ai-briefing" className="mt-5">
+          <AICoachBriefing clientId={id} />
         </TabsContent>
         <TabsContent value="blood" className="mt-5">
           <BloodPanelDashboard clientId={id} panels={panels} readOnly={false} />

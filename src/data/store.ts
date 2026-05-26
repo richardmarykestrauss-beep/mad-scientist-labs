@@ -300,6 +300,13 @@ export const actions = {
     };
     emit();
   },
+  setClientStatus(clientId: string, status: "active" | "review" | "inactive") {
+    state = {
+      ...state,
+      clients: state.clients.map((c) => c.id === clientId ? { ...c, status } : c)
+    };
+    emit();
+  },
   resetStore() {
     state = { 
       coach: COACH, 

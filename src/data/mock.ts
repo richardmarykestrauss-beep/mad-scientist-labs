@@ -2,9 +2,9 @@ import type { Client, Coach, BloodPanel } from "@/lib/types";
 
 export const COACH: Coach = {
   id: "coach-1",
-  name: "Dr. Helix Vance",
-  email: "helix@madscientist.lab",
-  initials: "HV",
+  name: "Warren Germishuizen",
+  email: "warren@madscientist.lab",
+  initials: "WG",
 };
 
 export const CLIENTS: Client[] = [

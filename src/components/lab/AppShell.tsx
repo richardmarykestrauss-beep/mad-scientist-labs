@@ -1,9 +1,11 @@
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Activity, Beaker, LayoutDashboard, Users, Settings, LogOut, Search, Bell } from "lucide-react";
 import { Logo } from "./Logo";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { COACH } from "@/data/mock";
+import { useStore } from "@/data/store";
 
 const NAV = [
   { to: "/coach", icon: LayoutDashboard, label: "Dashboard", end: true },
@@ -14,6 +16,31 @@ const NAV = [
 
 export function AppShell() {
   const loc = useLocation();
+  const navigate = useNavigate();
+  const { clients } = useStore();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  const matchedClients = normalizedQuery
+    ? clients.filter(
+        (c) =>
+          c.name.toLowerCase().includes(normalizedQuery) ||
+          c.email.toLowerCase().includes(normalizedQuery)
+      )
+    : [];
+
+  const allPages = [
+    { name: "Dashboard", path: "/coach" },
+    { name: "Clients", path: "/coach/clients" },
+    { name: "Blood Lab", path: "/coach/lab" },
+    { name: "Settings", path: "/coach/settings" }
+  ];
+
+  const matchedPages = normalizedQuery
+    ? allPages.filter((p) => p.name.toLowerCase().includes(normalizedQuery))
+    : [];
+
   return (
     <div className="min-h-screen flex bg-background text-foreground">
       <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-border bg-sidebar/80 backdrop-blur sticky top-0 h-screen">
@@ -63,8 +90,85 @@ export function AppShell() {
           </div>
           <div className="flex-1 flex justify-end items-center gap-2">
             <div className="relative hidden sm:block w-72">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder="Search clients, biomarkers…" className="pl-9 bg-card/60 border-border" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground animate-pulse-glow" />
+              <Input 
+                placeholder="Search clients, pages…" 
+                className="pl-9 bg-card/60 border-border text-xs h-9" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setSearchQuery("");
+                  }
+                }}
+              />
+              {searchQuery.trim() !== "" && (
+                <>
+                  {/* Click-away backdrop */}
+                  <div className="fixed inset-0 z-30" onClick={() => setSearchQuery("")} />
+                  
+                  {/* Dropdown list */}
+                  <div className="absolute right-0 top-full mt-2 w-80 rounded-xl border border-border bg-popover/95 backdrop-blur-md p-3 shadow-2xl z-40 max-h-[350px] overflow-y-auto scrollbar-thin">
+                    {matchedClients.length === 0 && matchedPages.length === 0 ? (
+                      <div className="p-3 text-center text-xs text-muted-foreground font-mono">
+                        No matches found
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {matchedClients.length > 0 && (
+                          <div>
+                            <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground px-2 mb-1">
+                              Clients
+                            </div>
+                            <div className="space-y-0.5">
+                              {matchedClients.map((c) => (
+                                <button
+                                  key={c.id}
+                                  onClick={() => {
+                                    navigate(`/coach/clients/${c.id}`);
+                                    setSearchQuery("");
+                                  }}
+                                  className="w-full text-left flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-xs hover:bg-secondary/40 transition"
+                                >
+                                  <div className={`grid h-5 w-5 place-items-center rounded-full bg-gradient-to-br ${c.avatarColor} text-background font-bold text-[9px] shrink-0`}>
+                                    {c.initials}
+                                  </div>
+                                  <div className="truncate font-medium flex-1">{c.name}</div>
+                                  <div className="truncate text-[10px] text-muted-foreground ml-auto">{c.email}</div>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {matchedPages.length > 0 && (
+                          <div>
+                            <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground px-2 mb-1">
+                              Pages
+                            </div>
+                            <div className="space-y-0.5">
+                              {matchedPages.map((p) => (
+                                <button
+                                  key={p.path}
+                                  onClick={() => {
+                                    navigate(p.path);
+                                    setSearchQuery("");
+                                  }}
+                                  className="w-full text-left flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs hover:bg-secondary/40 transition font-medium"
+                                >
+                                  <Activity className="h-3.5 w-3.5 text-primary shrink-0" />
+                                  <span>{p.name}</span>
+                                  <span className="text-[10px] text-muted-foreground ml-auto">{p.path}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
             <button className="grid h-9 w-9 place-items-center rounded-xl border border-border bg-card/60 hover:bg-card transition">
               <Bell className="h-4 w-4" />

@@ -1,9 +1,25 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FeaturePlannedDialog } from "@/components/lab/FeaturePlannedDialog";
-import { Activity, AlertTriangle, ArrowUpRight, Beaker, FlaskConical, Plus, ShieldAlert, TrendingUp, UserPlus, Users, Brain } from "lucide-react";
+import { 
+  Activity, 
+  AlertTriangle, 
+  ArrowUpRight, 
+  Beaker, 
+  FlaskConical, 
+  Plus, 
+  ShieldAlert, 
+  TrendingUp, 
+  UserPlus, 
+  Users, 
+  Brain,
+  CheckSquare,
+  Calendar
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AICoachBriefing } from "@/components/coach/AICoachBriefing";
+import { AttentionQueue } from "@/components/coach/AttentionQueue";
+import { CoachWorkQueue } from "@/components/coach/CoachWorkQueue";
 import { useStore, getClientPanels } from "@/data/store";
 import { BIOMARKER_MAP, getStatus, STATUS_META } from "@/lib/biomarkers";
 import type { BiomarkerStatus } from "@/lib/types";
@@ -14,7 +30,15 @@ export default function CoachDashboard() {
   const [plannedFeature, setPlannedFeature] = useState<string | null>(null);
   const [isBriefingOpen, setIsBriefingOpen] = useState(false);
   const { clients, panels } = useStore();
+  const TODAY = "2026-05-26";
+
+  const totalClients = clients.length;
+  const activeClients = clients.filter(c => c.status === "active").length;
   const review = clients.filter((c) => c.status === "review").length;
+  
+  const checkInsDue = clients.filter(c => c.status === "review" || c.nextCheckIn <= TODAY).length;
+  const lowAdherence = clients.filter(c => c.trainingCompliance < 75 || c.nutritionCompliance < 75).length;
+
   const recentPanels = [...panels].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4);
   const avgTraining = Math.round(clients.reduce((s, c) => s + c.trainingCompliance, 0) / clients.length);
   const avgNutrition = Math.round(clients.reduce((s, c) => s + c.nutritionCompliance, 0) / clients.length);
@@ -45,7 +69,9 @@ export default function CoachDashboard() {
         <div>
           <div className="chip mb-3"><FlaskConical className="h-3 w-3 text-primary" /> Coach Lab Console</div>
           <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">Welcome back, Coach Warren</h1>
-          <p className="text-muted-foreground mt-1">{clients.length} active clients · {panels.length} blood panels on file · {alerts.length} biomarker alerts</p>
+          <p className="text-muted-foreground mt-1">
+            {clients.length} active clients · {panels.length} blood panels on file · {alerts.length} biomarker alerts · Live database planned
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="neon" className="border-primary/60 bg-primary/10 text-primary hover:bg-primary/15" onClick={() => setIsBriefingOpen(true)}>
@@ -58,12 +84,25 @@ export default function CoachDashboard() {
       </div>
 
       {/* metric cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <MetricCard icon={Users} label="Active Clients" value={clients.length} sub={`${review} need review`} />
-        <MetricCard icon={Beaker} label="Panels on File" value={panels.length} sub={`${recentPanels.length} this quarter`} />
-        <MetricCard icon={TrendingUp} label="Training Compliance" value={`${avgTraining}%`} sub="avg across clients" tone={avgTraining >= 85 ? "good" : "warn"} />
-        <MetricCard icon={Activity} label="Nutrition Compliance" value={`${avgNutrition}%`} sub="avg across clients" tone={avgNutrition >= 85 ? "good" : "warn"} />
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <MetricCard icon={Users} label="Total Roster" value={totalClients} sub="Mock Demo" />
+        <MetricCard icon={Users} label="Active Clients" value={activeClients} sub="In training" tone="good" />
+        <MetricCard icon={CheckSquare} label="Needs Review" value={review} sub="check-ins submitted" tone={review > 0 ? "warn" : "default"} />
+        <MetricCard icon={Calendar} label="Check-Ins Due" value={checkInsDue} sub="overdue or review" tone={checkInsDue > 0 ? "warn" : "default"} />
+        <MetricCard icon={Activity} label="Low Adherence" value={lowAdherence} sub="compliance < 75%" tone={lowAdherence > 0 ? "warn" : "default"} />
+        <MetricCard icon={ShieldAlert} label="Lab Alerts" value={alerts.length} sub="biomarker issues" tone={alerts.length > 0 ? "warn" : "default"} />
       </div>
+
+      {/* Scale Command Console Queues */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          <AttentionQueue />
+        </div>
+        <div className="lg:col-span-1">
+          <CoachWorkQueue />
+        </div>
+      </div>
+
 
       <div className="grid lg:grid-cols-3 gap-4">
         <div className="lab-card-glow p-5 lg:col-span-2">

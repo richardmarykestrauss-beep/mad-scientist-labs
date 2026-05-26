@@ -7,7 +7,76 @@ export const COACH: Coach = {
   initials: "WG",
 };
 
-export const CLIENTS: Client[] = [
+const FIRST_NAMES = ["James", "John", "Robert", "Michael", "William", "David", "Richard", "Joseph", "Thomas", "Charles", "Christopher", "Daniel", "Matthew", "Anthony", "Mark", "Donald", "Steven", "Paul", "Andrew", "Joshua", "Mary", "Patricia", "Jennifer", "Linda", "Elizabeth", "Barbara", "Susan", "Jessica", "Sarah", "Karen"];
+const LAST_NAMES = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Miller", "Davis", "Garcia", "Rodriguez", "Wilson", "Martinez", "Anderson", "Taylor", "Thomas", "Hernandez", "Moore", "Martin", "Jackson", "Thompson", "White", "Lopez", "Lee", "Gonzalez", "Harris", "Clark", "Lewis", "Robinson", "Walker", "Perez", "Hall"];
+const GOALS = [
+  "Bodyfat reduction to 12% & hypertrophy focus",
+  "Improve insulin sensitivity & glucose control",
+  "Restore sleep cycle & cortisol normalization",
+  "Support thyroid output & increase lean mass",
+  "Recomp and athletic performance enhancement",
+  "Atherogenic risk management & cardiovascular fitness",
+  "Ferritin restoration and fatigue management",
+  "Peak performance training and hydration optimization"
+];
+const AVATAR_COLORS = [
+  "from-emerald-400 to-cyan-400",
+  "from-fuchsia-400 to-violet-400",
+  "from-amber-400 to-rose-400",
+  "from-sky-400 to-indigo-400",
+  "from-pink-400 to-rose-400",
+  "from-green-400 to-teal-400"
+];
+
+const generateMockClients = (count: number): Client[] => {
+  const generated: Client[] = [];
+  for (let i = 1; i <= count; i++) {
+    const firstName = FIRST_NAMES[i % FIRST_NAMES.length];
+    const lastName = LAST_NAMES[(i * 7) % LAST_NAMES.length];
+    const name = `${firstName} ${lastName}`;
+    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.fit`;
+    const goal = GOALS[(i * 3) % GOALS.length];
+    const avatarColor = AVATAR_COLORS[(i * 2) % AVATAR_COLORS.length];
+    const initials = `${firstName[0]}${lastName[0]}`;
+    
+    // Distribution target: about 80% active, 10% review, 10% inactive
+    let status: "active" | "review" | "inactive" = "active";
+    if (i % 10 === 0) {
+      status = "review";
+    } else if (i % 10 === 9) {
+      status = "inactive";
+    }
+    
+    const trainingCompliance = Math.max(45, Math.min(100, 75 + (i % 25) - (i % 7) * 2));
+    const nutritionCompliance = Math.max(45, Math.min(100, 72 + (i % 27) - (i % 9) * 2));
+    const bodyWeightKg = Math.round((70 + (i % 45) * 0.8 + (i % 3) * 1.5) * 10) / 10;
+    
+    // Spread starting dates over 2025
+    const startedAt = `2025-${String((i % 12) + 1).padStart(2, '0')}-${String((i % 28) + 1).padStart(2, '0')}`;
+    
+    // Spread check-in dates around today
+    const nextCheckIn = `2026-05-${String((i % 15) + 1).padStart(2, '0')}`;
+    
+    generated.push({
+      id: `c-gen-${String(i).padStart(3, '0')}`,
+      name,
+      email,
+      avatarColor,
+      initials,
+      goal,
+      bodyWeightKg,
+      startedAt,
+      status,
+      trainingCompliance,
+      nutritionCompliance,
+      nextCheckIn,
+      notes: i % 5 === 0 ? "Adherence trending downwards. Needs follow-up call." : undefined
+    });
+  }
+  return generated;
+};
+
+const STATIC_CLIENTS: Client[] = [
   {
     id: "c-001",
     name: "Marcus Reign",
@@ -68,6 +137,11 @@ export const CLIENTS: Client[] = [
   },
 ];
 
+export const CLIENTS: Client[] = [
+  ...STATIC_CLIENTS,
+  ...generateMockClients(250 - STATIC_CLIENTS.length)
+];
+
 // Helper to build panels concisely
 const panel = (id: string, clientId: string, date: string, label: string, results: Record<string, number>, summary?: string): BloodPanel => ({
   id, clientId, date, label,
@@ -75,7 +149,7 @@ const panel = (id: string, clientId: string, date: string, label: string, result
   coachSummary: summary,
 });
 
-export const PANELS: BloodPanel[] = [
+const STATIC_PANELS: BloodPanel[] = [
   // Marcus — 3 panels showing trend
   panel("p-1", "c-001", "2025-09-20", "Baseline", {
     fasting_glucose: 96, hba1c: 5.4, eag: 108, tyg_index: 8.4,
@@ -144,7 +218,7 @@ export const PANELS: BloodPanel[] = [
     tsh: 2.6, free_t4: 1.1, free_t3: 2.9, ft3_ft4_ratio: 2.6,
     nlr: 1.8, plr: 132,
     vitamin_d: 38, vitamin_b12: 520,
-    fsh: 6.4, lh: 5.2, free_test: 2.4 as unknown as number, total_test: 42, bio_test: 18, estradiol: 110, prolactin: 14,
+    fsh: 6.4, lh: 5.2, free_test: 2.4, total_test: 42, bio_test: 18, estradiol: 110, prolactin: 14,
     rbc: 4.5, hemoglobin: 13.6, hematocrit: 41, mcv: 89, mch: 30, mchc: 33.5, platelets: 268, mpv: 9.2, rdw: 12.9,
     wbc: 5.4, neutrophils_pct: 54, lymphocytes_pct: 35, monocytes_pct: 6, eosinophils_pct: 4, basophils_pct: 1,
     abs_neutrophils: 2.9, abs_lymphocytes: 1.9, abs_monocytes: 0.3, abs_eosinophils: 0.22, abs_basophils: 0.05,
@@ -162,9 +236,40 @@ export const PANELS: BloodPanel[] = [
     tsh: 3.4, free_t4: 0.95, free_t3: 2.6, ft3_ft4_ratio: 2.73,
     nlr: 2.1, plr: 142,
     vitamin_d: 52, vitamin_b12: 640,
-    fsh: 6.0, lh: 5.0, free_test: 2.2 as unknown as number, total_test: 38, bio_test: 16, estradiol: 32.28, prolactin: 32.28,
+    fsh: 6.0, lh: 5.0, free_test: 2.2, total_test: 38, bio_test: 16, estradiol: 32.28, prolactin: 32.28,
     rbc: 4.6, hemoglobin: 13.9, hematocrit: 42, mcv: 90, mch: 30, mchc: 33.4, platelets: 272, mpv: 9.3, rdw: 12.7,
     wbc: 5.6, neutrophils_pct: 56, lymphocytes_pct: 33, monocytes_pct: 6, eosinophils_pct: 4, basophils_pct: 1,
     abs_neutrophils: 3.1, abs_lymphocytes: 1.8, abs_monocytes: 0.3, abs_eosinophils: 0.22, abs_basophils: 0.05,
   }, "Ferritin restored. Thyroid drifting suboptimal — TSH up, FT3 down. Prolactin spiked — investigate stress and sleep."),
+];
+
+const generateMockPanels = (clients: Client[]): BloodPanel[] => {
+  const generatedPanels: BloodPanel[] = [];
+  for (let i = 0; i < clients.length; i++) {
+    const client = clients[i];
+    if (client.id.startsWith("c-gen-") && i % 10 === 0) {
+      const date = `2026-04-${String((i % 25) + 1).padStart(2, '0')}`;
+      generatedPanels.push(
+        panel(
+          `p-gen-${client.id}`,
+          client.id,
+          date,
+          "Routine Panel",
+          {
+            fasting_glucose: i % 2 === 0 ? 104 : 88, // 104 is high (Alert)
+            tsh: i % 3 === 0 ? 4.8 : 1.8, // 4.8 is high (Alert)
+            vitamin_d: i % 4 === 0 ? 22 : 62, // 22 is low (Alert)
+            ferritin: i % 5 === 0 ? 15 : 120, // 15 is low (Alert)
+          },
+          "Generated telemetry panel."
+        )
+      );
+    }
+  }
+  return generatedPanels;
+};
+
+export const PANELS: BloodPanel[] = [
+  ...STATIC_PANELS,
+  ...generateMockPanels(CLIENTS)
 ];

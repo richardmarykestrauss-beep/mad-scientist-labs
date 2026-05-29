@@ -117,15 +117,15 @@ export function ClientRadarGrid() {
   }, [filteredTiles]);
 
   return (
-    <div className="bg-[#0e1115]/85 p-3.5 px-4 flex flex-col h-full space-y-3.5 border border-border/40 rounded-xl backdrop-blur-md">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-border/20">
+    <div className="bg-white p-4 flex flex-col h-full space-y-3.5 border border-slate-200 rounded-xl shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-100">
         <div>
-          <h3 className="text-xs font-semibold text-foreground">Client Radar Snapshot</h3>
-          <p className="text-[9px] text-muted-foreground uppercase font-mono mt-0.5">
+          <h3 className="text-xs font-semibold text-slate-800">Client Radar Snapshot</h3>
+          <p className="text-[9px] text-slate-400 uppercase font-mono mt-0.5">
             Mock roster
           </p>
         </div>
-        <div className="text-[9px] font-mono text-muted-foreground bg-secondary/40 border border-border/40 px-2 py-0.5 rounded-full shrink-0">
+        <div className="text-[9px] font-mono text-slate-500 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-full shrink-0">
           Showing {displayTiles.length} of {filteredTiles.length}
         </div>
       </div>
@@ -145,8 +145,8 @@ export function ClientRadarGrid() {
             className={cn(
               "px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wider transition border",
               activeFilter === chip.id
-                ? "bg-primary/10 text-primary border-primary/20"
-                : "text-muted-foreground hover:text-foreground border-transparent hover:bg-secondary/40"
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                : "text-slate-500 hover:text-slate-800 border-slate-200 hover:bg-slate-50"
             )}
           >
             {chip.label}
@@ -163,38 +163,38 @@ export function ClientRadarGrid() {
             className={cn(
               "aspect-square rounded-[3px] cursor-pointer transition relative group overflow-hidden border",
               tile.color === "green" 
-                ? "bg-status-optimal/10 border-status-optimal/30 hover:border-status-optimal" 
+                ? "bg-emerald-50 border-emerald-100 hover:border-emerald-400" 
                 : tile.color === "amber"
-                  ? "bg-amber-500/10 border-amber-500/30 hover:border-amber-500"
+                  ? "bg-amber-50 border-amber-100 hover:border-amber-400"
                   : tile.color === "red"
-                    ? "bg-status-high/15 border-status-high/30 hover:border-status-high"
-                    : "bg-secondary/45 border-border/40 hover:border-muted-foreground"
+                    ? "bg-red-50 border-red-100 hover:border-red-400"
+                    : "bg-slate-50 border-slate-200 hover:border-slate-400"
             )}
           >
             {/* Tile Tooltip overlay */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-background/95 z-10 text-[8px] font-bold font-mono">
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 z-10 text-[8px] font-bold font-mono text-slate-800">
               {tile.initials}
             </div>
 
-            {/* Glowing dot -> Flat indicator dot */}
+            {/* Flat indicator dot */}
             <span className={cn(
-              "absolute bottom-0.5 right-0.5 h-1 w-1 rounded-full",
-              tile.color === "green" && "bg-status-optimal",
+              "absolute bottom-0.5 right-0.5 h-1.5 w-1.5 rounded-full",
+              tile.color === "green" && "bg-emerald-500",
               tile.color === "amber" && "bg-amber-500",
-              tile.color === "red" && "bg-status-high",
-              tile.color === "gray" && "bg-muted-foreground"
+              tile.color === "red" && "bg-red-500",
+              tile.color === "gray" && "bg-slate-400"
             )} />
 
             {/* Hover Tooltip tooltip node */}
-            <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col bg-popover/95 border border-border/40 p-2 rounded shadow-2xl w-36 z-20 text-[9.5px] space-y-0.5">
-              <span className="font-semibold text-foreground truncate">{tile.name}</span>
-              <span className="text-muted-foreground font-mono">Compliance: {tile.compliance}%</span>
+            <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col bg-white border border-slate-200 p-2 rounded shadow-lg w-36 z-20 text-[9.5px] space-y-0.5 text-slate-800">
+              <span className="font-semibold text-slate-900 truncate">{tile.name}</span>
+              <span className="text-slate-500 font-mono">Compliance: {tile.compliance}%</span>
               <span className={cn(
                 "font-mono text-[8.5px] uppercase font-bold",
-                tile.color === "green" && "text-status-optimal",
+                tile.color === "green" && "text-emerald-600",
                 tile.color === "amber" && "text-amber-500",
-                tile.color === "red" && "text-status-high",
-                tile.color === "gray" && "text-muted-foreground"
+                tile.color === "red" && "text-red-500",
+                tile.color === "gray" && "text-slate-400"
               )}>
                 {tile.reasons[0]}
               </span>
@@ -204,12 +204,12 @@ export function ClientRadarGrid() {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-between text-[8px] font-mono text-muted-foreground border-t border-border/20 pt-1.5 flex-wrap gap-2">
+      <div className="flex items-center justify-between text-[8px] font-mono text-slate-400 border-t border-slate-100 pt-1.5 flex-wrap gap-2">
         <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-status-optimal" /> Stable</span>
+          <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Stable</span>
           <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> Watch</span>
-          <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-status-high" /> Alert</span>
-          <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-muted-foreground" /> Inactive</span>
+          <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-red-500" /> Alert</span>
+          <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inactive</span>
         </div>
         <span>Hover for info · Click to open</span>
       </div>

@@ -170,48 +170,50 @@ export default function ClientList() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end gap-3 justify-between">
         <div>
-          <div className="chip mb-2">Roster Console</div>
-          <h1 className="font-display text-3xl font-bold flex items-center gap-2">
+          <div className="chip mb-2 bg-slate-50 border-slate-200 text-slate-500">Roster Console</div>
+          <h1 className="font-display text-3xl font-bold flex items-center gap-2 text-slate-900">
             Clients
-            <span className="text-xs font-mono text-muted-foreground font-normal border border-border/80 px-2 py-0.5 rounded-full bg-secondary/20">
+            <span className="text-xs font-mono text-slate-500 font-normal border border-slate-200 px-2 py-0.5 rounded-full bg-white">
               Mock Demo Roster
             </span>
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage and monitor compliance across approximately 250 athletes.</p>
+          <p className="text-slate-500 text-sm mt-1">Manage and monitor compliance across approximately 250 athletes.</p>
         </div>
         <div className="flex gap-2">
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button variant="hero"><UserPlus className="h-4 w-4" /> Invite Client</Button>
+              <Button variant="outline" className="border-slate-300 bg-white text-slate-700 hover:bg-slate-50 font-mono text-[10px] uppercase tracking-wider h-9">
+                <UserPlus className="h-4 w-4 mr-1 text-emerald-600" /> Invite Client
+              </Button>
             </DialogTrigger>
-            <DialogContent className="bg-card border-border">
+            <DialogContent className="bg-white border-slate-200 text-slate-800">
               <DialogHeader>
-                <DialogTitle>Invite a new client</DialogTitle>
-                <DialogDescription>Generate an invite link or add them manually.</DialogDescription>
+                <DialogTitle className="text-slate-900 font-display font-bold">Invite a new client</DialogTitle>
+                <DialogDescription className="text-xs text-slate-500">Generate an invite link or add them manually.</DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
-                <div className="lab-card p-3 flex items-center gap-3">
-                  <Link2 className="h-4 w-4 text-primary" />
-                  <code className="flex-1 truncate font-mono text-xs">https://madsci.lab/invite/{inviteCode}</code>
-                  <Button size="sm" variant="neon" onClick={() => { navigator.clipboard.writeText(`https://madsci.lab/invite/${inviteCode}`); toast.success("Invite link copied"); }}>
-                    <Copy className="h-3.5 w-3.5" /> Copy
+                <div className="p-3 flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl">
+                  <Link2 className="h-4 w-4 text-emerald-600" />
+                  <code className="flex-1 truncate font-mono text-xs text-slate-600">https://madsci.lab/invite/{inviteCode}</code>
+                  <Button size="sm" variant="outline" className="border-slate-300 bg-white text-slate-700 hover:bg-slate-50 font-mono text-[9px] uppercase tracking-wider" onClick={() => { navigator.clipboard.writeText(`https://madsci.lab/invite/${inviteCode}`); toast.success("Invite link copied"); }}>
+                    <Copy className="h-3.5 w-3.5 mr-1" /> Copy
                   </Button>
                 </div>
-                <div className="text-xs text-muted-foreground text-center">— or add manually —</div>
+                <div className="text-xs text-slate-500 text-center">— or add manually —</div>
                 <div className="grid gap-3">
-                  <div className="space-y-1.5"><Label>Name</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" /></div>
-                  <div className="space-y-1.5"><Label>Email</Label><Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@athlete.com" /></div>
-                  <div className="space-y-1.5"><Label>Primary Goal</Label><Input value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="Recomp, recover thyroid…" /></div>
+                  <div className="space-y-1.5"><Label className="text-slate-600">Name</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" className="bg-slate-50 border-slate-200 text-slate-800" /></div>
+                  <div className="space-y-1.5"><Label className="text-slate-600">Email</Label><Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@athlete.com" className="bg-slate-50 border-slate-200 text-slate-800" /></div>
+                  <div className="space-y-1.5"><Label className="text-slate-600">Primary Goal</Label><Input value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="Recomp, recover thyroid…" className="bg-slate-50 border-slate-200 text-slate-800" /></div>
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button variant="hero" onClick={() => {
+                <Button variant="ghost" onClick={() => setOpen(false)} className="text-slate-500">Cancel</Button>
+                <Button variant="default" className="bg-slate-900 hover:bg-slate-800 text-white" onClick={() => {
                   if (!name) return toast.error("Name required");
                   actions.addClient(name, email || "pending@invite", goal || "—");
                   setOpen(false); setName(""); setEmail(""); setGoal("");
                   toast.success("Client added to mock store");
-                }}><Plus className="h-4 w-4" /> Add</Button>
+                }}><Plus className="h-4 w-4 mr-1" /> Add</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -219,15 +221,15 @@ export default function ClientList() {
       </div>
 
       {/* Search and Filters */}
-      <div className="lab-card-glow p-4 flex flex-col xl:flex-row gap-4 items-center justify-between">
+      <div className="bg-white p-4 flex flex-col xl:flex-row gap-4 items-center justify-between border border-slate-200 rounded-xl shadow-sm">
         {/* Search */}
         <div className="relative w-full xl:max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input 
             value={q} 
             onChange={handleSearchChange} 
             placeholder="Search roster by name, email, or goal..." 
-            className="pl-9 bg-background/40" 
+            className="pl-9 bg-slate-50 border-slate-200 text-slate-800 focus:bg-white placeholder-slate-400" 
           />
         </div>
 
@@ -235,13 +237,13 @@ export default function ClientList() {
         <div className="flex flex-col md:flex-row w-full xl:w-auto gap-3 items-stretch md:items-center">
           {/* Sorting */}
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-xs text-muted-foreground font-mono whitespace-nowrap flex items-center gap-1">
+            <span className="text-xs text-slate-500 font-mono whitespace-nowrap flex items-center gap-1">
               <ArrowUpDown className="h-3.5 w-3.5" /> Sort By:
             </span>
             <select
               value={sortBy}
               onChange={handleSortChange}
-              className="bg-background/40 border border-border rounded-xl px-3 py-1.5 text-xs text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-primary/60 cursor-pointer h-9"
+              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-slate-400 cursor-pointer h-9"
             >
               <option value="needs-attention">Needs Attention</option>
               <option value="name">Name (A-Z)</option>
@@ -252,7 +254,7 @@ export default function ClientList() {
           </div>
 
           {/* Counts */}
-          <div className="text-xs font-mono text-muted-foreground bg-background/30 border border-border px-3 py-2 rounded-xl text-center">
+          <div className="text-xs font-mono text-slate-500 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-center">
             Showing {Math.min(visibleCount, sorted.length)} of {sorted.length} clients
           </div>
         </div>
@@ -276,8 +278,8 @@ export default function ClientList() {
             onClick={() => handleFilterChange(tab.id)}
             className={`px-3.5 py-1.5 rounded-xl text-xs uppercase tracking-wider font-semibold whitespace-nowrap transition border ${
               filter === tab.id
-                ? "bg-primary/10 text-primary border-primary/30"
-                : "text-muted-foreground hover:text-foreground border-transparent hover:bg-secondary/30"
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
+                : "text-slate-500 hover:text-slate-800 border-slate-200 hover:bg-slate-50"
             }`}
           >
             {tab.label}
@@ -286,9 +288,9 @@ export default function ClientList() {
       </div>
 
       {/* Grid of Clients */}
-      {paginatedClients.length === 0 ? (
-        <div className="lab-card-glow py-16 text-center text-muted-foreground flex flex-col items-center">
-          <Filter className="h-8 w-8 text-primary mb-3 opacity-60" />
+      {filtered.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm py-16 text-center text-slate-500 flex flex-col items-center">
+          <Filter className="h-8 w-8 text-emerald-500 mb-3 opacity-60" />
           <div className="text-sm font-semibold">No clients match your filter criteria</div>
           <div className="text-xs mt-1">Try resetting search query or tab filters.</div>
         </div>
@@ -300,43 +302,43 @@ export default function ClientList() {
               <div
                 key={c.id}
                 onClick={() => setSelectedClient(c)}
-                className="lab-card-glow p-5 hover:border-primary/40 transition group cursor-pointer flex flex-col"
+                className="bg-white p-5 border border-slate-200 hover:border-emerald-300 rounded-xl shadow-sm transition group cursor-pointer flex flex-col"
               >
                 <div className="flex items-start gap-3">
-                  <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${c.avatarColor} text-background font-bold`}>
+                  <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${c.avatarColor} text-white font-bold`}>
                     {c.initials}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-semibold truncate group-hover:text-primary transition flex items-center gap-1.5">
+                    <div className="font-semibold truncate text-slate-800 group-hover:text-emerald-600 transition flex items-center gap-1.5">
                       {c.name}
                       {hasAlerts && (
                         <span title={`${markers.length} lab alerts`} className="shrink-0">
-                          <ShieldAlert className="h-3.5 w-3.5 text-status-above" />
+                          <ShieldAlert className="h-3.5 w-3.5 text-amber-500" />
                         </span>
                       )}
                     </div>
-                    <div className="text-xs text-muted-foreground truncate">{c.email}</div>
+                    <div className="text-xs text-slate-500 truncate">{c.email}</div>
                   </div>
                   <span className={`chip shrink-0 ${
                     c.status === "review" 
-                      ? "text-status-above border-status-above/40 bg-status-above/5" 
+                      ? "text-amber-700 border-amber-200 bg-amber-50" 
                       : c.status === "inactive"
-                        ? "text-muted-foreground border-border bg-secondary/5"
-                        : "text-status-optimal border-status-optimal/40 bg-status-optimal/5"
+                        ? "text-slate-500 border-slate-200 bg-slate-50"
+                        : "text-emerald-700 border-emerald-200 bg-emerald-50"
                   }`}>
                     {c.status}
                   </span>
                 </div>
-                <div className="mt-3 text-xs text-muted-foreground line-clamp-2 min-h-[2.5em] flex-1">
+                <div className="mt-3 text-xs text-slate-500 line-clamp-2 min-h-[2.5em] flex-1">
                   {c.goal}
                 </div>
-                <div className="mt-4 grid grid-cols-2 gap-3 pt-3 border-t border-border/40">
+                <div className="mt-4 grid grid-cols-2 gap-3 pt-3 border-t border-slate-100">
                   <Bar label="Training" value={c.trainingCompliance} />
                   <Bar label="Nutrition" value={c.nutritionCompliance} />
                 </div>
-                <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-muted-foreground">
+                <div className="mt-4 flex items-center justify-between text-[11px] font-mono text-slate-400">
                   <span>BW {c.bodyWeightKg || "—"} kg</span>
-                  <span className={c.nextCheckIn <= TODAY && c.status !== "review" ? "text-amber-500 font-bold" : ""}>
+                  <span className={c.nextCheckIn <= TODAY && c.status !== "review" ? "text-amber-600 font-bold" : ""}>
                     Check-in: {c.nextCheckIn}
                   </span>
                 </div>
@@ -350,8 +352,8 @@ export default function ClientList() {
       {sorted.length > visibleCount && (
         <div className="flex justify-center mt-6">
           <Button
-            variant="neon"
-            className="w-full sm:w-auto px-10 h-10 font-bold"
+            variant="outline"
+            className="w-full sm:w-auto px-10 h-10 font-bold border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
             onClick={() => setVisibleCount((prev) => prev + 12)}
           >
             Load More Clients (+12)
@@ -362,17 +364,17 @@ export default function ClientList() {
       {/* Quick Preview Slide-over Drawer */}
       <Sheet open={!!selectedClient} onOpenChange={(open) => !open && setSelectedClient(null)}>
         {selectedClient && (
-          <SheetContent className="bg-card border-l border-border sm:max-w-md overflow-y-auto flex flex-col h-full z-50">
-            <SheetHeader className="pb-4 border-b border-border/80">
+          <SheetContent className="bg-white border-l border-slate-200 sm:max-w-md overflow-y-auto flex flex-col h-full z-50 text-slate-800">
+            <SheetHeader className="pb-4 border-b border-slate-200">
               <div className="flex items-center gap-3">
-                <div className={`grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${selectedClient.avatarColor} text-background font-bold text-lg shadow-lg`}>
+                <div className={`grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br ${selectedClient.avatarColor} text-white font-bold text-lg shadow-lg`}>
                   {selectedClient.initials}
                 </div>
                 <div className="text-left">
-                  <SheetTitle className="text-xl font-bold font-display tracking-tight text-foreground">
+                  <SheetTitle className="text-xl font-bold font-display tracking-tight text-slate-900">
                     {selectedClient.name}
                   </SheetTitle>
-                  <SheetDescription className="text-xs text-muted-foreground">
+                  <SheetDescription className="text-xs text-slate-500">
                     {selectedClient.email}
                   </SheetDescription>
                 </div>
@@ -381,14 +383,14 @@ export default function ClientList() {
 
             <div className="flex-1 py-5 space-y-6">
               {/* Status Section */}
-              <div className="flex items-center justify-between p-3 rounded-xl border border-border/80 bg-background/20">
-                <span className="text-xs text-muted-foreground uppercase font-mono">Profile Status</span>
+              <div className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-slate-50">
+                <span className="text-xs text-slate-500 uppercase font-mono">Profile Status</span>
                 <span className={`chip capitalize ${
                   selectedClient.status === "review" 
-                    ? "text-status-above border-status-above/40 bg-status-above/5" 
+                    ? "text-amber-700 border-amber-200 bg-amber-50" 
                     : selectedClient.status === "inactive"
-                      ? "text-muted-foreground border-border bg-secondary/5"
-                      : "text-status-optimal border-status-optimal/40 bg-status-optimal/5"
+                      ? "text-slate-500 border-slate-200 bg-slate-50"
+                      : "text-emerald-700 border-emerald-200 bg-emerald-50"
                 }`}>
                   {selectedClient.status}
                 </span>
@@ -396,16 +398,16 @@ export default function ClientList() {
 
               {/* Goal Box */}
               <div className="space-y-1.5">
-                <h4 className="text-[10px] uppercase font-mono tracking-wider text-muted-foreground">Coaching Focus</h4>
-                <div className="p-3.5 rounded-xl border border-border/80 bg-background/40 text-xs leading-relaxed text-foreground font-medium">
+                <h4 className="text-[10px] uppercase font-mono tracking-wider text-slate-400">Coaching Focus</h4>
+                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 text-xs leading-relaxed text-slate-700 font-medium font-display">
                   {selectedClient.goal}
                 </div>
               </div>
 
               {/* Adherence / Compliance */}
               <div className="space-y-3">
-                <h4 className="text-[10px] uppercase font-mono tracking-wider text-muted-foreground">Roster Adherence Averages</h4>
-                <div className="grid gap-3 p-4 rounded-xl border border-border/80 bg-background/30">
+                <h4 className="text-[10px] uppercase font-mono tracking-wider text-slate-400">Roster Adherence Averages</h4>
+                <div className="grid gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50">
                   <Bar label="Training Compliance" value={selectedClient.trainingCompliance} />
                   <Bar label="Nutrition Compliance" value={selectedClient.nutritionCompliance} />
                 </div>
@@ -413,13 +415,13 @@ export default function ClientList() {
 
               {/* Core Telemetry */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-xl border border-border bg-background/20 text-center">
-                  <div className="text-[10px] text-muted-foreground uppercase font-mono">Last Weight</div>
-                  <div className="text-lg font-bold mt-1 font-mono-data">{selectedClient.bodyWeightKg || "—"} kg</div>
+                <div className="p-3 rounded-xl border border-slate-200 bg-slate-50 text-center">
+                  <div className="text-[10px] text-slate-400 uppercase font-mono">Last Weight</div>
+                  <div className="text-lg font-bold mt-1 font-mono-data text-slate-800">{selectedClient.bodyWeightKg || "—"} kg</div>
                 </div>
-                <div className="p-3 rounded-xl border border-border bg-background/20 text-center">
-                  <div className="text-[10px] text-muted-foreground uppercase font-mono">Next Check-In</div>
-                  <div className={`text-sm font-bold mt-2 font-mono-data ${selectedClient.nextCheckIn <= TODAY && selectedClient.status !== "review" ? "text-amber-500 font-bold" : ""}`}>
+                <div className="p-3 rounded-xl border border-slate-200 bg-slate-50 text-center">
+                  <div className="text-[10px] text-slate-400 uppercase font-mono">Next Check-In</div>
+                  <div className={`text-sm font-bold mt-2 font-mono-data ${selectedClient.nextCheckIn <= TODAY && selectedClient.status !== "review" ? "text-amber-600 font-bold" : "text-slate-800"}`}>
                     {selectedClient.nextCheckIn}
                   </div>
                 </div>
@@ -427,35 +429,35 @@ export default function ClientList() {
 
               {/* Latest Lab Alerts */}
               <div className="space-y-1.5">
-                <h4 className="text-[10px] uppercase font-mono tracking-wider text-muted-foreground flex items-center gap-1">
-                  <Beaker className="h-3 w-3 text-primary" /> Lab Telemetry Alert Status
+                <h4 className="text-[10px] uppercase font-mono tracking-wider text-slate-400 flex items-center gap-1">
+                  <Beaker className="h-3 w-3 text-emerald-600" /> Lab Telemetry Alert Status
                 </h4>
                 {selectedClientAlerts.hasAlerts ? (
-                  <div className="p-3.5 rounded-xl border border-status-above/30 bg-status-above/5 space-y-2">
-                    <div className="flex items-center gap-2 text-status-above text-xs font-semibold">
-                      <AlertTriangle className="h-4 w-4" />
+                  <div className="p-3.5 rounded-xl border border-amber-200 bg-amber-50/50 space-y-2">
+                    <div className="flex items-center gap-2 text-amber-700 text-xs font-semibold">
+                      <AlertTriangle className="h-4 w-4 text-amber-500" />
                       Anomalies Detected ({selectedClientAlerts.markers.length})
                     </div>
-                    <div className="text-[11px] text-muted-foreground">
+                    <div className="text-[11px] text-slate-500">
                       The latest panel from <span className="font-mono">{selectedClientAlerts.latestDate}</span> reports out-of-bounds values:
                     </div>
                     <div className="flex flex-wrap gap-1.5 mt-1.5">
                       {selectedClientAlerts.markers.map((marker) => (
-                        <span key={marker} className="text-[10px] font-semibold bg-status-above/10 text-status-above border border-status-above/20 px-2 py-0.5 rounded-md">
+                        <span key={marker} className="text-[10px] font-semibold bg-amber-100/50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-md">
                           {marker}
                         </span>
                       ))}
                     </div>
                   </div>
                 ) : selectedClientAlerts.latestDate ? (
-                  <div className="p-3.5 rounded-xl border border-status-optimal/30 bg-status-optimal/5 flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-status-optimal" />
-                    <div className="text-xs font-semibold text-status-optimal">
+                  <div className="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/50 flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-emerald-600" />
+                    <div className="text-xs font-semibold text-emerald-700">
                       All Biomarkers Optimal (Latest: {selectedClientAlerts.latestDate})
                     </div>
                   </div>
                 ) : (
-                  <div className="p-3.5 rounded-xl border border-border bg-background/20 text-center text-xs text-muted-foreground">
+                  <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 text-center text-xs text-slate-400">
                     No blood panel records on file.
                   </div>
                 )}
@@ -463,10 +465,10 @@ export default function ClientList() {
             </div>
 
             {/* Actions at bottom */}
-            <div className="pt-4 border-t border-border mt-auto space-y-2">
+            <div className="pt-4 border-t border-slate-200 mt-auto space-y-2">
               <Button
-                variant="hero"
-                className="w-full h-11 text-xs gap-1.5 font-bold uppercase tracking-wider"
+                variant="default"
+                className="w-full h-11 text-xs gap-1.5 font-bold uppercase tracking-wider bg-slate-900 text-white hover:bg-slate-800"
                 asChild
                 onClick={() => setSelectedClient(null)}
               >
@@ -478,8 +480,8 @@ export default function ClientList() {
               
               {selectedClient.status === "review" && (
                 <Button
-                  variant="neon"
-                  className="w-full h-10 text-xs font-semibold border-status-optimal/30"
+                  variant="outline"
+                  className="w-full h-10 text-xs font-semibold border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                   onClick={() => {
                     actions.setClientStatus(selectedClient.id, "active");
                     setSelectedClient({ ...selectedClient, status: "active" });
@@ -492,7 +494,7 @@ export default function ClientList() {
 
               <Button
                 variant="outline"
-                className="w-full h-10 text-xs text-muted-foreground hover:text-foreground"
+                className="w-full h-10 text-xs text-slate-500 hover:text-slate-800"
                 onClick={() => setSelectedClient(null)}
               >
                 Close Preview
@@ -508,10 +510,10 @@ export default function ClientList() {
 function Bar({ label, value }: { label: string; value: number }) {
   return (
     <div>
-      <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+      <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-slate-400">
         <span>{label}</span><span>{value}%</span>
       </div>
-      <div className="mt-1 h-1.5 rounded-full bg-secondary overflow-hidden">
+      <div className="mt-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
         <div className="h-full bg-gradient-primary" style={{ width: `${value}%` }} />
       </div>
     </div>

@@ -115,58 +115,58 @@ export function AttentionQueue() {
   };
 
   return (
-    <div className="lab-card-glow p-4 flex flex-col h-full border border-border/80">
-      <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-border/60">
+    <div className="bg-white p-4 flex flex-col h-full border border-slate-200 rounded-xl shadow-sm text-slate-800">
+      <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100">
         <div>
-          <div className="text-xs font-semibold flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
+          <div className="text-xs font-semibold flex items-center gap-1.5 text-slate-900">
+            <Sparkles className="h-3.5 w-3.5 text-emerald-600 animate-pulse" />
             Attention Queue
           </div>
-          <p className="text-[9px] text-muted-foreground mt-0.5 uppercase tracking-wider font-mono">
+          <p className="text-[9px] text-slate-400 mt-0.5 uppercase tracking-wider font-mono">
             Prototype attention queue · Live database planned
           </p>
         </div>
-        <span className="chip text-status-above border-status-above/30 bg-status-above/10 text-[8px] px-1.5 py-0.5">
+        <span className="chip text-amber-700 border-amber-200 bg-amber-50 text-[8px] px-1.5 py-0.5">
           {attentionList.length} Action{attentionList.length !== 1 ? "s" : ""}
         </span>
       </div>
 
       <div className="space-y-2.5 flex-1 overflow-y-auto scrollbar-thin pr-1 max-h-[300px]">
         {attentionList.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center text-xs text-muted-foreground">
-            <CheckCircle className="h-6 w-6 text-status-optimal mb-1.5 opacity-60" />
+          <div className="flex flex-col items-center justify-center py-8 text-center text-xs text-slate-400">
+            <CheckCircle className="h-6 w-6 text-emerald-500 mb-1.5 opacity-60" />
             No immediate client attention actions. Roster is fully aligned.
           </div>
         ) : (
           attentionList.slice(0, 5).map((item) => (
             <div
               key={item.clientId}
-              className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2.5 rounded-xl border border-border/80 bg-background/40 hover:border-primary/30 transition group"
+              className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-emerald-300 hover:bg-slate-50 transition group"
             >
               <div className="flex items-start gap-3 min-w-0">
-                <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${item.avatarColor} text-background font-bold text-xs`}>
+                <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${item.avatarColor} text-white font-bold text-xs`}>
                   {item.initials}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-semibold truncate group-hover:text-primary transition">{item.name}</span>
+                    <span className="text-xs font-semibold truncate text-slate-800 group-hover:text-emerald-600 transition">{item.name}</span>
                     <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
                       item.severity === "High" 
-                        ? "text-status-above border-status-above/30 bg-status-above/5" 
+                        ? "text-amber-700 border-amber-200 bg-amber-50" 
                         : item.severity === "Medium"
-                          ? "text-amber-500 border-amber-500/30 bg-amber-500/5"
-                          : "text-muted-foreground border-border bg-secondary/5"
+                          ? "text-amber-600 border-amber-100 bg-amber-50/50"
+                          : "text-slate-500 border-slate-200 bg-slate-50"
                     }`}>
                       {item.severity} Priority
                     </span>
                   </div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                  <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1.5">
                     <AlertTriangle className={`h-3 w-3 shrink-0 ${
-                      item.severity === "High" ? "text-status-above" : "text-amber-500"
+                      item.severity === "High" ? "text-amber-600" : "text-amber-500"
                     }`} />
                     <span className="truncate">{item.reason}</span>
                   </div>
-                  <div className="text-[10px] text-primary/80 mt-1 font-mono-data font-medium flex items-center gap-1">
+                  <div className="text-[10px] text-emerald-600 mt-1 font-mono-data font-medium flex items-center gap-1">
                     <Clock className="h-2.5 w-2.5" />
                     Action: {item.actionText}
                   </div>
@@ -176,8 +176,8 @@ export function AttentionQueue() {
               <div className="flex items-center gap-1.5 shrink-0 md:self-center self-end mt-1 md:mt-0">
                 <Button
                   size="sm"
-                  variant="ghost"
-                  className="h-7 text-[10px] px-2 gap-1 hover:text-primary hover:bg-secondary/40 border border-transparent hover:border-border"
+                  variant="outline"
+                  className="h-7 text-[10px] px-2 gap-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 bg-white"
                   asChild
                 >
                   <Link to={`/coach/clients/${item.clientId}`}>
@@ -189,8 +189,8 @@ export function AttentionQueue() {
                 {item.status === "review" && (
                   <Button
                     size="sm"
-                    variant="neon"
-                    className="h-7 text-[10px] px-2 font-semibold"
+                    variant="outline"
+                    className="h-7 text-[10px] px-2 font-semibold border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                     onClick={() => handleMarkReviewed(item.clientId, item.name)}
                   >
                     <CheckCircle className="h-3 w-3 mr-0.5" />
@@ -205,7 +205,7 @@ export function AttentionQueue() {
       
       {attentionList.length > 5 && (
         <div className="mt-3 text-center">
-          <Button variant="link" size="sm" className="text-xs text-primary hover:underline gap-1" asChild>
+          <Button variant="link" size="sm" className="text-xs text-emerald-600 hover:text-emerald-700 hover:underline gap-1" asChild>
             <Link to="/coach/clients">
               View all {attentionList.length} attention issues <ArrowRight className="h-3.5 w-3.5" />
             </Link>

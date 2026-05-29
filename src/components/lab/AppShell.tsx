@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Activity, Beaker, LayoutDashboard, Users, Settings, LogOut, Search, Bell } from "lucide-react";
 import { Logo } from "./Logo";
@@ -19,6 +19,22 @@ export function AppShell() {
   const navigate = useNavigate();
   const { clients } = useStore();
   const [searchQuery, setSearchQuery] = useState("");
+
+  const isCoachWorkspaceLight =
+    loc.pathname === "/coach" ||
+    loc.pathname === "/coach/clients" ||
+    loc.pathname === "/coach/lab" ||
+    loc.pathname === "/coach/settings";
+
+  useEffect(() => {
+    if (isCoachWorkspaceLight) {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
+    } else {
+      document.documentElement.classList.remove("light");
+      document.documentElement.classList.add("dark");
+    }
+  }, [isCoachWorkspaceLight]);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -42,10 +58,13 @@ export function AppShell() {
     : [];
 
   return (
-    <div className="min-h-screen flex bg-background text-foreground">
-      <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-border bg-sidebar/80 backdrop-blur sticky top-0 h-screen">
-        <div className="px-5 py-5 border-b border-border">
-          <Logo />
+    <div className={cn("min-h-screen flex", isCoachWorkspaceLight ? "bg-[#f8f9fa] text-slate-800" : "bg-background text-foreground")}>
+      <aside className={cn(
+        "hidden md:flex w-64 shrink-0 flex-col sticky top-0 h-screen backdrop-blur",
+        isCoachWorkspaceLight ? "border-r border-slate-200 bg-white shadow-sm" : "border-r border-border bg-sidebar/80"
+      )}>
+        <div className={cn("px-5 py-5 border-b", isCoachWorkspaceLight ? "border-slate-100" : "border-border")}>
+          <Logo className={cn(isCoachWorkspaceLight && "[&_.text-foreground]:text-slate-900 [&_.text-primary]:text-emerald-600 [&_.bg-primary\\/10]:bg-emerald-50 [&_.border-primary\\/40]:border-emerald-200")} />
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1">
           {NAV.map((item) => (
@@ -56,8 +75,12 @@ export function AppShell() {
               className={({ isActive }) => cn(
                 "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
                 isActive
-                  ? "bg-primary/10 text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.25)]"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-foreground"
+                  ? (isCoachWorkspaceLight
+                      ? "bg-emerald-50 text-emerald-700 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.2)]"
+                      : "bg-primary/10 text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.25)]")
+                  : (isCoachWorkspaceLight
+                      ? "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-foreground")
               )}
             >
               <item.icon className="h-4 w-4" />
@@ -65,35 +88,38 @@ export function AppShell() {
             </NavLink>
           ))}
         </nav>
-        <div className="p-3 border-t border-border">
-          <div className="flex items-center gap-3 rounded-xl border border-border bg-card/60 p-2.5">
+        <div className={cn("p-3", isCoachWorkspaceLight ? "border-t border-slate-100" : "border-t border-border")}>
+          <div className={cn("flex items-center gap-3 rounded-xl p-2.5", isCoachWorkspaceLight ? "border border-slate-200 bg-white shadow-sm" : "border border-border bg-card/60")}>
             <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-primary text-primary-foreground font-bold text-sm">
               {COACH.initials}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-semibold">{COACH.name}</div>
-              <div className="truncate text-[11px] text-muted-foreground">Coach · Admin</div>
+              <div className={cn("truncate text-sm font-semibold", isCoachWorkspaceLight ? "text-slate-800" : "text-foreground")}>{COACH.name}</div>
+              <div className={cn("truncate text-[11px]", isCoachWorkspaceLight ? "text-slate-400" : "text-muted-foreground")}>Coach · Admin</div>
             </div>
-            <LogOut className="h-4 w-4 text-muted-foreground" />
+            <LogOut className={cn("h-4 w-4", isCoachWorkspaceLight ? "text-slate-400" : "text-muted-foreground")} />
           </div>
         </div>
       </aside>
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-background/80 backdrop-blur px-4 md:px-6 py-3">
+        <header className={cn(
+          "sticky top-0 z-20 flex items-center gap-3 backdrop-blur px-4 md:px-6 py-3",
+          isCoachWorkspaceLight ? "border-b border-slate-200 bg-white/95 shadow-sm" : "border-b border-border bg-background/80"
+        )}>
           <div className="md:hidden"><Logo compact /></div>
-          <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground font-mono uppercase tracking-wider">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-glow" />
+          <div className={cn("hidden md:flex items-center gap-2 text-xs font-mono uppercase tracking-wider", isCoachWorkspaceLight ? "text-slate-500" : "text-muted-foreground")}>
+            <span className={cn("h-1.5 w-1.5 rounded-full", isCoachWorkspaceLight ? "bg-emerald-500 animate-pulse" : "bg-primary animate-pulse-glow")} />
             <span>Lab Online</span>
-            <span className="text-border">/</span>
+            <span className={isCoachWorkspaceLight ? "text-slate-300" : "text-border"}>/</span>
             <span className="truncate">{loc.pathname}</span>
           </div>
           <div className="flex-1 flex justify-end items-center gap-2">
             <div className="relative hidden sm:block w-72">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground animate-pulse-glow" />
+              <Search className={cn("pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2", isCoachWorkspaceLight ? "text-slate-400" : "text-muted-foreground animate-pulse-glow")} />
               <Input 
                 placeholder="Search clients, pages…" 
-                className="pl-9 bg-card/60 border-border text-xs h-9" 
+                className={cn("pl-9 text-xs h-9", isCoachWorkspaceLight ? "bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 focus:bg-white" : "bg-card/60 border-border")} 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
@@ -170,7 +196,7 @@ export function AppShell() {
                 </>
               )}
             </div>
-            <button className="grid h-9 w-9 place-items-center rounded-xl border border-border bg-card/60 hover:bg-card transition">
+            <button className={cn("grid h-9 w-9 place-items-center rounded-xl transition", isCoachWorkspaceLight ? "border border-slate-200 bg-white hover:bg-slate-50 text-slate-600" : "border border-border bg-card/60 hover:bg-card")}>
               <Bell className="h-4 w-4" />
             </button>
             <div className="md:hidden grid h-9 w-9 place-items-center rounded-full bg-gradient-primary text-primary-foreground font-bold text-sm">
@@ -181,8 +207,8 @@ export function AppShell() {
         <main className="flex-1 px-4 md:px-6 py-6">
           <Outlet />
         </main>
-        <footer className="px-6 py-4 text-[11px] text-muted-foreground border-t border-border flex items-center gap-2 justify-between">
-          <div className="flex items-center gap-2"><Activity className="h-3 w-3 text-primary" /> Mad Scientist Coaching Lab — v0.1</div>
+        <footer className={cn("px-6 py-4 text-[11px] flex items-center gap-2 justify-between", isCoachWorkspaceLight ? "border-t border-slate-200 bg-white text-slate-500" : "border-t border-border text-muted-foreground")}>
+          <div className="flex items-center gap-2"><Activity className={cn("h-3 w-3 text-primary", isCoachWorkspaceLight ? "text-emerald-600" : "text-primary")} /> Mad Scientist Coaching Lab — v0.1</div>
           <div>Not for medical diagnosis · Educational coaching only</div>
         </footer>
       </div>

@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import type { BloodPanel, BiomarkerResult, CheckIn, ExerciseLog, SupplementLog, NutritionPlan } from "@/lib/types";
+import type { BloodPanel, BiomarkerResult, CheckIn, ExerciseLog, SupplementLog, NutritionPlan, Exercise, TrainingPlan } from "@/lib/types";
 import { CLIENTS, PANELS, COACH } from "./mock";
 
 type State = {
@@ -10,6 +10,8 @@ type State = {
   exerciseLogs: ExerciseLog[];
   supplementLogs: SupplementLog[];
   nutritionPlans: NutritionPlan[];
+  masterExercises: Exercise[];
+  trainingPlans: TrainingPlan[];
 };
 
 const LOCAL_STORAGE_KEY = "mad-scientist-lab-state";
@@ -117,6 +119,373 @@ const SEED_NUTRITION_PLANS = (): NutritionPlan[] => {
   ];
 };
 
+const SEED_MASTER_EXERCISES = (): Exercise[] => {
+  return [
+    {
+      id: "ex-1",
+      name: "Barbell Bench Press",
+      primaryMuscle: "Chest",
+      equipment: "Barbell",
+      cues: ["Keep elbows tucked to 45 degrees", "Leg drive through the floor", "Touch bar to lower sternum"],
+      mistakes: ["Flaring elbows out wide", "Bouncing the bar off the chest", "Lifting hips off the bench"]
+    },
+    {
+      id: "ex-2",
+      name: "Incline Dumbbell Press",
+      primaryMuscle: "Chest",
+      equipment: "Dumbbell",
+      cues: ["30-degree bench angle", "Control the stretch at the bottom", "Press in a slight inward arc"],
+      mistakes: ["Bench angle too steep (front delts dominant)", "Touching weights at the top (loses tension)"]
+    },
+    {
+      id: "ex-3",
+      name: "Romanian Deadlift",
+      primaryMuscle: "Legs",
+      equipment: "Barbell",
+      cues: ["Push hips back as far as possible", "Keep bar close to thighs", "Maintain flat back/neutral spine"],
+      mistakes: ["Rounding the lower back", "Squatting the weight down rather than hinging"]
+    },
+    {
+      id: "ex-4",
+      name: "Back Squat",
+      primaryMuscle: "Legs",
+      equipment: "Barbell",
+      cues: ["Sit back and down into hips", "Keep knees tracking over toes", "Chest up, drive through mid-foot"],
+      mistakes: ["Knees caving inward (valgus)", "Heels rising off the floor", "Rounding upper back"]
+    },
+    {
+      id: "ex-5",
+      name: "Lat Pulldown",
+      primaryMuscle: "Back",
+      equipment: "Machine",
+      cues: ["Drive elbows down to hips", "Slight lean back, pull to upper chest", "Control the eccentric phase"],
+      mistakes: ["Using momentum (excessive swinging)", "Pulling bar down with forearms/wrist flexors"]
+    },
+    {
+      id: "ex-6",
+      name: "Seated Row",
+      primaryMuscle: "Back",
+      equipment: "Machine",
+      cues: ["Pull shoulders down and back", "Squeeze shoulder blades", "Control the reach at the start"],
+      mistakes: ["Rounding the shoulders at peak contraction", "Leaning too far forward/backward"]
+    },
+    {
+      id: "ex-7",
+      name: "Shoulder Press",
+      primaryMuscle: "Shoulders",
+      equipment: "Dumbbell",
+      cues: ["Press straight up, biceps close to ears", "Keep core braced, back flat on bench", "Full range of motion"],
+      mistakes: ["Arching the lower back excessively", "Flaring elbows to the sides"]
+    },
+    {
+      id: "ex-8",
+      name: "DB Lateral Raise",
+      primaryMuscle: "Shoulders",
+      equipment: "Dumbbell",
+      cues: ["Lead with the elbows", "Slight forward lean", "Pour water/pinky high at the top"],
+      mistakes: ["Using traps to shrug the weight up", "Swinging the dumbbells with hip drive"]
+    },
+    {
+      id: "ex-9",
+      name: "Cable Flye",
+      primaryMuscle: "Chest",
+      equipment: "Cables",
+      cues: ["Hug a big tree", "Maintain a slight bend in the elbows", "Squeeze chests hard at center"],
+      mistakes: ["Pressing the cables instead of flying", "Letting hands go behind shoulders at start"]
+    },
+    {
+      id: "ex-10",
+      name: "Bicep Curl",
+      primaryMuscle: "Arms",
+      equipment: "Dumbbell",
+      cues: ["Keep elbows pinned to sides", "Supinate wrists at the top", "Squeeze bicep, control descent"],
+      mistakes: ["Swinging elbows forward (uses front delts)", "Using lower back swing"]
+    },
+    {
+      id: "ex-11",
+      name: "Tricep Rope Pushdown",
+      primaryMuscle: "Arms",
+      equipment: "Cables",
+      cues: ["Keep elbows pinned to ribs", "Spread the rope at the bottom", "Lock out tricep, slow release"],
+      mistakes: ["Allowing shoulders to roll forward", "Letting elbows flare out"]
+    },
+    {
+      id: "ex-12",
+      name: "Plank",
+      primaryMuscle: "Core",
+      equipment: "Bodyweight",
+      cues: ["Brace core like getting punched", "Keep hips in line with shoulders", "Squeeze glutes and quads"],
+      mistakes: ["Sagging hips down", "Piking hips up", "Looking forward (strains neck)"]
+    }
+  ];
+};
+
+const SEED_TRAINING_PLANS = (): TrainingPlan[] => {
+  return [
+    {
+      id: "tp-1",
+      clientId: "c-001",
+      programName: "Bio-Performance Hypertrophy",
+      days: [
+        {
+          id: "tpd-1-1",
+          dayName: "Day 1: Upper Push",
+          exercises: [
+            {
+              id: "tpe-1-1-1",
+              exerciseId: "ex-1",
+              name: "Barbell Bench Press",
+              primaryMuscle: "Chest",
+              equipment: "Barbell",
+              sets: 4,
+              repsPrescription: "8-10 reps (RPE 8)",
+              tempo: "3110",
+              restSeconds: 120
+            },
+            {
+              id: "tpe-1-1-2",
+              exerciseId: "ex-2",
+              name: "Incline Dumbbell Press",
+              primaryMuscle: "Chest",
+              equipment: "Dumbbell",
+              sets: 3,
+              repsPrescription: "10-12 reps",
+              tempo: "2010",
+              restSeconds: 90
+            },
+            {
+              id: "tpe-1-1-3",
+              exerciseId: "ex-7",
+              name: "Shoulder Press",
+              primaryMuscle: "Shoulders",
+              equipment: "Dumbbell",
+              sets: 3,
+              repsPrescription: "10 reps",
+              tempo: "2110",
+              restSeconds: 90
+            },
+            {
+              id: "tpe-1-1-4",
+              exerciseId: "ex-11",
+              name: "Tricep Rope Pushdown",
+              primaryMuscle: "Arms",
+              equipment: "Cables",
+              sets: 3,
+              repsPrescription: "12-15 reps",
+              tempo: "2011",
+              restSeconds: 60
+            }
+          ]
+        },
+        {
+          id: "tpd-1-2",
+          dayName: "Day 2: Upper Pull",
+          exercises: [
+            {
+              id: "tpe-1-2-1",
+              exerciseId: "ex-5",
+              name: "Lat Pulldown",
+              primaryMuscle: "Back",
+              equipment: "Machine",
+              sets: 4,
+              repsPrescription: "10 reps",
+              tempo: "3011",
+              restSeconds: 90
+            },
+            {
+              id: "tpe-1-2-2",
+              exerciseId: "ex-6",
+              name: "Seated Row",
+              primaryMuscle: "Back",
+              equipment: "Machine",
+              sets: 3,
+              repsPrescription: "12 reps",
+              tempo: "2012",
+              restSeconds: 90
+            },
+            {
+              id: "tpe-1-2-3",
+              exerciseId: "ex-8",
+              name: "DB Lateral Raise",
+              primaryMuscle: "Shoulders",
+              equipment: "Dumbbell",
+              sets: 4,
+              repsPrescription: "15 reps",
+              tempo: "2010",
+              restSeconds: 60
+            },
+            {
+              id: "tpe-1-2-4",
+              exerciseId: "ex-10",
+              name: "Bicep Curl",
+              primaryMuscle: "Arms",
+              equipment: "Dumbbell",
+              sets: 3,
+              repsPrescription: "12 reps",
+              tempo: "3010",
+              restSeconds: 60
+            }
+          ]
+        },
+        {
+          id: "tpd-1-3",
+          dayName: "Day 3: Lower & Core Focus",
+          exercises: [
+            {
+              id: "tpe-1-3-1",
+              exerciseId: "ex-4",
+              name: "Back Squat",
+              primaryMuscle: "Legs",
+              equipment: "Barbell",
+              sets: 4,
+              repsPrescription: "6 reps (RPE 9)",
+              tempo: "3110",
+              restSeconds: 180
+            },
+            {
+              id: "tpe-1-3-2",
+              exerciseId: "ex-3",
+              name: "Romanian Deadlift",
+              primaryMuscle: "Legs",
+              equipment: "Barbell",
+              sets: 3,
+              repsPrescription: "8-10 reps",
+              tempo: "3010",
+              restSeconds: 120
+            },
+            {
+              id: "tpe-1-3-3",
+              exerciseId: "ex-12",
+              name: "Plank",
+              primaryMuscle: "Core",
+              equipment: "Bodyweight",
+              sets: 3,
+              repsPrescription: "60 seconds",
+              tempo: "1010",
+              restSeconds: 60
+            }
+          ]
+        }
+      ],
+      notes: "Focus on strict tempo and technique consistency. Ensure core remains braced throughout squats and deadlifts to maintain back support."
+    },
+    {
+      id: "tp-2",
+      clientId: "c-002",
+      programName: "Metabolic Conditioning & Strength",
+      days: [
+        {
+          id: "tpd-2-1",
+          dayName: "Day 1: Lower & Core",
+          exercises: [
+            {
+              id: "tpe-2-1-1",
+              exerciseId: "ex-3",
+              name: "Romanian Deadlift",
+              primaryMuscle: "Legs",
+              equipment: "Barbell",
+              sets: 4,
+              repsPrescription: "10 reps",
+              tempo: "3010",
+              restSeconds: 90
+            },
+            {
+              id: "tpe-2-1-2",
+              exerciseId: "ex-12",
+              name: "Plank",
+              primaryMuscle: "Core",
+              equipment: "Bodyweight",
+              sets: 3,
+              repsPrescription: "45 seconds",
+              tempo: "1010",
+              restSeconds: 60
+            }
+          ]
+        },
+        {
+          id: "tpd-2-2",
+          dayName: "Day 2: Upper Body & Arms",
+          exercises: [
+            {
+              id: "tpe-2-2-1",
+              exerciseId: "ex-5",
+              name: "Lat Pulldown",
+              primaryMuscle: "Back",
+              equipment: "Machine",
+              sets: 3,
+              repsPrescription: "12 reps",
+              tempo: "3011",
+              restSeconds: 60
+            },
+            {
+              id: "tpe-2-2-2",
+              exerciseId: "ex-6",
+              name: "Seated Row",
+              primaryMuscle: "Back",
+              equipment: "Machine",
+              sets: 3,
+              repsPrescription: "12 reps",
+              tempo: "2012",
+              restSeconds: 60
+            },
+            {
+              id: "tpe-2-2-3",
+              exerciseId: "ex-10",
+              name: "Bicep Curl",
+              primaryMuscle: "Arms",
+              equipment: "Dumbbell",
+              sets: 3,
+              repsPrescription: "12 reps",
+              tempo: "3010",
+              restSeconds: 45
+            },
+            {
+              id: "tpe-2-2-4",
+              exerciseId: "ex-11",
+              name: "Tricep Rope Pushdown",
+              primaryMuscle: "Arms",
+              equipment: "Cables",
+              sets: 3,
+              repsPrescription: "12 reps",
+              tempo: "2011",
+              restSeconds: 45
+            }
+          ]
+        },
+        {
+          id: "tpd-2-3",
+          dayName: "Day 3: Conditioning",
+          exercises: [
+            {
+              id: "tpe-2-3-1",
+              exerciseId: "ex-4",
+              name: "Back Squat",
+              primaryMuscle: "Legs",
+              equipment: "Barbell",
+              sets: 3,
+              repsPrescription: "12 reps",
+              tempo: "2010",
+              restSeconds: 90
+            },
+            {
+              id: "tpe-2-3-2",
+              exerciseId: "ex-12",
+              name: "Plank",
+              primaryMuscle: "Core",
+              equipment: "Bodyweight",
+              sets: 3,
+              repsPrescription: "60 seconds",
+              tempo: "1010",
+              restSeconds: 60
+            }
+          ]
+        }
+      ],
+      notes: "Prioritize movement control and technique consistency over high loading. Keep rests strict to maximize metabolic output."
+    }
+  ];
+};
+
 const loadInitialState = (): State => {
   const defaultState: State = {
     coach: COACH,
@@ -125,7 +494,9 @@ const loadInitialState = (): State => {
     checkIns: [...SEED_CHECKINS],
     exerciseLogs: SEED_EXERCISE_LOGS(),
     supplementLogs: SEED_SUPPLEMENT_LOGS(),
-    nutritionPlans: SEED_NUTRITION_PLANS()
+    nutritionPlans: SEED_NUTRITION_PLANS(),
+    masterExercises: SEED_MASTER_EXERCISES(),
+    trainingPlans: SEED_TRAINING_PLANS()
   };
   try {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -139,7 +510,9 @@ const loadInitialState = (): State => {
           checkIns: parsed.checkIns || [...SEED_CHECKINS],
           exerciseLogs: parsed.exerciseLogs || SEED_EXERCISE_LOGS(),
           supplementLogs: parsed.supplementLogs || SEED_SUPPLEMENT_LOGS(),
-          nutritionPlans: parsed.nutritionPlans || SEED_NUTRITION_PLANS()
+          nutritionPlans: parsed.nutritionPlans || SEED_NUTRITION_PLANS(),
+          masterExercises: parsed.masterExercises || SEED_MASTER_EXERCISES(),
+          trainingPlans: parsed.trainingPlans || SEED_TRAINING_PLANS()
         };
       }
     }
@@ -160,7 +533,9 @@ const saveState = (newState: State) => {
       checkIns: newState.checkIns,
       exerciseLogs: newState.exerciseLogs,
       supplementLogs: newState.supplementLogs,
-      nutritionPlans: newState.nutritionPlans
+      nutritionPlans: newState.nutritionPlans,
+      masterExercises: newState.masterExercises,
+      trainingPlans: newState.trainingPlans
     }));
   } catch (e) {
     console.error("Failed to save state to localStorage:", e);
@@ -358,7 +733,9 @@ export const actions = {
       checkIns: [...SEED_CHECKINS], 
       exerciseLogs: SEED_EXERCISE_LOGS(), 
       supplementLogs: SEED_SUPPLEMENT_LOGS(),
-      nutritionPlans: SEED_NUTRITION_PLANS()
+      nutritionPlans: SEED_NUTRITION_PLANS(),
+      masterExercises: SEED_MASTER_EXERCISES(),
+      trainingPlans: SEED_TRAINING_PLANS()
     };
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
@@ -377,6 +754,15 @@ export const actions = {
       ...state,
       nutritionPlans: state.nutritionPlans.map((p) => p.id === updatedPlan.id ? updatedPlan : p)
     };
+    emit();
+    return updatedPlan;
+  },
+  updateTrainingPlan(updatedPlan: TrainingPlan) {
+    state = {
+      ...state,
+      trainingPlans: state.trainingPlans.map((p) => p.id === updatedPlan.id ? updatedPlan : p)
+    };
+    saveState(state);
     emit();
     return updatedPlan;
   }
@@ -408,4 +794,12 @@ export function getClientExerciseLogs(clientId: string, date: string) {
 
 export function getClientSupplementLogs(clientId: string, date: string) {
   return state.supplementLogs.filter((l) => l.clientId === clientId && l.date === date);
+}
+
+export function getClientTrainingPlan(clientId: string) {
+  return state.trainingPlans.find((p) => p.clientId === clientId);
+}
+
+export function getMasterExercises() {
+  return state.masterExercises;
 }

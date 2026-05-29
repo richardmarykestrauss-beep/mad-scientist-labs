@@ -136,3 +136,42 @@ export interface NutritionPlan {
   focusAreas: NutritionFocusArea[];
   mealTiming: MealTimingBlock[];
 }
+
+// Training / Exercise Library related types
+export type MuscleGroup = "Chest" | "Back" | "Legs" | "Shoulders" | "Arms" | "Core";
+export type EquipmentType = "Barbell" | "Dumbbell" | "Cables" | "Machine" | "Bodyweight";
+
+export interface Exercise {
+  id: string;
+  name: string;
+  primaryMuscle: MuscleGroup;
+  equipment: EquipmentType;
+  cues: string[];
+  mistakes: string[];
+}
+
+export interface TrainingPlanExercise {
+  id: string; // instance ID
+  exerciseId: string;
+  name: string;
+  primaryMuscle: MuscleGroup;
+  equipment: EquipmentType;
+  sets: number;
+  repsPrescription: string; // e.g. "8-10" or "RPE 9"
+  tempo: string; // e.g. "3010"
+  restSeconds: number;
+}
+
+export interface TrainingDay {
+  id: string;
+  dayName: string; // e.g. "Day 1: Upper Push"
+  exercises: TrainingPlanExercise[];
+}
+
+export interface TrainingPlan {
+  id: string;
+  clientId: string;
+  programName: string; // e.g. "Hypertrophy Phase 1"
+  days: TrainingDay[];
+  notes: string;
+}

@@ -33,6 +33,7 @@ import { BloodReportUploadFlow } from "@/components/blood/BloodReportUploadFlow"
 import { Button } from "@/components/ui/button";
 import { AICoachBriefing } from "@/components/coach/AICoachBriefing";
 import NutritionPlanPanel from "@/components/coach/NutritionPlanPanel";
+import TrainingPlanPanel from "@/components/coach/TrainingPlanPanel";
 import { BIOMARKERS, getStatus, STATUS_META } from "@/lib/biomarkers";
 import { cn } from "@/lib/utils";
 
@@ -360,7 +361,7 @@ export default function ClientProfile() {
         </TabsContent>
 
         <TabsContent value="training" className="mt-5">
-          <Scaffold title="Training Program" desc="Build periodized programs, assign weekly workouts, and track exercise compliance." cta="Open Program Builder" onCta={() => setPlannedFeature("Training Program Builder")} />
+          <TrainingPlanPanel clientId={id} />
         </TabsContent>
 
         <TabsContent value="nutrition" className="mt-5">

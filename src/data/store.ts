@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import type { BloodPanel, BiomarkerResult, CheckIn, ExerciseLog, SupplementLog, NutritionPlan, Exercise, TrainingPlan, SupplementProtocol, SupplementProtocolItem, SupplementCategory, SupplementStatus } from "@/lib/types";
+import type { BloodPanel, BiomarkerResult, CheckIn, ExerciseLog, SupplementLog, NutritionPlan, Exercise, TrainingPlan, SupplementProtocol, SupplementProtocolItem, SupplementCategory, SupplementStatus, CoachNote } from "@/lib/types";
 import { CLIENTS, PANELS, COACH } from "./mock";
 
 type State = {
@@ -13,6 +13,7 @@ type State = {
   masterExercises: Exercise[];
   trainingPlans: TrainingPlan[];
   supplementProtocols: SupplementProtocol[];
+  coachNotes: CoachNote[];
 };
 
 const LOCAL_STORAGE_KEY = "mad-scientist-lab-state";
@@ -576,6 +577,44 @@ const SEED_SUPPLEMENT_PROTOCOLS = (): SupplementProtocol[] => {
   ];
 };
 
+const SEED_COACH_NOTES = (): CoachNote[] => {
+  return [
+    {
+      id: "cn-1",
+      clientId: "c-001",
+      title: "Q1 Thyroid Review",
+      body: "T3 and T4 levels show mild recovery. Re-assess in Q2 labs. Keep current selenium supplementation active.",
+      category: "Lab Review",
+      visibility: "private",
+      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
+      updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      pinned: true
+    },
+    {
+      id: "cn-2",
+      clientId: "c-001",
+      title: "Sleep Adherence Check",
+      body: "Client reports much better sleep quality since adding Magnesium Glycinate before bed. Monitor sleep latency over next two weeks.",
+      category: "Check-In",
+      visibility: "client_safe",
+      createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+      updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      pinned: false
+    },
+    {
+      id: "cn-3",
+      clientId: "c-002",
+      title: "Metabolic Pathway Telemetry",
+      body: "Calorie surplus is currently set to 250 kcal. Focus on keeping fat gain minimized while monitoring recovery.",
+      category: "Nutrition",
+      visibility: "private",
+      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+      updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      pinned: true
+    }
+  ];
+};
+
 const loadInitialState = (): State => {
   const defaultState: State = {
     coach: COACH,
@@ -587,7 +626,8 @@ const loadInitialState = (): State => {
     nutritionPlans: SEED_NUTRITION_PLANS(),
     masterExercises: SEED_MASTER_EXERCISES(),
     trainingPlans: SEED_TRAINING_PLANS(),
-    supplementProtocols: SEED_SUPPLEMENT_PROTOCOLS()
+    supplementProtocols: SEED_SUPPLEMENT_PROTOCOLS(),
+    coachNotes: SEED_COACH_NOTES()
   };
   try {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -604,7 +644,8 @@ const loadInitialState = (): State => {
           nutritionPlans: parsed.nutritionPlans || SEED_NUTRITION_PLANS(),
           masterExercises: parsed.masterExercises || SEED_MASTER_EXERCISES(),
           trainingPlans: parsed.trainingPlans || SEED_TRAINING_PLANS(),
-          supplementProtocols: parsed.supplementProtocols || SEED_SUPPLEMENT_PROTOCOLS()
+          supplementProtocols: parsed.supplementProtocols || SEED_SUPPLEMENT_PROTOCOLS(),
+          coachNotes: parsed.coachNotes || SEED_COACH_NOTES()
         };
       }
     }
@@ -628,7 +669,8 @@ const saveState = (newState: State) => {
       nutritionPlans: newState.nutritionPlans,
       masterExercises: newState.masterExercises,
       trainingPlans: newState.trainingPlans,
-      supplementProtocols: newState.supplementProtocols
+      supplementProtocols: newState.supplementProtocols,
+      coachNotes: newState.coachNotes
     }));
   } catch (e) {
     console.error("Failed to save state to localStorage:", e);
@@ -829,7 +871,8 @@ export const actions = {
       nutritionPlans: SEED_NUTRITION_PLANS(),
       masterExercises: SEED_MASTER_EXERCISES(),
       trainingPlans: SEED_TRAINING_PLANS(),
-      supplementProtocols: SEED_SUPPLEMENT_PROTOCOLS()
+      supplementProtocols: SEED_SUPPLEMENT_PROTOCOLS(),
+      coachNotes: SEED_COACH_NOTES()
     };
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
@@ -934,6 +977,50 @@ export const actions = {
     };
     saveState(state);
     emit();
+  },
+  addCoachNote(note: Omit<CoachNote, "id" | "createdAt" | "updatedAt">) {
+    const newNote: CoachNote = {
+      ...note,
+      id: `cn-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    state = {
+      ...state,
+      coachNotes: [...state.coachNotes, newNote]
+    };
+    saveState(state);
+    emit();
+    return newNote;
+  },
+  updateCoachNote(updatedNote: CoachNote) {
+    const noteWithTimestamp = {
+      ...updatedNote,
+      updatedAt: new Date().toISOString()
+    };
+    state = {
+      ...state,
+      coachNotes: state.coachNotes.map((n) => n.id === updatedNote.id ? noteWithTimestamp : n)
+    };
+    saveState(state);
+    emit();
+    return noteWithTimestamp;
+  },
+  deleteCoachNote(noteId: string) {
+    state = {
+      ...state,
+      coachNotes: state.coachNotes.filter((n) => n.id !== noteId)
+    };
+    saveState(state);
+    emit();
+  },
+  toggleCoachNotePinned(noteId: string) {
+    state = {
+      ...state,
+      coachNotes: state.coachNotes.map((n) => n.id === noteId ? { ...n, pinned: !n.pinned, updatedAt: new Date().toISOString() } : n)
+    };
+    saveState(state);
+    emit();
   }
 };
 
@@ -975,4 +1062,8 @@ export function getMasterExercises() {
 
 export function getClientSupplementProtocol(clientId: string) {
   return state.supplementProtocols.find((p) => p.clientId === clientId);
+}
+
+export function getClientCoachNotes(clientId: string) {
+  return state.coachNotes.filter((n) => n.clientId === clientId);
 }

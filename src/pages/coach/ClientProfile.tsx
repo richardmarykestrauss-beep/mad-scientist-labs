@@ -35,6 +35,7 @@ import { AICoachBriefing } from "@/components/coach/AICoachBriefing";
 import NutritionPlanPanel from "@/components/coach/NutritionPlanPanel";
 import TrainingPlanPanel from "@/components/coach/TrainingPlanPanel";
 import SupplementProtocolPanel from "@/components/coach/SupplementProtocolPanel";
+import CoachNotesPanel from "@/components/coach/CoachNotesPanel";
 import { BIOMARKERS, getStatus, STATUS_META } from "@/lib/biomarkers";
 import { cn } from "@/lib/utils";
 
@@ -378,12 +379,7 @@ export default function ClientProfile() {
         </TabsContent>
 
         <TabsContent value="notes" className="mt-5">
-          <div className="lab-card-glow p-5 border border-border/80 space-y-3">
-            <h3 className="text-sm font-semibold">Coach Notes</h3>
-            <div className="p-4 rounded-xl border border-border/60 bg-background/25 text-xs leading-relaxed">
-              {client.notes ?? "No coach notes on file. Add note guidelines during the next weekly review session."}
-            </div>
-          </div>
+          <CoachNotesPanel clientId={id} />
         </TabsContent>
       </Tabs>
 

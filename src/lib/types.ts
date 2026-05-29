@@ -209,3 +209,27 @@ export interface SupplementProtocol {
   updatedAt: string; // ISO timestamp
 }
 
+export type CoachNoteCategory =
+  | "Lab Review"
+  | "Training"
+  | "Nutrition"
+  | "Supplements"
+  | "Check-In"
+  | "General"
+  | "Follow-Up";
+
+export type CoachNoteVisibility = "private" | "client_safe";
+
+export interface CoachNote {
+  id: string;
+  clientId: string;
+  title: string;
+  body: string;
+  category: CoachNoteCategory;
+  visibility: CoachNoteVisibility;
+  createdAt: string;
+  updatedAt: string;
+  pinned: boolean;
+  followUpDate?: string;
+}
+

@@ -4,7 +4,7 @@ import { actions, getClientTrainingPlan, getMasterExercises } from "@/data/store
 import type { TrainingPlan, TrainingDay, TrainingPlanExercise, Exercise, MuscleGroup, EquipmentType } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Edit, Save, X, Search, Plus, Trash2, ShieldAlert, Award, Dumbbell, HelpCircle } from "lucide-react";
+import { Edit, Save, X, Search, Plus, Trash2, ShieldAlert, Dumbbell, Play, Info, AlertTriangle } from "lucide-react";
 import MuscleMapMini from "./MuscleMapMini";
 
 interface TrainingPlanPanelProps {
@@ -44,7 +44,7 @@ export default function TrainingPlanPanel({ clientId }: { clientId: string }) {
 
   if (!plan) {
     return (
-      <div className="p-10 text-center text-muted-foreground lab-card-glow border border-border/80">
+      <div className="p-10 text-center text-muted-foreground lab-card-glow border border-border/80 bg-background/10">
         No active training program found for this client.
       </div>
     );
@@ -144,75 +144,76 @@ export default function TrainingPlanPanel({ clientId }: { clientId: string }) {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in pb-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h2 className="font-display text-2xl font-bold text-glow text-primary">
-            Client Training Program
+    <div className="space-y-5 animate-fade-in pb-8">
+      {/* Header Panel */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/20 pb-4">
+        <div>
+          <h2 className="font-display text-xl font-bold tracking-tight text-glow text-primary flex items-center gap-2">
+            <Dumbbell className="h-5 w-5 text-primary" /> Client Training Program
           </h2>
-          <p className="text-[10px] text-muted-foreground uppercase font-mono tracking-wider">
-            Prototype training builder · Live database planned
+          <p className="text-[9px] text-muted-foreground uppercase font-mono tracking-widest mt-0.5">
+            Precision Prescriptions · Real-Time Telemetry Layer
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        
+        <div className="flex items-center gap-3 self-end sm:self-center">
           {isDirty && (
-            <span className="text-[10px] font-mono font-bold uppercase text-status-above border border-status-above/30 bg-status-above/5 px-2.5 py-1 rounded-full flex items-center gap-1.5 animate-pulse">
-              <ShieldAlert className="h-3.5 w-3.5" /> Unsaved program edits
+            <span className="text-[9px] font-mono font-bold uppercase text-status-above border border-status-above/30 bg-status-above/10 px-2.5 py-1 rounded-md flex items-center gap-1.5 animate-pulse">
+              <ShieldAlert className="h-3 w-3" /> Unsaved program edits
             </span>
           )}
           {editMode ? (
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleCancel} className="h-8 text-xs">
+              <Button variant="outline" size="sm" onClick={handleCancel} className="h-7.5 px-3 text-xs font-semibold uppercase tracking-wider font-mono">
                 <X className="mr-1 h-3.5 w-3.5" /> Cancel
               </Button>
-              <Button variant="neon" size="sm" onClick={handleSave} className="h-8 text-xs">
+              <Button variant="neon" size="sm" onClick={handleSave} className="h-7.5 px-4 text-xs font-semibold uppercase tracking-wider font-mono shadow-[0_0_12px_rgba(6,182,212,0.15)]">
                 <Save className="mr-1 h-3.5 w-3.5" /> Save Plan
               </Button>
             </div>
           ) : (
-            <Button variant="secondary" size="sm" onClick={() => setEditMode(true)} className="h-8 text-xs">
-              <Edit className="mr-1 h-3.5 w-3.5" /> Edit Program
+            <Button variant="secondary" size="sm" onClick={() => setEditMode(true)} className="h-7.5 px-3.5 text-xs font-semibold uppercase tracking-wider font-mono border border-border/40 hover:border-primary/20">
+              <Edit className="mr-1 h-3.5 w-3.5 text-primary" /> Edit Program
             </Button>
           )}
         </div>
       </div>
 
       {/* Program Summary Card */}
-      <div className="lab-card-glow p-4 border border-border/80 bg-background/25">
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="space-y-2">
-            <div>
-              <span className="text-[9px] font-mono text-muted-foreground uppercase">Program Name</span>
-              {editMode ? (
-                <input
-                  type="text"
-                  value={plan.programName}
-                  onChange={(e) => handlePlanNameChange(e.target.value)}
-                  className="input-glass mt-1 text-sm font-semibold py-1 px-2.5 w-full text-primary"
-                />
-              ) : (
-                <h3 className="text-base font-bold text-primary font-display">{plan.programName}</h3>
-              )}
-            </div>
-            <div className="flex gap-4 text-xs font-mono text-muted-foreground">
+      <div className="lab-card-glow p-4 border border-border/60 bg-[#0e1217]/50 backdrop-blur-md relative overflow-hidden rounded-xl">
+        <div className="absolute right-0 top-0 h-24 w-24 bg-primary/5 rounded-full blur-2xl pointer-events-none" />
+        <div className="grid md:grid-cols-3 gap-5 relative z-10">
+          <div className="space-y-1.5">
+            <span className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest block">Program Profile</span>
+            {editMode ? (
+              <input
+                type="text"
+                value={plan.programName}
+                onChange={(e) => handlePlanNameChange(e.target.value)}
+                className="input-glass mt-1 text-sm font-semibold py-1 px-2.5 w-full text-primary font-display"
+              />
+            ) : (
+              <h3 className="text-base font-bold text-primary font-display tracking-tight text-glow">{plan.programName}</h3>
+            )}
+            <div className="flex gap-4 text-[10px] font-mono text-muted-foreground pt-0.5">
               <div>Days: <span className="text-foreground font-bold">{plan.days.length}</span></div>
-              <div>Total Exercises: <span className="text-foreground font-bold">{plan.days.reduce((acc, d) => acc + d.exercises.length, 0)}</span></div>
+              <div>Volume: <span className="text-foreground font-bold">{plan.days.reduce((acc, d) => acc + d.exercises.length, 0)} Movements</span></div>
             </div>
           </div>
+
           <div className="md:col-span-2 space-y-1">
-            <span className="text-[9px] font-mono text-muted-foreground uppercase flex items-center gap-1">
-              <Award className="h-3 w-3 text-primary" /> Client-Safe Training Summary
+            <span className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+              <Info className="h-3 w-3 text-cyan-400" /> Client-Safe Training Summary
             </span>
             {editMode ? (
               <textarea
                 value={plan.notes}
                 onChange={(e) => handleNotesChange(e.target.value)}
-                className="input-glass text-xs p-2 w-full h-16 resize-none leading-normal text-muted-foreground"
-                placeholder="Training focus guidelines, movement control, and tempo awareness notes..."
+                className="input-glass text-xs p-2.5 w-full h-16 resize-none leading-normal text-muted-foreground mt-1"
+                placeholder="Prescribe movement control guidelines, target tempos, and overall performance notes..."
               />
             ) : (
-              <p className="text-xs text-muted-foreground leading-relaxed italic">
+              <p className="text-xs text-muted-foreground leading-relaxed italic bg-background/20 p-2.5 rounded-lg border border-border/30">
                 "{plan.notes}"
               </p>
             )}
@@ -220,22 +221,23 @@ export default function TrainingPlanPanel({ clientId }: { clientId: string }) {
         </div>
       </div>
 
-      {/* Main Builder & Drawer Section */}
-      <div className={cn("grid gap-6 transition-all duration-300", editMode ? "lg:grid-cols-3" : "grid-cols-1")}>
+      {/* Main Content Area */}
+      <div className={cn("grid gap-5 transition-all duration-300", editMode ? "lg:grid-cols-3" : "grid-cols-1")}>
         
-        {/* Workout Builder Tab Pane */}
+        {/* Left Side: Builder and Active Day Workout */}
         <div className={cn("space-y-4", editMode ? "lg:col-span-2" : "")}>
-          {/* Day Tabs */}
-          <div className="flex gap-2 border-b border-border/40 pb-2">
+          
+          {/* Day Navigation Tabs */}
+          <div className="flex flex-wrap gap-1.5 border-b border-border/20 pb-2">
             {plan.days.map((day) => (
               <button
                 key={day.id}
                 onClick={() => setActiveDayId(day.id)}
                 className={cn(
-                  "px-3 py-1.5 text-xs font-mono uppercase tracking-wider rounded-lg border transition",
+                  "px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider rounded-md border transition duration-200",
                   activeDayId === day.id
-                    ? "bg-primary/10 border-primary text-primary font-bold shadow-sm"
-                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary/20"
+                    ? "bg-cyan-500/10 border-cyan-500/40 text-cyan-400 font-bold shadow-[0_0_8px_rgba(6,182,212,0.1)]"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-[#161c24]/40"
                 )}
               >
                 {day.dayName}
@@ -243,47 +245,67 @@ export default function TrainingPlanPanel({ clientId }: { clientId: string }) {
             ))}
           </div>
 
-          {/* Active Day Exercises List */}
+          {/* Exercises Layout */}
           {activeDay && (
-            <div className="space-y-3">
+            <div className="space-y-3.5">
               {activeDay.exercises.length === 0 ? (
-                <div className="p-8 text-center text-xs text-muted-foreground border border-dashed border-border/60 rounded-xl">
-                  No exercises programmed for this day yet. {editMode && "Use the library drawer to add some."}
+                <div className="p-10 text-center text-xs text-muted-foreground border border-dashed border-border/40 rounded-xl bg-background/10">
+                  No movements programmed for this block. {editMode && "Add exercises using the library drawer."}
                 </div>
               ) : (
-                activeDay.exercises.map((tpe) => {
+                activeDay.exercises.map((tpe, index) => {
                   const details = getExerciseDetails(tpe.exerciseId);
                   return (
                     <div
                       key={tpe.id}
-                      className="lab-card-glow p-4 border border-border/80 bg-background/25 flex flex-col md:flex-row gap-4 justify-between items-start"
+                      className="lab-card-glow p-4 border border-border/60 bg-[#0e1217]/40 hover:border-cyan-500/20 transition-all duration-300 rounded-xl flex flex-col md:flex-row gap-4 justify-between items-stretch"
                     >
-                      <div className="flex gap-4 items-start w-full md:w-auto">
-                        <MuscleMapMini highlighted={tpe.primaryMuscle} />
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-bold text-sm text-primary">{tpe.name}</h4>
-                            <span className="text-[8px] font-mono uppercase px-1.5 py-0.5 rounded bg-secondary/60 text-muted-foreground border border-border/40">
+                      {/* Left: Info, Muscle Map, Title & Cues */}
+                      <div className="flex gap-4 items-start flex-1 min-w-0">
+                        {/* Numerical Badge & Telemetry Map */}
+                        <div className="flex flex-col items-center gap-2 shrink-0">
+                          <span className="text-[10px] font-mono font-bold text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full border border-border/40">
+                            {String(index + 1).padStart(2, "0")}
+                          </span>
+                          <MuscleMapMini highlighted={tpe.primaryMuscle} />
+                        </div>
+
+                        {/* Text Block */}
+                        <div className="space-y-2 flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h4 className="font-bold text-sm text-glow text-primary truncate max-w-[240px]">
+                              {tpe.name}
+                            </h4>
+                            <span className="text-[8.5px] font-mono uppercase px-2 py-0.5 rounded bg-cyan-950/40 text-cyan-400 border border-cyan-500/20 tracking-wider">
+                              {tpe.primaryMuscle}
+                            </span>
+                            <span className="text-[8.5px] font-mono uppercase px-2 py-0.5 rounded bg-secondary/50 text-muted-foreground border border-border/30 tracking-wider">
                               {tpe.equipment}
                             </span>
                           </div>
 
-                          {/* Render Cue Card Details */}
                           {details && (
-                            <div className="space-y-1.5 mt-2 max-w-lg">
-                              <div>
-                                <span className="text-[8px] font-mono uppercase text-muted-foreground block">Movement Control Cues</span>
-                                <ul className="list-disc list-inside text-[10px] text-muted-foreground leading-normal pl-0.5">
+                            <div className="grid sm:grid-cols-2 gap-3 pt-1">
+                              {/* Cues Block */}
+                              <div className="bg-background/15 border border-border/40 p-2.5 rounded-lg space-y-1">
+                                <span className="text-[8px] font-mono uppercase text-cyan-400 tracking-wider flex items-center gap-1 font-semibold">
+                                  <Play className="h-2 w-2 text-cyan-400 fill-cyan-400" /> Movement Control Cues
+                                </span>
+                                <ul className="list-disc list-inside text-[10px] text-muted-foreground leading-normal pl-0.5 space-y-0.5">
                                   {details.cues.map((cue, i) => (
-                                    <li key={i}>{cue}</li>
+                                    <li key={i} className="truncate">{cue}</li>
                                   ))}
                                 </ul>
                               </div>
-                              <div>
-                                <span className="text-[8px] font-mono uppercase text-status-above block">Technique Consistency (Avoid)</span>
-                                <ul className="list-disc list-inside text-[10px] text-muted-foreground/80 leading-normal pl-0.5">
+
+                              {/* Mistakes Warning Box */}
+                              <div className="bg-amber-500/5 border border-amber-500/20 p-2.5 rounded-lg space-y-1">
+                                <span className="text-[8px] font-mono uppercase text-amber-400 tracking-wider flex items-center gap-1 font-semibold">
+                                  <AlertTriangle className="h-2.5 w-2.5 text-amber-400" /> Technique Consistency
+                                </span>
+                                <ul className="list-disc list-inside text-[10px] text-muted-foreground/90 leading-normal pl-0.5 space-y-0.5">
                                   {details.mistakes.map((mistake, i) => (
-                                    <li key={i}>{mistake}</li>
+                                    <li key={i} className="truncate">{mistake}</li>
                                   ))}
                                 </ul>
                               </div>
@@ -292,55 +314,60 @@ export default function TrainingPlanPanel({ clientId }: { clientId: string }) {
                         </div>
                       </div>
 
-                      {/* Prescriptions and Controls */}
-                      <div className="flex flex-col md:items-end justify-between h-full w-full md:w-auto gap-4 self-stretch">
+                      {/* Right: Prescriptions & Action Buttons */}
+                      <div className="flex flex-row md:flex-col md:items-end justify-between md:justify-center gap-4 shrink-0 border-t md:border-t-0 md:border-l border-border/20 pt-3 md:pt-0 md:pl-4">
                         {editMode ? (
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-2 gap-2 w-full max-w-[220px]">
                             <div>
-                              <label className="text-[8px] font-mono uppercase text-muted-foreground block">Sets</label>
+                              <span className="text-[8px] font-mono uppercase text-muted-foreground block tracking-wider">Sets</span>
                               <input
                                 type="number"
                                 value={tpe.sets}
                                 onChange={(e) => handleExerciseChange(activeDay.id, tpe.id, "sets", Number(e.target.value))}
-                                className="input-glass py-0.5 px-2 w-full text-center text-xs mt-0.5"
+                                className="input-glass py-0.5 px-2 w-full text-center text-xs mt-0.5 font-semibold font-mono"
                                 min={1}
                               />
                             </div>
                             <div>
-                              <label className="text-[8px] font-mono uppercase text-muted-foreground block">Reps</label>
+                              <span className="text-[8px] font-mono uppercase text-muted-foreground block tracking-wider">Reps</span>
                               <input
                                 type="text"
                                 value={tpe.repsPrescription}
                                 onChange={(e) => handleExerciseChange(activeDay.id, tpe.id, "repsPrescription", e.target.value)}
-                                className="input-glass py-0.5 px-2 w-full text-center text-xs mt-0.5"
+                                className="input-glass py-0.5 px-2 w-full text-center text-xs mt-0.5 font-mono"
                               />
                             </div>
                             <div>
-                              <label className="text-[8px] font-mono uppercase text-muted-foreground block">Tempo</label>
+                              <span className="text-[8px] font-mono uppercase text-muted-foreground block tracking-wider">Tempo</span>
                               <input
                                 type="text"
                                 value={tpe.tempo}
                                 onChange={(e) => handleExerciseChange(activeDay.id, tpe.id, "tempo", e.target.value)}
-                                className="input-glass py-0.5 px-2 w-full text-center text-xs mt-0.5"
+                                className="input-glass py-0.5 px-2 w-full text-center text-xs mt-0.5 font-mono"
                               />
                             </div>
                             <div>
-                              <label className="text-[8px] font-mono uppercase text-muted-foreground block">Rest (s)</label>
+                              <span className="text-[8px] font-mono uppercase text-muted-foreground block tracking-wider">Rest (s)</span>
                               <input
                                 type="number"
                                 value={tpe.restSeconds}
                                 onChange={(e) => handleExerciseChange(activeDay.id, tpe.id, "restSeconds", Number(e.target.value))}
-                                className="input-glass py-0.5 px-2 w-full text-center text-xs mt-0.5"
+                                className="input-glass py-0.5 px-2 w-full text-center text-xs mt-0.5 font-semibold font-mono"
                                 min={0}
                               />
                             </div>
                           </div>
                         ) : (
-                          <div className="flex gap-4 text-xs font-mono text-muted-foreground justify-between w-full md:justify-end">
-                            <div>Sets: <span className="text-foreground font-semibold">{tpe.sets}</span></div>
-                            <div>Reps: <span className="text-foreground font-semibold">{tpe.repsPrescription}</span></div>
-                            <div>Tempo: <span className="text-foreground font-semibold">{tpe.tempo}</span></div>
-                            <div>Rest: <span className="text-foreground font-semibold">{tpe.restSeconds}s</span></div>
+                          <div className="flex md:flex-col gap-2 w-full justify-between md:justify-start">
+                            {/* Sets/Reps Pill */}
+                            <div className="bg-[#12161b] border border-border/40 px-3 py-1 rounded-lg flex items-center justify-center gap-1.5 text-[10px] font-mono text-muted-foreground w-[100px] shrink-0">
+                              <span className="text-primary font-bold text-glow text-xs">{tpe.sets}</span> sets <span className="text-foreground">×</span> <span className="text-foreground font-semibold">{tpe.repsPrescription.split(" ")[0]}</span>
+                            </div>
+                            {/* Tempo/Rest Pill */}
+                            <div className="bg-[#12161b] border border-border/40 px-3 py-1 rounded-lg flex flex-col justify-center text-[8.5px] font-mono text-muted-foreground w-[100px] shrink-0 space-y-0.5 leading-none">
+                              <div>TEMPO: <span className="text-foreground font-semibold">{tpe.tempo}</span></div>
+                              <div className="mt-0.5">REST: <span className="text-cyan-400 font-semibold">{tpe.restSeconds}s</span></div>
+                            </div>
                           </div>
                         )}
 
@@ -349,7 +376,7 @@ export default function TrainingPlanPanel({ clientId }: { clientId: string }) {
                             variant="destructive"
                             size="icon"
                             onClick={() => handleRemoveExercise(activeDay.id, tpe.id)}
-                            className="h-7 w-7 rounded-lg text-xs self-end mt-auto"
+                            className="h-7 w-7 rounded-lg text-xs hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-400 border border-transparent md:self-end mt-auto shrink-0"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
@@ -363,41 +390,42 @@ export default function TrainingPlanPanel({ clientId }: { clientId: string }) {
           )}
         </div>
 
-        {/* Exercise Library Drawer (Only visible in edit mode) */}
+        {/* Right Side: Exercise Library Drawer Panel (Edit Mode Only) */}
         {editMode && (
-          <div className="space-y-4 border-l border-border/30 pl-6 h-fit lg:sticky lg:top-4">
+          <div className="space-y-4 border-l border-border/20 pl-5 h-fit lg:sticky lg:top-4 bg-[#0e1217]/30 p-4 rounded-xl border border-border/40 backdrop-blur-md">
             <div className="space-y-1">
-              <h3 className="font-display font-semibold text-sm text-primary flex items-center gap-1.5">
-                <Dumbbell className="h-4 w-4" /> Exercise Library
+              <h3 className="font-display font-semibold text-sm text-primary flex items-center gap-2">
+                <Dumbbell className="h-4 w-4 text-primary" /> Exercise Library
               </h3>
-              <p className="text-[9px] text-muted-foreground uppercase font-mono">
-                Click to add exercises to {activeDay?.dayName || "selected day"}
+              <p className="text-[9px] text-muted-foreground uppercase font-mono tracking-wider">
+                Click + to add to {activeDay?.dayName.split(":")[0] || "selected block"}
               </p>
             </div>
 
-            {/* Search and Filters */}
-            <div className="space-y-2">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Search exercises..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="input-glass pl-8 pr-3 py-1.5 w-full text-xs"
-                />
-              </div>
+            {/* Search Box */}
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search exercises..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="input-glass pl-8.5 pr-3 py-1.5 w-full text-xs"
+              />
+            </div>
 
-              {/* Muscle Filter */}
+            {/* Muscle Filters */}
+            <div className="space-y-1.5">
+              <span className="text-[8px] font-mono uppercase text-muted-foreground block tracking-wider">Filter Muscle</span>
               <div className="flex flex-wrap gap-1">
                 {["All", "Chest", "Back", "Legs", "Shoulders", "Arms", "Core"].map((muscle) => (
                   <button
                     key={muscle}
                     onClick={() => setSelectedMuscle(muscle as MuscleGroup | "All")}
                     className={cn(
-                      "text-[9px] font-mono px-2 py-0.5 rounded border transition",
+                      "text-[9px] font-mono px-2 py-0.5 rounded border transition duration-200",
                       selectedMuscle === muscle
-                        ? "bg-primary/20 border-primary/50 text-primary"
+                        ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-400 font-bold"
                         : "bg-background/20 border-border/40 text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -405,17 +433,20 @@ export default function TrainingPlanPanel({ clientId }: { clientId: string }) {
                   </button>
                 ))}
               </div>
+            </div>
 
-              {/* Equipment Filter */}
+            {/* Equipment Filters */}
+            <div className="space-y-1.5">
+              <span className="text-[8px] font-mono uppercase text-muted-foreground block tracking-wider">Filter Equipment</span>
               <div className="flex flex-wrap gap-1">
                 {["All", "Barbell", "Dumbbell", "Cables", "Machine", "Bodyweight"].map((equip) => (
                   <button
                     key={equip}
                     onClick={() => setSelectedEquipment(equip as EquipmentType | "All")}
                     className={cn(
-                      "text-[9px] font-mono px-2 py-0.5 rounded border transition",
+                      "text-[9px] font-mono px-2 py-0.5 rounded border transition duration-200",
                       selectedEquipment === equip
-                        ? "bg-primary/20 border-primary/50 text-primary"
+                        ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-400 font-bold"
                         : "bg-background/20 border-border/40 text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -425,20 +456,20 @@ export default function TrainingPlanPanel({ clientId }: { clientId: string }) {
               </div>
             </div>
 
-            {/* Exercises List scrollable box */}
-            <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
+            {/* Exercises List */}
+            <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1 border-t border-border/20 pt-3">
               {filteredExercises.length === 0 ? (
-                <p className="text-[10px] text-center text-muted-foreground p-4">No exercises match search criteria.</p>
+                <p className="text-[10px] text-center text-muted-foreground py-6">No matching movements found.</p>
               ) : (
                 filteredExercises.map((ex) => (
                   <div
                     key={ex.id}
-                    className="p-2 border border-border/60 bg-background/10 hover:bg-background/25 rounded-lg flex items-center justify-between gap-3 text-xs"
+                    className="p-2 border border-border/40 bg-[#0e1217]/50 hover:bg-[#161c24]/60 hover:border-cyan-500/20 transition-all rounded-lg flex items-center justify-between gap-3 text-xs"
                   >
-                    <div className="flex items-center gap-2">
-                      <MuscleMapMini highlighted={ex.primaryMuscle} className="w-[30px] h-[40px] p-0.5" />
-                      <div>
-                        <h4 className="font-semibold text-primary text-[11px] leading-tight">{ex.name}</h4>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <MuscleMapMini highlighted={ex.primaryMuscle} className="w-8 h-10 p-0.5 shrink-0 bg-background/40" />
+                      <div className="min-w-0">
+                        <h4 className="font-semibold text-primary text-[11px] leading-tight truncate">{ex.name}</h4>
                         <span className="text-[8px] font-mono text-muted-foreground block uppercase mt-0.5">
                           {ex.primaryMuscle} · {ex.equipment}
                         </span>
@@ -448,9 +479,9 @@ export default function TrainingPlanPanel({ clientId }: { clientId: string }) {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleAddExercise(ex)}
-                      className="h-6 w-6 rounded hover:bg-primary/20 text-primary border border-transparent hover:border-primary/30 shrink-0"
+                      className="h-6.5 w-6.5 rounded hover:bg-cyan-500/20 text-cyan-400 border border-transparent hover:border-cyan-500/30 shrink-0"
                     >
-                      <Plus className="h-3.5 w-3.5" />
+                      <Plus className="h-4 w-4" />
                     </Button>
                   </div>
                 ))

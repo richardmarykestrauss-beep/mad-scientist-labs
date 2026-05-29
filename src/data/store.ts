@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import type { BloodPanel, BiomarkerResult, CheckIn, ExerciseLog, SupplementLog, NutritionPlan, Exercise, TrainingPlan } from "@/lib/types";
+import type { BloodPanel, BiomarkerResult, CheckIn, ExerciseLog, SupplementLog, NutritionPlan, Exercise, TrainingPlan, SupplementProtocol, SupplementProtocolItem, SupplementCategory, SupplementStatus } from "@/lib/types";
 import { CLIENTS, PANELS, COACH } from "./mock";
 
 type State = {
@@ -12,6 +12,7 @@ type State = {
   nutritionPlans: NutritionPlan[];
   masterExercises: Exercise[];
   trainingPlans: TrainingPlan[];
+  supplementProtocols: SupplementProtocol[];
 };
 
 const LOCAL_STORAGE_KEY = "mad-scientist-lab-state";
@@ -486,6 +487,95 @@ const SEED_TRAINING_PLANS = (): TrainingPlan[] => {
   ];
 };
 
+const SEED_SUPPLEMENT_PROTOCOLS = (): SupplementProtocol[] => {
+  return [
+    {
+      id: "sp-1",
+      clientId: "c-001",
+      updatedAt: new Date().toISOString(),
+      items: [
+        {
+          id: "spi-1",
+          name: "Vitamin D3 + K2",
+          category: "Micronutrient Support",
+          dose: 5000,
+          unit: "IU",
+          timing: "Morning, with breakfast",
+          frequency: "Daily",
+          supportFocus: "Bone density & androgen synthesis pathway support",
+          linkedBiomarkerKey: "d3",
+          status: "active",
+          coachNote: "Linked to low baseline Vitamin D levels in Q1 labs.",
+          clientInstruction: "Take with a meal containing fats to optimize absorption."
+        },
+        {
+          id: "spi-2",
+          name: "Magnesium Glycinate",
+          category: "Sleep & Recovery",
+          dose: 400,
+          unit: "mg",
+          timing: "Evening, 30-60 min before sleep",
+          frequency: "Daily",
+          supportFocus: "CNS relaxation & deep sleep pathway support",
+          linkedBiomarkerKey: "mg",
+          status: "active",
+          coachNote: "Reference guardrail: standard active dose.",
+          clientInstruction: "Improves recovery. Taken before sleep."
+        },
+        {
+          id: "spi-3",
+          name: "Thyroid Complex (Iodine/Selenium)",
+          category: "Hormonal Support",
+          dose: 1,
+          unit: "capsule",
+          timing: "Morning, with water",
+          frequency: "Daily",
+          supportFocus: "Thyroid hormone production support",
+          linkedBiomarkerKey: "t3",
+          status: "paused",
+          coachNote: "Currently paused to assess baseline T3 recovery.",
+          clientInstruction: "Temporary pause per coach review."
+        }
+      ]
+    },
+    {
+      id: "sp-2",
+      clientId: "c-002",
+      updatedAt: new Date().toISOString(),
+      items: [
+        {
+          id: "spi-4",
+          name: "Vitamin D3 + K2",
+          category: "Micronutrient Support",
+          dose: 5000,
+          unit: "IU",
+          timing: "Morning, with breakfast",
+          frequency: "Daily",
+          supportFocus: "Micronutrient balance support",
+          linkedBiomarkerKey: "d3",
+          status: "active",
+          coachNote: "Reference guardrail: standard winter target.",
+          clientInstruction: "Take with food."
+        },
+        {
+          id: "spi-5",
+          name: "Magnesium Glycinate",
+          category: "Sleep & Recovery",
+          dose: 400,
+          unit: "mg",
+          timing: "Evening, 30-60 min before sleep",
+          frequency: "Daily",
+          supportFocus: "Sleep quality and muscle relaxation support",
+          linkedBiomarkerKey: "mg",
+          status: "active",
+          coachNote: "Supports sleep latency.",
+          clientInstruction: "Take before bed."
+        }
+      ]
+    }
+  ];
+};
+
 const loadInitialState = (): State => {
   const defaultState: State = {
     coach: COACH,
@@ -496,7 +586,8 @@ const loadInitialState = (): State => {
     supplementLogs: SEED_SUPPLEMENT_LOGS(),
     nutritionPlans: SEED_NUTRITION_PLANS(),
     masterExercises: SEED_MASTER_EXERCISES(),
-    trainingPlans: SEED_TRAINING_PLANS()
+    trainingPlans: SEED_TRAINING_PLANS(),
+    supplementProtocols: SEED_SUPPLEMENT_PROTOCOLS()
   };
   try {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -512,7 +603,8 @@ const loadInitialState = (): State => {
           supplementLogs: parsed.supplementLogs || SEED_SUPPLEMENT_LOGS(),
           nutritionPlans: parsed.nutritionPlans || SEED_NUTRITION_PLANS(),
           masterExercises: parsed.masterExercises || SEED_MASTER_EXERCISES(),
-          trainingPlans: parsed.trainingPlans || SEED_TRAINING_PLANS()
+          trainingPlans: parsed.trainingPlans || SEED_TRAINING_PLANS(),
+          supplementProtocols: parsed.supplementProtocols || SEED_SUPPLEMENT_PROTOCOLS()
         };
       }
     }
@@ -535,7 +627,8 @@ const saveState = (newState: State) => {
       supplementLogs: newState.supplementLogs,
       nutritionPlans: newState.nutritionPlans,
       masterExercises: newState.masterExercises,
-      trainingPlans: newState.trainingPlans
+      trainingPlans: newState.trainingPlans,
+      supplementProtocols: newState.supplementProtocols
     }));
   } catch (e) {
     console.error("Failed to save state to localStorage:", e);
@@ -735,7 +828,8 @@ export const actions = {
       supplementLogs: SEED_SUPPLEMENT_LOGS(),
       nutritionPlans: SEED_NUTRITION_PLANS(),
       masterExercises: SEED_MASTER_EXERCISES(),
-      trainingPlans: SEED_TRAINING_PLANS()
+      trainingPlans: SEED_TRAINING_PLANS(),
+      supplementProtocols: SEED_SUPPLEMENT_PROTOCOLS()
     };
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
@@ -765,6 +859,81 @@ export const actions = {
     saveState(state);
     emit();
     return updatedPlan;
+  },
+  updateSupplementProtocol(updatedProtocol: SupplementProtocol) {
+    state = {
+      ...state,
+      supplementProtocols: state.supplementProtocols.map((p) => p.id === updatedProtocol.id ? updatedProtocol : p)
+    };
+    saveState(state);
+    emit();
+    return updatedProtocol;
+  },
+  addSupplementItem(clientId: string, item: Omit<SupplementProtocolItem, "id">) {
+    const newItem: SupplementProtocolItem = {
+      ...item,
+      id: `spi-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+    };
+    state = {
+      ...state,
+      supplementProtocols: state.supplementProtocols.map((proto) => {
+        if (proto.clientId !== clientId) return proto;
+        return {
+          ...proto,
+          items: [...proto.items, newItem],
+          updatedAt: new Date().toISOString()
+        };
+      })
+    };
+    saveState(state);
+    emit();
+    return newItem;
+  },
+  updateSupplementItem(clientId: string, updatedItem: SupplementProtocolItem) {
+    state = {
+      ...state,
+      supplementProtocols: state.supplementProtocols.map((proto) => {
+        if (proto.clientId !== clientId) return proto;
+        return {
+          ...proto,
+          items: proto.items.map((i) => i.id === updatedItem.id ? updatedItem : i),
+          updatedAt: new Date().toISOString()
+        };
+      })
+    };
+    saveState(state);
+    emit();
+    return updatedItem;
+  },
+  pauseSupplementItem(clientId: string, itemId: string) {
+    state = {
+      ...state,
+      supplementProtocols: state.supplementProtocols.map((proto) => {
+        if (proto.clientId !== clientId) return proto;
+        return {
+          ...proto,
+          items: proto.items.map((i) => i.id === itemId ? { ...i, status: "paused" as const } : i),
+          updatedAt: new Date().toISOString()
+        };
+      })
+    };
+    saveState(state);
+    emit();
+  },
+  archiveSupplementItem(clientId: string, itemId: string) {
+    state = {
+      ...state,
+      supplementProtocols: state.supplementProtocols.map((proto) => {
+        if (proto.clientId !== clientId) return proto;
+        return {
+          ...proto,
+          items: proto.items.map((i) => i.id === itemId ? { ...i, status: "archived" as const } : i),
+          updatedAt: new Date().toISOString()
+        };
+      })
+    };
+    saveState(state);
+    emit();
   }
 };
 
@@ -802,4 +971,8 @@ export function getClientTrainingPlan(clientId: string) {
 
 export function getMasterExercises() {
   return state.masterExercises;
+}
+
+export function getClientSupplementProtocol(clientId: string) {
+  return state.supplementProtocols.find((p) => p.clientId === clientId);
 }

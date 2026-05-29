@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import { AICoachBriefing } from "@/components/coach/AICoachBriefing";
 import NutritionPlanPanel from "@/components/coach/NutritionPlanPanel";
 import TrainingPlanPanel from "@/components/coach/TrainingPlanPanel";
+import SupplementProtocolPanel from "@/components/coach/SupplementProtocolPanel";
 import { BIOMARKERS, getStatus, STATUS_META } from "@/lib/biomarkers";
 import { cn } from "@/lib/utils";
 
@@ -369,7 +370,7 @@ export default function ClientProfile() {
         </TabsContent>
 
         <TabsContent value="supplements" className="mt-5">
-          <Scaffold title="Supplementation Protocol" desc="Dosage, timing, frequency, and start/end dates with compliance tracking." cta="Create Protocol" onCta={() => setPlannedFeature("Supplementation Protocol Builder")} />
+          <SupplementProtocolPanel clientId={id} />
         </TabsContent>
 
         <TabsContent value="checkins" className="mt-5">

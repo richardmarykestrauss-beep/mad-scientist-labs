@@ -175,3 +175,37 @@ export interface TrainingPlan {
   days: TrainingDay[];
   notes: string;
 }
+
+// Supplement Protocol related types
+export type SupplementCategory =
+  | "Hormonal Support"
+  | "Metabolic Optimization"
+  | "Micronutrient Support"
+  | "Nootropic/CNS"
+  | "Sleep & Recovery"
+  | "Custom";
+
+export type SupplementStatus = "active" | "paused" | "archived";
+
+export interface SupplementProtocolItem {
+  id: string;
+  name: string;
+  category: SupplementCategory;
+  dose: number;
+  unit: string; // e.g. "mg", "capsules", "IU"
+  timing: string; // e.g. "Morning, with food"
+  frequency: string; // e.g. "Daily", "Training Days"
+  supportFocus: string; // e.g. "Thyroid support", "Cellular energy"
+  linkedBiomarkerKey?: string; // Optional links to biomarker
+  status: SupplementStatus;
+  coachNote?: string;
+  clientInstruction?: string;
+}
+
+export interface SupplementProtocol {
+  id: string;
+  clientId: string;
+  items: SupplementProtocolItem[];
+  updatedAt: string; // ISO timestamp
+}
+

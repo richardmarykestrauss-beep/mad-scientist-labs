@@ -107,3 +107,32 @@ export interface SupplementLog {
   supplementName: string;
   completed: boolean;
 }
+
+// Nutrition plan related types
+export interface MacroTargets {
+  calories: number;
+  protein: number; // grams
+  carbs: number; // grams
+  fats: number; // grams
+  fluidIntakeLiters: number;
+}
+
+export interface MealTimingBlock {
+  name: string;
+  time: string; // HH:MM
+}
+
+export interface NutritionFocusArea {
+  name: string;
+  completed: boolean;
+}
+
+export interface NutritionPlan {
+  id: string;
+  clientId: string;
+  date: string; // ISO date of plan creation
+  macroTargets: MacroTargets;
+  adherence: number; // 0-100
+  focusAreas: NutritionFocusArea[];
+  mealTiming: MealTimingBlock[];
+}

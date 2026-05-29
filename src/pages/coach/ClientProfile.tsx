@@ -32,6 +32,7 @@ import { BloodPanelDashboard } from "@/components/blood/BloodPanelDashboard";
 import { BloodReportUploadFlow } from "@/components/blood/BloodReportUploadFlow";
 import { Button } from "@/components/ui/button";
 import { AICoachBriefing } from "@/components/coach/AICoachBriefing";
+import NutritionPlanPanel from "@/components/coach/NutritionPlanPanel";
 import { BIOMARKERS, getStatus, STATUS_META } from "@/lib/biomarkers";
 import { cn } from "@/lib/utils";
 
@@ -363,7 +364,7 @@ export default function ClientProfile() {
         </TabsContent>
 
         <TabsContent value="nutrition" className="mt-5">
-          <Scaffold title="Nutrition Plan" desc="Macro targets, meal sections, food lists, and weekly adherence review." cta="Build Diet Plan" onCta={() => setPlannedFeature("Nutrition Diet Plan Builder")} />
+          <NutritionPlanPanel clientId={id} />
         </TabsContent>
 
         <TabsContent value="supplements" className="mt-5">

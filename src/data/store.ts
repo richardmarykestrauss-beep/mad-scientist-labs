@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import type { BloodPanel, BiomarkerResult, CheckIn, ExerciseLog, SupplementLog } from "@/lib/types";
+import type { BloodPanel, BiomarkerResult, CheckIn, ExerciseLog, SupplementLog, NutritionPlan } from "@/lib/types";
 import { CLIENTS, PANELS, COACH } from "./mock";
 
 type State = {
@@ -9,6 +9,7 @@ type State = {
   checkIns: CheckIn[];
   exerciseLogs: ExerciseLog[];
   supplementLogs: SupplementLog[];
+  nutritionPlans: NutritionPlan[];
 };
 
 const LOCAL_STORAGE_KEY = "mad-scientist-lab-state";
@@ -77,14 +78,54 @@ const SEED_SUPPLEMENT_LOGS = (): SupplementLog[] => {
   ];
 };
 
+const SEED_NUTRITION_PLANS = (): NutritionPlan[] => {
+  const today = new Date().toISOString().slice(0, 10);
+  return [
+    {
+      id: "np-1",
+      clientId: "c-001",
+      date: today,
+      macroTargets: { calories: 2850, protein: 180, carbs: 250, fats: 70, fluidIntakeLiters: 3 },
+      adherence: 86,
+      focusAreas: [
+        { name: "Protein timing", completed: true },
+        { name: "Carb cycling", completed: false }
+      ],
+      mealTiming: [
+        { name: "Breakfast", time: "08:00" },
+        { name: "Lunch", time: "12:30" },
+        { name: "Dinner", time: "19:00" }
+      ]
+    },
+    {
+      id: "np-2",
+      clientId: "c-002",
+      date: today,
+      macroTargets: { calories: 2050, protein: 130, carbs: 200, fats: 55, fluidIntakeLiters: 2.5 },
+      adherence: 71,
+      focusAreas: [
+        { name: "Meal timing", completed: true },
+        { name: "Fat quality", completed: false }
+      ],
+      mealTiming: [
+        { name: "Breakfast", time: "07:30" },
+        { name: "Snack", time: "10:30" },
+        { name: "Lunch", time: "13:00" },
+        { name: "Dinner", time: "18:30" }
+      ]
+    }
+  ];
+};
+
 const loadInitialState = (): State => {
-  const defaultState: State = { 
-    coach: COACH, 
-    clients: [...CLIENTS], 
+  const defaultState: State = {
+    coach: COACH,
+    clients: [...CLIENTS],
     panels: [...PANELS],
     checkIns: [...SEED_CHECKINS],
     exerciseLogs: SEED_EXERCISE_LOGS(),
-    supplementLogs: SEED_SUPPLEMENT_LOGS()
+    supplementLogs: SEED_SUPPLEMENT_LOGS(),
+    nutritionPlans: SEED_NUTRITION_PLANS()
   };
   try {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -97,7 +138,8 @@ const loadInitialState = (): State => {
           panels: parsed.panels,
           checkIns: parsed.checkIns || [...SEED_CHECKINS],
           exerciseLogs: parsed.exerciseLogs || SEED_EXERCISE_LOGS(),
-          supplementLogs: parsed.supplementLogs || SEED_SUPPLEMENT_LOGS()
+          supplementLogs: parsed.supplementLogs || SEED_SUPPLEMENT_LOGS(),
+          nutritionPlans: parsed.nutritionPlans || SEED_NUTRITION_PLANS()
         };
       }
     }
@@ -117,7 +159,8 @@ const saveState = (newState: State) => {
       panels: newState.panels,
       checkIns: newState.checkIns,
       exerciseLogs: newState.exerciseLogs,
-      supplementLogs: newState.supplementLogs
+      supplementLogs: newState.supplementLogs,
+      nutritionPlans: newState.nutritionPlans
     }));
   } catch (e) {
     console.error("Failed to save state to localStorage:", e);
@@ -311,10 +354,11 @@ export const actions = {
     state = { 
       coach: COACH, 
       clients: [...CLIENTS], 
-      panels: [...PANELS],
-      checkIns: [...SEED_CHECKINS],
-      exerciseLogs: SEED_EXERCISE_LOGS(),
-      supplementLogs: SEED_SUPPLEMENT_LOGS()
+      panels: [...PANELS], 
+      checkIns: [...SEED_CHECKINS], 
+      exerciseLogs: SEED_EXERCISE_LOGS(), 
+      supplementLogs: SEED_SUPPLEMENT_LOGS(),
+      nutritionPlans: SEED_NUTRITION_PLANS()
     };
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
@@ -322,6 +366,19 @@ export const actions = {
       console.error("Failed to remove state from localStorage:", e);
     }
     emit();
+  },
+  addNutritionPlan(plan) {
+    state = { ...state, nutritionPlans: [...state.nutritionPlans, plan] };
+    emit();
+    return plan;
+  },
+  updateNutritionPlan(updatedPlan) {
+    state = {
+      ...state,
+      nutritionPlans: state.nutritionPlans.map((p) => p.id === updatedPlan.id ? updatedPlan : p)
+    };
+    emit();
+    return updatedPlan;
   }
 };
 
@@ -339,6 +396,10 @@ export function getClientCheckIns(clientId: string) {
   return state.checkIns
     .filter((c) => c.clientId === clientId)
     .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export function getClientNutritionPlan(clientId: string) {
+  return state.nutritionPlans.find((p) => p.clientId === clientId);
 }
 
 export function getClientExerciseLogs(clientId: string, date: string) {

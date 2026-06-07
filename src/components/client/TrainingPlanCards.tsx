@@ -1,5 +1,6 @@
+import { useState, useEffect } from "react";
 import { useStore, actions, getClientExerciseLogs } from "@/data/store";
-import { Dumbbell, ShieldAlert, Check, HelpCircle, Trophy } from "lucide-react";
+import { Dumbbell, ShieldAlert, Check, HelpCircle, Trophy, Clock, RotateCcw, Play, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -34,6 +35,19 @@ const CLIENT_EXERCISES: Record<string, Exercise[]> = {
   ]
 };
 
+// Mock previous performance logs for UI completeness
+const MOCK_PREVIOUS_PERFORMANCE: Record<string, string> = {
+  "Incline Dumbbell Press": "Prev: 4 sets x 10 reps @ 36kg",
+  "Weighted Pull-ups": "Prev: 4 sets x 8 reps @ +15kg",
+  "Romanian Deadlifts (RDL)": "Prev: 3 sets x 12 reps @ 100kg",
+  "Lateral Raises": "Prev: 4 sets x 15 reps @ 12kg",
+  "Cambered Bar Skull Crushers": "Prev: 3 sets x 15 reps @ 27.5kg",
+  "Barbell Squats": "Prev: 4 sets x 10 reps @ 90kg",
+  "EZ Bar Bicep Curls": "Prev: 3 sets x 12 reps @ 30kg",
+  "Leg Extensions": "Prev: 3 sets x 15 reps @ 65kg",
+  "Face Pulls": "Prev: 4 sets x 15 reps @ 22.5kg"
+};
+
 function MuscleMap({ target }: { target: string }) {
   const muscles = [
     { name: "Delts", active: ["shoulders", "delts", "deltoids"].some(x => target.toLowerCase().includes(x)) },
@@ -47,15 +61,15 @@ function MuscleMap({ target }: { target: string }) {
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-1 w-full max-w-[200px] bg-background/60 p-2 rounded-xl border border-border/40 font-mono text-[9px] text-center">
+    <div className="grid grid-cols-4 gap-1 w-full max-w-[200px] bg-zinc-950/60 p-2 rounded-xl border border-zinc-800/40 font-mono text-[9px] text-center">
       {muscles.map((m) => (
         <div
           key={m.name}
           className={cn(
-            "py-1 rounded border transition text-[8px]",
+            "py-0.5 rounded border transition text-[7.5px]",
             m.active
               ? "bg-primary/20 border-primary text-primary font-bold shadow-glow"
-              : "bg-secondary/20 border-border/20 text-muted-foreground"
+              : "bg-zinc-900/40 border-zinc-800/40 text-zinc-500"
           )}
         >
           {m.name}
@@ -72,6 +86,35 @@ export function TrainingPlanCards({ clientId }: Props) {
   const exercises = CLIENT_EXERCISES[clientId] || CLIENT_EXERCISES["c-001"];
   const logs = getClientExerciseLogs(clientId, today);
 
+  // Timer state
+  const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
+  const [timerTotal, setTimerTotal] = useState<number>(0);
+
+  useEffect(() => {
+    if (timerSeconds === null || timerSeconds <= 0) return;
+    const interval = setInterval(() => {
+      setTimerSeconds((prev) => {
+        if (prev === null || prev <= 1) {
+          clearInterval(interval);
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timerSeconds]);
+
+  const startRestTimer = (secondsStr: string) => {
+    const parsed = parseInt(secondsStr);
+    const targetSeconds = isNaN(parsed) ? 90 : parsed;
+    setTimerTotal(targetSeconds);
+    setTimerSeconds(targetSeconds);
+  };
+
+  const resetRestTimer = () => {
+    setTimerSeconds(null);
+  };
+
   // Calculate stats
   const exerciseStats = exercises.map((ex) => {
     const log = logs.find((l) => l.exerciseName === ex.name);
@@ -82,113 +125,182 @@ export function TrainingPlanCards({ clientId }: Props) {
 
   const completedCount = exerciseStats.filter((e) => e.isCompleted).length;
   const progressPct = exercises.length > 0 ? Math.round((completedCount / exercises.length) * 100) : 0;
+  const totalSetsExpected = exercises.reduce((sum, ex) => sum + ex.sets, 0);
+  const totalSetsCompleted = exerciseStats.reduce((sum, ex) => sum + ex.setsCompleted, 0);
 
   return (
-    <div className="space-y-5">
-      {/* Progress Card */}
-      <div className="lab-card-glow p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/30 grid place-items-center">
-            <Dumbbell className="h-5 w-5 text-primary" />
+    <div className="space-y-4">
+      {/* Rest Timer Widget */}
+      {timerSeconds !== null && (
+        <div className="sticky top-20 z-40 bg-zinc-900 border border-primary/30 p-3 rounded-xl flex items-center justify-between shadow-2xl animate-fade-in">
+          <div className="flex items-center gap-3">
+            <Clock className="h-5 w-5 text-primary animate-pulse" />
+            <div>
+              <span className="text-[9px] font-mono uppercase text-zinc-400">Rest Timer Active</span>
+              <div className="font-mono text-lg font-bold text-white leading-none mt-0.5">
+                {Math.floor(timerSeconds / 60)}:{(timerSeconds % 60).toString().padStart(2, '0')}
+              </div>
+            </div>
           </div>
+          <div className="w-24 bg-zinc-950 h-1.5 rounded-full overflow-hidden mx-4 hidden sm:block">
+            <div 
+              className="h-full bg-primary transition-all duration-1000" 
+              style={{ width: `${(timerSeconds / timerTotal) * 100}%` }}
+            />
+          </div>
+          <button 
+            onClick={resetRestTimer}
+            className="flex items-center gap-1 bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-white px-2.5 py-1 rounded-lg text-xs font-mono transition"
+          >
+            <RotateCcw className="h-3 w-3" /> Skip
+          </button>
+        </div>
+      )}
+
+      {/* Today's Workout Hero / Progress Overview */}
+      <div className="rounded-xl border border-zinc-800 bg-gradient-to-r from-zinc-900 to-zinc-950 p-4 space-y-4 shadow-xl">
+        <div className="flex justify-between items-start gap-4">
           <div>
-            <h3 className="font-display text-lg font-bold">Today's Focus: Push & Posterior Pull</h3>
-            <p className="text-xs text-muted-foreground">
-              Mark off your training sets in real-time as you complete them.
+            <span className="text-[9px] font-mono bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded uppercase font-bold tracking-wider">
+              Day 1: Pull & Recovery Focus
+            </span>
+            <h3 className="font-display text-lg font-black text-white mt-1.5">Hypertrophy Plan</h3>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Target completion: 45-60 min session. Rest fully between sets.
             </p>
           </div>
-        </div>
-        <div className="space-y-1.5 min-w-[150px]">
-          <div className="flex justify-between text-xs font-mono">
-            <span>Exercises: {completedCount} / {exercises.length}</span>
-            <span className="text-primary font-bold">{progressPct}%</span>
+          <div className="text-right shrink-0">
+            <span className="text-[9px] font-mono text-zinc-500 uppercase">Est. Duration</span>
+            <div className="text-xs font-bold text-white font-mono mt-0.5">50 mins</div>
           </div>
-          <div className="h-2 rounded-full bg-secondary overflow-hidden">
-            <div
-              className="h-full bg-gradient-primary transition-all duration-300"
-              style={{ width: `${progressPct}%` }}
-            />
+        </div>
+
+        {/* Progress Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 border-t border-zinc-850 pt-3.5">
+          <div className="bg-zinc-950/40 p-2.5 rounded-lg border border-zinc-900">
+            <span className="text-[8.5px] font-mono uppercase text-zinc-500 block">Exercises Completed</span>
+            <span className="font-bold text-zinc-200 mt-0.5 block">{completedCount} / {exercises.length}</span>
+          </div>
+          <div className="bg-zinc-950/40 p-2.5 rounded-lg border border-zinc-900">
+            <span className="text-[8.5px] font-mono uppercase text-zinc-500 block">Total Sets Completed</span>
+            <span className="font-bold text-zinc-200 mt-0.5 block">{totalSetsCompleted} / {totalSetsExpected}</span>
+          </div>
+          <div className="col-span-2 sm:col-span-1 bg-zinc-950/40 p-2.5 rounded-lg border border-zinc-900 flex flex-col justify-center">
+            <div className="flex justify-between text-[8.5px] font-mono text-zinc-500 mb-1">
+              <span>PROGRESS</span>
+              <span className="text-primary font-bold">{progressPct}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-zinc-900 overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Exercises List */}
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="space-y-4">
         {exercises.map((ex) => {
           const log = logs.find((l) => l.exerciseName === ex.name);
           const completedSets = log ? log.completedSets : Array(ex.sets).fill(false);
-          const isCompleted = completedSets.filter(Boolean).length === ex.sets;
+          const setsDone = completedSets.filter(Boolean).length;
+          
+          let statusText = "Pending";
+          let statusColor = "bg-zinc-800/50 text-zinc-400 border-zinc-700/50";
+          if (setsDone === ex.sets) {
+            statusText = "Complete";
+            statusColor = "bg-primary/10 text-primary border-primary/20";
+          } else if (setsDone > 0) {
+            statusText = "In Progress";
+            statusColor = "bg-amber-400/10 text-amber-400 border-amber-400/20";
+          }
 
           return (
             <div
               key={ex.name}
               className={cn(
-                "lab-card-glow p-5 space-y-4 flex flex-col justify-between transition-colors border",
-                isCompleted ? "border-primary/40 bg-primary/5" : "border-border"
+                "rounded-xl border bg-zinc-900/30 p-4 space-y-4 hover:border-zinc-700/60 transition-all shadow-lg",
+                setsDone === ex.sets ? "border-primary/30" : "border-zinc-800"
               )}
             >
-              <div className="space-y-2">
-                <div className="flex justify-between items-start gap-2">
-                  <div>
-                    <h4 className="font-display text-base font-bold flex items-center gap-1.5">
+              {/* Card Header */}
+              <div className="flex justify-between items-start gap-4">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="font-display text-sm font-black text-white leading-tight">
                       {ex.name}
-                      {isCompleted && (
-                        <span className="h-5 w-5 rounded-full bg-primary/20 border border-primary/40 grid place-items-center">
-                          <Trophy className="h-3 w-3 text-primary" />
-                        </span>
-                      )}
                     </h4>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {ex.equipment} · Target: <span className="text-foreground">{ex.muscle}</span>
-                    </p>
+                    {setsDone === ex.sets && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
                   </div>
-                  <span className="chip font-mono text-[10px] uppercase">
+                  <p className="text-[11px] text-zinc-400 mt-0.5">
+                    {ex.equipment} · Target: <span className="text-zinc-200">{ex.muscle}</span>
+                  </p>
+                </div>
+                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                  <span className={cn("text-[8.5px] font-mono border px-2 py-0.5 rounded-full font-bold uppercase tracking-wider", statusColor)}>
+                    {statusText}
+                  </span>
+                  <span className="font-mono text-[9px] text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded">
                     {ex.sets}x{ex.reps}
                   </span>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-3 gap-2 py-2 text-center text-[10px] font-mono border-y border-border/40">
-                  <div>
-                    <span className="text-muted-foreground block uppercase text-[8px]">Tempo</span>
-                    <span className="text-foreground font-semibold">{ex.tempo}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground block uppercase text-[8px]">Rest</span>
-                    <span className="text-foreground font-semibold">{ex.rest}</span>
-                  </div>
-                  <div className="flex justify-center items-center">
-                    <MuscleMap target={ex.muscle} />
-                  </div>
+              {/* Specifications Sub-Grid */}
+              <div className="grid grid-cols-3 gap-2 py-2 text-center text-[10px] font-mono border-y border-zinc-800/80">
+                <div>
+                  <span className="text-zinc-500 block uppercase text-[8px]">Tempo</span>
+                  <span className="text-zinc-300 font-semibold">{ex.tempo}</span>
                 </div>
-
-                <div className="space-y-1.5 text-xs">
-                  <div className="rounded-lg bg-secondary/30 p-2.5 border border-border/20">
-                    <span className="font-mono text-[9px] font-bold text-primary block uppercase tracking-wider">Coach Cue</span>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{ex.cue}</p>
-                  </div>
-                  <div className="rounded-lg bg-destructive/5 p-2.5 border border-destructive/10 flex items-start gap-1.5">
-                    <ShieldAlert className="h-3.5 w-3.5 text-status-high shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-mono text-[9px] font-bold text-status-high block uppercase tracking-wider">Avoid Mistake</span>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">{ex.mistake}</p>
-                    </div>
-                  </div>
+                <div>
+                  <span className="text-zinc-500 block uppercase text-[8px]">Rest Target</span>
+                  <span className="text-zinc-300 font-semibold flex items-center justify-center gap-1">
+                    {ex.rest} 
+                    <button 
+                      onClick={() => startRestTimer(ex.rest)}
+                      className="p-0.5 hover:bg-zinc-800 rounded text-primary transition"
+                    >
+                      <Play className="h-2.5 w-2.5" />
+                    </button>
+                  </span>
+                </div>
+                <div className="flex justify-center items-center">
+                  <MuscleMap target={ex.muscle} />
                 </div>
               </div>
 
-              {/* Set Tracker */}
-              <div className="space-y-2 pt-2">
-                <span className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider block">Set Completion Tracker</span>
-                <div className="flex flex-wrap gap-1.5">
+              {/* Coaching Tips & Avoid Mistakes */}
+              <div className="grid sm:grid-cols-2 gap-2 text-xs">
+                <div className="bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-850">
+                  <span className="font-mono text-[8.5px] font-bold text-primary block uppercase tracking-wider">Coach Cue</span>
+                  <p className="text-[10.5px] text-zinc-400 mt-1">{ex.cue}</p>
+                </div>
+                <div className="bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-850">
+                  <span className="font-mono text-[8.5px] font-bold text-destructive block uppercase tracking-wider">Avoid Mistake</span>
+                  <p className="text-[10.5px] text-zinc-400 mt-1">{ex.mistake}</p>
+                </div>
+              </div>
+
+              {/* Previous Performance & Set Logging Row */}
+              <div className="pt-1.5 space-y-3">
+                <div className="flex justify-between items-center text-[9px] font-mono uppercase tracking-wider">
+                  <span className="text-zinc-500">Execution Logger</span>
+                  <span className="text-primary font-bold">
+                    {MOCK_PREVIOUS_PERFORMANCE[ex.name] || "Prev: No logged session"}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
                   {completedSets.map((completed, idx) => (
                     <button
                       key={idx}
                       onClick={() => actions.toggleExerciseSet(clientId, ex.name, idx)}
                       className={cn(
-                        "flex-1 min-w-[65px] h-8 rounded-lg border text-xs font-mono transition flex items-center justify-center gap-1.5",
+                        "flex-1 min-w-[70px] h-9 rounded-lg border text-xs font-mono transition flex items-center justify-center gap-1.5",
                         completed
                           ? "bg-primary/20 border-primary text-primary font-bold shadow-glow"
-                          : "border-border bg-background/40 text-muted-foreground hover:text-foreground"
+                          : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:text-white"
                       )}
                     >
                       {completed ? (
@@ -197,7 +309,7 @@ export function TrainingPlanCards({ clientId }: Props) {
                         </>
                       ) : (
                         <>
-                          <HelpCircle className="h-3.5 w-3.5 opacity-40" /> Set {idx + 1}
+                          <HelpCircle className="h-3.5 w-3.5 opacity-30" /> Set {idx + 1}
                         </>
                       )}
                     </button>

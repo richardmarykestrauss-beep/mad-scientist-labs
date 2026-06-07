@@ -333,39 +333,21 @@ export default function ClientHome() {
         )}
 
         {activeTab === "program" && (
-          <div className="space-y-5 animate-fade-in">
-            <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
-              <div className="flex items-center gap-2">
-                <Dumbbell className="h-5 w-5 text-primary" />
-                <h2 className="font-display text-xl font-bold">Active Coaching Protocol</h2>
-              </div>
-              <div className="flex rounded-lg border border-zinc-800 p-0.5 bg-zinc-900/60">
-                <button
-                  onClick={() => setProgramSubTab("workout")}
-                  className={cn(
-                    "px-3 py-1 rounded text-xs font-mono transition uppercase",
-                    programSubTab === "workout" ? "bg-primary/10 text-primary font-bold" : "text-zinc-400"
-                  )}
-                >
-                  Workout
-                </button>
-                <button
-                  onClick={() => setProgramSubTab("supplements")}
-                  className={cn(
-                    "px-3 py-1 rounded text-xs font-mono transition uppercase",
-                    programSubTab === "supplements" ? "bg-primary/10 text-primary font-bold" : "text-zinc-400"
-                  )}
-                >
-                  Supplements
-                </button>
-              </div>
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex items-center gap-2 border-b border-zinc-900 pb-3">
+              <Dumbbell className="h-5 w-5 text-primary" />
+              <h2 className="font-display text-xl font-bold">Active Coaching Protocol</h2>
             </div>
 
-            {programSubTab === "workout" ? (
-              <TrainingPlanCards clientId={id} />
-            ) : (
+            <TrainingPlanCards clientId={id} />
+
+            <div className="pt-6 border-t border-zinc-800">
+              <div className="flex items-center gap-2 mb-3">
+                <Pill className="h-4 w-4 text-primary" />
+                <h3 className="font-display text-sm font-bold uppercase tracking-wider text-zinc-300">Today's Supplement Protocol</h3>
+              </div>
               <SupplementChecklist clientId={id} />
-            )}
+            </div>
           </div>
         )}
 

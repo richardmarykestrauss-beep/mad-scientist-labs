@@ -61,21 +61,21 @@ function MuscleMap({ target }: { target: string }) {
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-1 w-full max-w-[200px] bg-zinc-950/60 p-2 rounded-xl border border-zinc-800/40 font-mono text-[9px] text-center">
+    <div className="grid grid-cols-4 gap-1 w-full max-w-[200px] bg-zinc-950/60 p-2 rounded-xl border border-zinc-850/60 font-sans text-[9px] text-center">
       {muscles.map((m) => (
-        <div
-          key={m.name}
-          className={cn(
-            "py-0.5 rounded border transition text-[7.5px]",
-            m.active
-              ? "bg-primary/20 border-primary text-primary font-bold shadow-glow"
-              : "bg-zinc-900/40 border-zinc-800/40 text-zinc-500"
-          )}
-        >
-          {m.name}
-        </div>
-      ))}
-    </div>
+         <div
+           key={m.name}
+           className={cn(
+             "py-0.5 rounded border transition text-[7.5px]",
+             m.active
+               ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-medium"
+               : "bg-zinc-900/40 border-zinc-800/40 text-zinc-500"
+           )}
+         >
+           {m.name}
+         </div>
+       ))}
+     </div>
   );
 }
 
@@ -132,11 +132,11 @@ export function TrainingPlanCards({ clientId }: Props) {
     <div className="space-y-4">
       {/* Rest Timer Widget */}
       {timerSeconds !== null && (
-        <div className="sticky top-20 z-40 bg-zinc-900 border border-primary/30 p-3 rounded-xl flex items-center justify-between shadow-2xl animate-fade-in">
+        <div className="sticky top-20 z-40 bg-zinc-900/95 backdrop-blur-md border border-zinc-800 p-3 rounded-2xl flex items-center justify-between shadow-xl animate-fade-in">
           <div className="flex items-center gap-3">
-            <Clock className="h-5 w-5 text-primary animate-pulse" />
+            <Clock className="h-5 w-5 text-emerald-400 animate-pulse" />
             <div>
-              <span className="text-[9px] font-mono uppercase text-zinc-400">Rest Timer Active</span>
+              <span className="text-[9px] font-sans font-medium uppercase tracking-wide text-zinc-400">Rest Timer Active</span>
               <div className="font-mono text-lg font-bold text-white leading-none mt-0.5">
                 {Math.floor(timerSeconds / 60)}:{(timerSeconds % 60).toString().padStart(2, '0')}
               </div>
@@ -144,13 +144,13 @@ export function TrainingPlanCards({ clientId }: Props) {
           </div>
           <div className="w-24 bg-zinc-950 h-1.5 rounded-full overflow-hidden mx-4 hidden sm:block">
             <div 
-              className="h-full bg-primary transition-all duration-1000" 
+              className="h-full bg-emerald-500 transition-all duration-1000" 
               style={{ width: `${(timerSeconds / timerTotal) * 100}%` }}
             />
           </div>
           <button 
             onClick={resetRestTimer}
-            className="flex items-center gap-1 bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-white px-2.5 py-1 rounded-lg text-xs font-mono transition"
+            className="flex items-center gap-1 bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-white px-2.5 py-1 rounded-lg text-xs font-sans transition"
           >
             <RotateCcw className="h-3 w-3" /> Skip
           </button>
@@ -158,41 +158,41 @@ export function TrainingPlanCards({ clientId }: Props) {
       )}
 
       {/* Today's Workout Hero / Progress Overview */}
-      <div className="rounded-xl border border-zinc-800 bg-gradient-to-r from-zinc-900 to-zinc-950 p-4 space-y-4 shadow-xl">
+      <div className="rounded-2xl border border-zinc-800 bg-gradient-to-b from-zinc-900 to-zinc-950 p-5 space-y-4 shadow-md">
         <div className="flex justify-between items-start gap-4">
           <div>
-            <span className="text-[9px] font-mono bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded uppercase font-bold tracking-wider">
+            <span className="text-[10px] font-sans bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full uppercase font-medium">
               Day 1: Pull & Recovery Focus
             </span>
-            <h3 className="font-display text-lg font-black text-white mt-1.5">Hypertrophy Plan</h3>
-            <p className="text-xs text-zinc-400 mt-0.5">
+            <h3 className="font-display text-xl font-bold text-white mt-2">Hypertrophy Plan</h3>
+            <p className="text-xs text-zinc-400 mt-1">
               Target completion: 45-60 min session. Rest fully between sets.
             </p>
           </div>
           <div className="text-right shrink-0">
-            <span className="text-[9px] font-mono text-zinc-500 uppercase">Est. Duration</span>
-            <div className="text-xs font-bold text-white font-mono mt-0.5">50 mins</div>
+            <span className="text-[10px] font-sans text-zinc-500">Est. Duration</span>
+            <div className="text-xs font-semibold text-zinc-200 mt-0.5">50 mins</div>
           </div>
         </div>
 
         {/* Progress Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 border-t border-zinc-850 pt-3.5">
-          <div className="bg-zinc-950/40 p-2.5 rounded-lg border border-zinc-900">
-            <span className="text-[8.5px] font-mono uppercase text-zinc-500 block">Exercises Completed</span>
-            <span className="font-bold text-zinc-200 mt-0.5 block">{completedCount} / {exercises.length}</span>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 border-t border-zinc-850/60 pt-3.5">
+          <div className="bg-zinc-950/20 p-3 rounded-xl border border-zinc-900/60">
+            <span className="text-[10px] font-sans text-zinc-500 block">Exercises Completed</span>
+            <span className="font-semibold text-zinc-200 mt-1 block">{completedCount} / {exercises.length}</span>
           </div>
-          <div className="bg-zinc-950/40 p-2.5 rounded-lg border border-zinc-900">
-            <span className="text-[8.5px] font-mono uppercase text-zinc-500 block">Total Sets Completed</span>
-            <span className="font-bold text-zinc-200 mt-0.5 block">{totalSetsCompleted} / {totalSetsExpected}</span>
+          <div className="bg-zinc-950/20 p-3 rounded-xl border border-zinc-900/60">
+            <span className="text-[10px] font-sans text-zinc-500 block">Total Sets Completed</span>
+            <span className="font-semibold text-zinc-200 mt-1 block">{totalSetsCompleted} / {totalSetsExpected}</span>
           </div>
-          <div className="col-span-2 sm:col-span-1 bg-zinc-950/40 p-2.5 rounded-lg border border-zinc-900 flex flex-col justify-center">
-            <div className="flex justify-between text-[8.5px] font-mono text-zinc-500 mb-1">
+          <div className="col-span-2 sm:col-span-1 bg-zinc-950/20 p-3 rounded-xl border border-zinc-900/60 flex flex-col justify-center">
+            <div className="flex justify-between text-[10px] font-sans text-zinc-500 mb-1">
               <span>PROGRESS</span>
-              <span className="text-primary font-bold">{progressPct}%</span>
+              <span className="text-emerald-400 font-semibold">{progressPct}%</span>
             </div>
             <div className="h-2 rounded-full bg-zinc-900 overflow-hidden">
               <div 
-                className="h-full bg-primary transition-all duration-300"
+                className="h-full bg-emerald-500 transition-all duration-300"
                 style={{ width: `${progressPct}%` }}
               />
             </div>
@@ -211,56 +211,56 @@ export function TrainingPlanCards({ clientId }: Props) {
           let statusColor = "bg-zinc-800/50 text-zinc-400 border-zinc-700/50";
           if (setsDone === ex.sets) {
             statusText = "Complete";
-            statusColor = "bg-primary/10 text-primary border-primary/20";
+            statusColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
           } else if (setsDone > 0) {
             statusText = "In Progress";
-            statusColor = "bg-amber-400/10 text-amber-400 border-amber-400/20";
+            statusColor = "bg-amber-500/10 text-amber-400 border-amber-500/20";
           }
 
           return (
             <div
               key={ex.name}
               className={cn(
-                "rounded-xl border bg-zinc-900/30 p-4 space-y-4 hover:border-zinc-700/60 transition-all shadow-lg",
-                setsDone === ex.sets ? "border-primary/30" : "border-zinc-800"
+                "rounded-2xl border bg-zinc-900/40 p-5 space-y-4 hover:border-zinc-700/60 transition-all shadow-md",
+                setsDone === ex.sets ? "border-emerald-500/20" : "border-zinc-800/80"
               )}
             >
               {/* Card Header */}
               <div className="flex justify-between items-start gap-4">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <h4 className="font-display text-sm font-black text-white leading-tight">
+                    <h4 className="font-display text-sm font-bold text-white leading-tight">
                       {ex.name}
                     </h4>
-                    {setsDone === ex.sets && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
+                    {setsDone === ex.sets && <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />}
                   </div>
                   <p className="text-[11px] text-zinc-400 mt-0.5">
                     {ex.equipment} · Target: <span className="text-zinc-200">{ex.muscle}</span>
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-1.5 shrink-0">
-                  <span className={cn("text-[8.5px] font-mono border px-2 py-0.5 rounded-full font-bold uppercase tracking-wider", statusColor)}>
+                  <span className={cn("text-[10px] font-sans border px-2.5 py-0.5 rounded-full font-medium uppercase tracking-normal", statusColor)}>
                     {statusText}
                   </span>
-                  <span className="font-mono text-[9px] text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded">
+                  <span className="font-sans text-[10px] text-zinc-400 bg-zinc-900 border border-zinc-800/80 px-2 py-0.5 rounded-lg">
                     {ex.sets}x{ex.reps}
                   </span>
                 </div>
               </div>
 
               {/* Specifications Sub-Grid */}
-              <div className="grid grid-cols-3 gap-2 py-2 text-center text-[10px] font-mono border-y border-zinc-800/80">
+              <div className="grid grid-cols-3 gap-2 py-2.5 text-center text-[11px] font-sans border-y border-zinc-800/60">
                 <div>
-                  <span className="text-zinc-500 block uppercase text-[8px]">Tempo</span>
+                  <span className="text-zinc-500 block text-[9px]">Tempo</span>
                   <span className="text-zinc-300 font-semibold">{ex.tempo}</span>
                 </div>
                 <div>
-                  <span className="text-zinc-500 block uppercase text-[8px]">Rest Target</span>
+                  <span className="text-zinc-500 block text-[9px]">Rest Target</span>
                   <span className="text-zinc-300 font-semibold flex items-center justify-center gap-1">
                     {ex.rest} 
                     <button 
                       onClick={() => startRestTimer(ex.rest)}
-                      className="p-0.5 hover:bg-zinc-800 rounded text-primary transition"
+                      className="p-0.5 hover:bg-zinc-800 rounded text-emerald-400 transition"
                     >
                       <Play className="h-2.5 w-2.5" />
                     </button>
@@ -273,21 +273,21 @@ export function TrainingPlanCards({ clientId }: Props) {
 
               {/* Coaching Tips & Avoid Mistakes */}
               <div className="grid sm:grid-cols-2 gap-2 text-xs">
-                <div className="bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-850">
-                  <span className="font-mono text-[8.5px] font-bold text-primary block uppercase tracking-wider">Coach Cue</span>
+                <div className="bg-zinc-900/60 p-3 rounded-xl border border-zinc-850">
+                  <span className="font-sans text-[10px] font-semibold text-emerald-400 block uppercase tracking-wider">Coach Cue</span>
                   <p className="text-[10.5px] text-zinc-400 mt-1">{ex.cue}</p>
                 </div>
-                <div className="bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-850">
-                  <span className="font-mono text-[8.5px] font-bold text-destructive block uppercase tracking-wider">Avoid Mistake</span>
+                <div className="bg-zinc-900/60 p-3 rounded-xl border border-zinc-850">
+                  <span className="font-sans text-[10px] font-semibold text-amber-500 block uppercase tracking-wider">Avoid Mistake</span>
                   <p className="text-[10.5px] text-zinc-400 mt-1">{ex.mistake}</p>
                 </div>
               </div>
 
               {/* Previous Performance & Set Logging Row */}
               <div className="pt-1.5 space-y-3">
-                <div className="flex justify-between items-center text-[9px] font-mono uppercase tracking-wider">
+                <div className="flex justify-between items-center text-[10px] font-sans tracking-normal">
                   <span className="text-zinc-500">Execution Logger</span>
-                  <span className="text-primary font-bold">
+                  <span className="text-zinc-400">
                     {MOCK_PREVIOUS_PERFORMANCE[ex.name] || "Prev: No logged session"}
                   </span>
                 </div>
@@ -297,10 +297,10 @@ export function TrainingPlanCards({ clientId }: Props) {
                       key={idx}
                       onClick={() => actions.toggleExerciseSet(clientId, ex.name, idx)}
                       className={cn(
-                        "flex-1 min-w-[70px] h-9 rounded-lg border text-xs font-mono transition flex items-center justify-center gap-1.5",
+                        "flex-1 min-w-[75px] h-10 rounded-xl border text-xs font-semibold transition flex items-center justify-center gap-1.5",
                         completed
-                          ? "bg-primary/20 border-primary text-primary font-bold shadow-glow"
-                          : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:text-white"
+                          ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400 shadow-sm"
+                          : "border-zinc-850 bg-zinc-900/40 text-zinc-400 hover:text-white"
                       )}
                     >
                       {completed ? (

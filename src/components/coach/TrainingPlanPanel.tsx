@@ -4,6 +4,7 @@ import { actions, getClientTrainingPlan, getMasterExercises } from "@/data/store
 import type { TrainingPlan, TrainingDay, TrainingPlanExercise, Exercise, MuscleGroup, EquipmentType } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { createId } from "@/lib/id";
 import { Edit, Save, X, Search, Plus, Trash2, ShieldAlert, Dumbbell, Play, Info, AlertTriangle } from "lucide-react";
 import MuscleMapMini from "./MuscleMapMini";
 
@@ -101,7 +102,7 @@ export default function TrainingPlanPanel({ clientId }: { clientId: string }) {
   const handleAddExercise = (exercise: Exercise) => {
     if (!activeDay) return;
     const newPlanExercise: TrainingPlanExercise = {
-      id: `tpe-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      id: createId("tpe"),
       exerciseId: exercise.id,
       name: exercise.name,
       primaryMuscle: exercise.primaryMuscle,

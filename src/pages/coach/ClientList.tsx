@@ -168,8 +168,8 @@ export default function ClientList() {
   return (
     <div className="space-y-5 animate-fade-in pb-10">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end gap-3 justify-between">
-        <div>
+      <div className="flex flex-col md:flex-row md:items-end gap-3 justify-between min-w-0">
+        <div className="min-w-0">
           <div className="chip mb-2 bg-slate-50 border-slate-200 text-slate-500">Roster Console</div>
           <h1 className="font-display text-3xl font-bold flex items-center gap-2 text-slate-900">
             Clients
@@ -179,7 +179,7 @@ export default function ClientList() {
           </h1>
           <p className="text-slate-500 text-sm mt-1">Manage and monitor compliance across approximately 250 athletes.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 shrink-0">
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="border-slate-300 bg-white text-slate-700 hover:bg-slate-50 font-mono text-[10px] uppercase tracking-wider h-9">
@@ -221,7 +221,7 @@ export default function ClientList() {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white p-4 flex flex-col xl:flex-row gap-4 items-center justify-between border border-slate-200 rounded-xl shadow-sm">
+      <div className="bg-white p-4 flex flex-col xl:flex-row gap-4 items-stretch xl:items-center justify-between border border-slate-200 rounded-xl shadow-sm min-w-0">
         {/* Search */}
         <div className="relative w-full xl:max-w-md">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -234,16 +234,16 @@ export default function ClientList() {
         </div>
 
         {/* Filters and Sorting */}
-        <div className="flex flex-col md:flex-row w-full xl:w-auto gap-3 items-stretch md:items-center">
+        <div className="flex flex-col md:flex-row w-full xl:w-auto gap-3 items-stretch md:items-center min-w-0">
           {/* Sorting */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 min-w-0">
             <span className="text-xs text-slate-500 font-mono whitespace-nowrap flex items-center gap-1">
               <ArrowUpDown className="h-3.5 w-3.5" /> Sort By:
             </span>
             <select
               value={sortBy}
               onChange={handleSortChange}
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-slate-400 cursor-pointer h-9"
+              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 font-medium focus:outline-none focus:ring-1 focus:ring-slate-400 cursor-pointer h-9 w-full sm:w-auto min-w-0"
             >
               <option value="needs-attention">Needs Attention</option>
               <option value="name">Name (A-Z)</option>
@@ -261,7 +261,7 @@ export default function ClientList() {
       </div>
 
       {/* 7 Filter Tabs */}
-      <div className="flex overflow-x-auto pb-2 scrollbar-thin gap-1">
+      <div className="flex min-w-0 max-w-full overflow-x-auto overscroll-x-contain pb-2 scrollbar-thin gap-1">
         {(
           [
             { id: "all", label: "All" },
@@ -295,14 +295,14 @@ export default function ClientList() {
           <div className="text-xs mt-1">Try resetting search query or tab filters.</div>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 min-w-0">
           {paginatedClients.map((c) => {
             const { hasAlerts, markers } = getClientAlerts(c.id, panels);
             return (
               <div
                 key={c.id}
                 onClick={() => setSelectedClient(c)}
-                className="bg-white p-5 border border-slate-200 hover:border-emerald-300 rounded-xl shadow-sm transition group cursor-pointer flex flex-col"
+                className="bg-white w-full min-w-0 max-w-full box-border p-5 border border-slate-200 hover:border-emerald-300 rounded-xl shadow-sm transition group cursor-pointer flex flex-col"
               >
                 <div className="flex items-start gap-3">
                   <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${c.avatarColor} text-white font-bold`}>

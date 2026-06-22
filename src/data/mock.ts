@@ -3,7 +3,7 @@ import type { Client, Coach, BloodPanel } from "@/lib/types";
 export const COACH: Coach = {
   id: "coach-1",
   name: "Warren Germishuizen",
-  email: "warren@madscientist.lab",
+  email: "warren@example.com",
   initials: "WG",
 };
 
@@ -34,7 +34,7 @@ const generateMockClients = (count: number): Client[] => {
     const firstName = FIRST_NAMES[i % FIRST_NAMES.length];
     const lastName = LAST_NAMES[(i * 7) % LAST_NAMES.length];
     const name = `${firstName} ${lastName}`;
-    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.fit`;
+    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`;
     const goal = GOALS[(i * 3) % GOALS.length];
     const avatarColor = AVATAR_COLORS[(i * 2) % AVATAR_COLORS.length];
     const initials = `${firstName[0]}${lastName[0]}`;
@@ -80,7 +80,7 @@ const STATIC_CLIENTS: Client[] = [
   {
     id: "c-001",
     name: "Marcus Reign",
-    email: "marcus@reign.io",
+    email: "marcus.reign@example.com",
     avatarColor: "from-emerald-400 to-cyan-400",
     initials: "MR",
     goal: "Recomp + raise free testosterone",
@@ -95,7 +95,7 @@ const STATIC_CLIENTS: Client[] = [
   {
     id: "c-002",
     name: "Sora Nakamura",
-    email: "sora@nakamura.fit",
+    email: "sora.nakamura@example.com",
     avatarColor: "from-fuchsia-400 to-violet-400",
     initials: "SN",
     goal: "Optimize thyroid + drop body fat to 14%",
@@ -110,7 +110,7 @@ const STATIC_CLIENTS: Client[] = [
   {
     id: "c-003",
     name: "Kade Whitlock",
-    email: "kade@whitlock.com",
+    email: "kade.whitlock@example.com",
     avatarColor: "from-amber-400 to-rose-400",
     initials: "KW",
     goal: "Lower atherogenic risk; improve sleep",
@@ -124,7 +124,7 @@ const STATIC_CLIENTS: Client[] = [
   {
     id: "c-004",
     name: "Lina Park",
-    email: "lina@parklab.co",
+    email: "lina.park@example.com",
     avatarColor: "from-sky-400 to-indigo-400",
     initials: "LP",
     goal: "Restore ferritin + energy",

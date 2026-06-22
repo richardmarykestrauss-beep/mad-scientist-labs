@@ -2,6 +2,7 @@ import { useSyncExternalStore } from "react";
 import type { BloodPanel, BiomarkerResult, CheckIn, ExerciseLog, SupplementLog, NutritionPlan, Exercise, TrainingPlan, SupplementProtocol, SupplementProtocolItem, SupplementCategory, SupplementStatus, CoachNote } from "@/lib/types";
 import { CLIENTS, PANELS, COACH } from "./mock";
 import { BIOMARKERS, getStatus } from "@/lib/biomarkers";
+import { createId } from "@/lib/id";
 
 type State = {
   coach: typeof COACH;
@@ -709,19 +710,27 @@ const emit = () => {
 const subscribe = (l: () => void) => { listeners.add(l); return () => listeners.delete(l); };
 const getSnapshot = () => state;
 
+const requireReflection = (value: string, label: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    throw new Error(`${label} is required`);
+  }
+  return trimmed;
+};
+
 export function useStore() {
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
 export const actions = {
   addPanel(clientId: string, date: string, label: string, results: BiomarkerResult[], summary?: string) {
-    const panel: BloodPanel = { id: `p-${Date.now()}`, clientId, date, label, results, coachSummary: summary };
+    const panel: BloodPanel = { id: createId("p"), clientId, date, label, results, coachSummary: summary };
     state = { ...state, panels: [...state.panels, panel] };
     emit();
     return panel;
   },
   addClient(name: string, email: string, goal: string) {
-    const id = `c-${Date.now()}`;
+    const id = createId("c");
     const initials = name.split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
     state = {
       ...state,
@@ -764,6 +773,10 @@ export const actions = {
     if (isNaN(bodyWeightKg) || bodyWeightKg <= 0) {
       throw new Error("Invalid body weight");
     }
+    const trimmedDigestionNotes = requireReflection(digestionNotes, "Digestion and recovery reflection");
+    const trimmedWinsThisWeek = requireReflection(winsThisWeek, "Wins this week");
+    const trimmedStrugglesThisWeek = requireReflection(strugglesThisWeek, "Struggles and bottlenecks");
+    const trimmedQuestionForCoach = requireReflection(questionForCoach, "Questions or concerns");
 
     const today = new Date().toISOString().slice(0, 10);
     const weekKey = getWeekKey(today);
@@ -777,7 +790,7 @@ export const actions = {
     }
 
     const newCheckIn: CheckIn = {
-      id: `ch-${Date.now()}`,
+      id: createId("ch"),
       clientId,
       date: today,
       bodyWeightKg,
@@ -787,10 +800,10 @@ export const actions = {
       stressScore,
       trainingAdherence,
       nutritionAdherence,
-      digestionNotes,
-      winsThisWeek,
-      strugglesThisWeek,
-      questionForCoach,
+      digestionNotes: trimmedDigestionNotes,
+      winsThisWeek: trimmedWinsThisWeek,
+      strugglesThisWeek: trimmedStrugglesThisWeek,
+      questionForCoach: trimmedQuestionForCoach,
       submittedAt: new Date().toISOString(),
       weekKey,
       status: "needs_review"
@@ -940,7 +953,7 @@ export const actions = {
       const completedSets = [false, false, false, false];
       completedSets[setIndex] = true;
       updatedLogs.push({
-        id: `el-${Date.now()}`,
+        id: createId("el"),
         clientId,
         date: today,
         exerciseName,
@@ -979,7 +992,7 @@ export const actions = {
       updatedLogs[logIndex] = { ...updatedLogs[logIndex], completed: !updatedLogs[logIndex].completed };
     } else {
       updatedLogs.push({
-        id: `sl-${Date.now()}`,
+        id: createId("sl"),
         clientId,
         date: today,
         supplementName,
@@ -1068,7 +1081,7 @@ export const actions = {
   addSupplementItem(clientId: string, item: Omit<SupplementProtocolItem, "id">) {
     const newItem: SupplementProtocolItem = {
       ...item,
-      id: `spi-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+      id: createId("spi")
     };
     state = {
       ...state,
@@ -1134,7 +1147,7 @@ export const actions = {
   addCoachNote(note: Omit<CoachNote, "id" | "createdAt" | "updatedAt">) {
     const newNote: CoachNote = {
       ...note,
-      id: `cn-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      id: createId("cn"),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -1189,7 +1202,7 @@ export const actions = {
   },
   replyToCoachNote(noteId: string, text: string) {
     const newMessage = {
-      id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      id: createId("msg"),
       senderRole: "client" as const,
       text: text.trim(),
       timestamp: new Date().toISOString()
@@ -1211,7 +1224,7 @@ export const actions = {
   },
   coachReplyToNote(noteId: string, text: string) {
     const newMessage = {
-      id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      id: createId("msg"),
       senderRole: "coach" as const,
       text: text.trim(),
       timestamp: new Date().toISOString()

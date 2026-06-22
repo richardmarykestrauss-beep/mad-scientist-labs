@@ -4,6 +4,7 @@ import { actions, getClientSupplementProtocol, getClientPanels } from "@/data/st
 import type { SupplementProtocol, SupplementProtocolItem, SupplementCategory, SupplementStatus } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { createId } from "@/lib/id";
 import { Plus, Edit, Trash2, Pause, Play, Archive, HelpCircle, Save, X, Activity, Award, ShieldAlert } from "lucide-react";
 import { BIOMARKERS, getStatus } from "@/lib/biomarkers";
 
@@ -224,7 +225,7 @@ export default function SupplementProtocolPanel({ clientId }: SupplementProtocol
       // Add new item to local state
       const newItem: SupplementProtocolItem = {
         ...itemData,
-        id: `spi-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        id: createId("spi"),
         status: "active"
       };
       setProtocol((prev) => {

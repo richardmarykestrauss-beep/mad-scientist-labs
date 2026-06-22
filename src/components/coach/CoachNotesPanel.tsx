@@ -592,7 +592,7 @@ function NoteConversation({ note }: { note: CoachNote }) {
           onChange={(e) => setReply(e.target.value)}
           className="flex-1 input-glass py-1.5 px-2.5 text-xs bg-background/50 border border-border/40 focus:border-primary/40 focus:outline-none"
         />
-        <Button type="submit" size="sm" className="h-8 font-mono text-[10px] uppercase tracking-wider bg-zinc-100 hover:bg-white text-zinc-950 px-3">
+        <Button type="submit" size="sm" aria-label="Send coach reply" className="h-8 font-mono text-[10px] uppercase tracking-wider bg-zinc-100 hover:bg-white text-zinc-950 px-3">
           Reply
         </Button>
       </form>

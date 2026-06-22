@@ -102,7 +102,7 @@ export function AppShell() {
         </div>
       </aside>
 
-      <div className="flex-1 min-w-0 flex flex-col">
+      <div className="flex-1 min-w-0 max-w-full overflow-x-clip flex flex-col">
         <header className={cn(
           "sticky top-0 z-20 flex items-center gap-3 backdrop-blur px-4 md:px-6 py-3",
           isCoachWorkspaceLight ? "border-b border-slate-200 bg-white/95 shadow-sm" : "border-b border-border bg-background/80"

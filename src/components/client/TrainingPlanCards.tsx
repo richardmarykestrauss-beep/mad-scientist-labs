@@ -60,7 +60,7 @@ export function TrainingPlanCards({ clientId }: Props) {
   // Subscribe to store updates
   useStore();
   const today = new Date().toISOString().slice(0, 10);
-  const exercises = CLIENT_EXERCISES[clientId] || CLIENT_EXERCISES["c-001"];
+  const exercises = CLIENT_EXERCISES[clientId] ?? [];
   const logs = getClientExerciseLogs(clientId, today);
 
   // Timer state
@@ -104,6 +104,18 @@ export function TrainingPlanCards({ clientId }: Props) {
   const progressPct = exercises.length > 0 ? Math.round((completedCount / exercises.length) * 100) : 0;
   const totalSetsExpected = exercises.reduce((sum, ex) => sum + ex.sets, 0);
   const totalSetsCompleted = exerciseStats.reduce((sum, ex) => sum + ex.setsCompleted, 0);
+
+  if (exercises.length === 0) {
+    return (
+      <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-8 text-center shadow-lg">
+        <Dumbbell className="h-8 w-8 text-zinc-600 mx-auto mb-3" />
+        <h3 className="font-display text-base font-bold text-zinc-200">No training programme assigned yet.</h3>
+        <p className="text-xs text-zinc-500 mt-2 max-w-sm mx-auto">
+          Your coach has not published a training programme for this athlete profile.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

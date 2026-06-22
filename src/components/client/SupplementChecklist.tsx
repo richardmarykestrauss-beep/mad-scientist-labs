@@ -31,7 +31,7 @@ export function SupplementChecklist({ clientId }: Props) {
   // Subscribe to store updates
   useStore();
   const today = new Date().toISOString().slice(0, 10);
-  const supplements = CLIENT_SUPPLEMENTS[clientId] || CLIENT_SUPPLEMENTS["c-001"];
+  const supplements = CLIENT_SUPPLEMENTS[clientId] ?? [];
   const logs = getClientSupplementLogs(clientId, today);
 
   // Calculate statistics
@@ -42,6 +42,18 @@ export function SupplementChecklist({ clientId }: Props) {
   }).length;
 
   const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  if (supplements.length === 0) {
+    return (
+      <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-8 text-center shadow-lg">
+        <Pill className="h-8 w-8 text-zinc-600 mx-auto mb-3" />
+        <h3 className="font-display text-base font-bold text-zinc-200">No supplement protocol assigned yet.</h3>
+        <p className="text-xs text-zinc-500 mt-2 max-w-sm mx-auto">
+          Your coach has not published a supplement protocol for this athlete profile.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

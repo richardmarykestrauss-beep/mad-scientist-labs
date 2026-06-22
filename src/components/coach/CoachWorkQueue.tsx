@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Plus, Trash2, RotateCcw, ListTodo } from "lucide-react";
 import { toast } from "sonner";
+import { createId } from "@/lib/id";
 
 interface CoachTask {
   id: string;
@@ -62,7 +63,7 @@ export function CoachWorkQueue() {
     if (!newTaskText.trim()) return;
 
     const newTask: CoachTask = {
-      id: `task-${Date.now()}`,
+      id: createId("task"),
       text: newTaskText.trim(),
       completed: false,
     };

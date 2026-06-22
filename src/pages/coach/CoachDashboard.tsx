@@ -119,7 +119,7 @@ export default function CoachDashboard() {
       toast.error("Name is required");
       return;
     }
-    actions.addClient(inviteName, inviteEmail || "pending@invite.fit", inviteGoal || "Athletic optimization");
+    actions.addClient(inviteName, inviteEmail || "pending@example.com", inviteGoal || "Athletic optimization");
     setIsInviteOpen(false);
     setInviteName("");
     setInviteEmail("");
@@ -128,7 +128,7 @@ export default function CoachDashboard() {
   };
 
   return (
-    <div className="-mx-4 md:-mx-6 -my-6 px-4 md:px-6 py-6 min-h-screen bg-[#f8f9fa] text-slate-800 space-y-6">
+    <div className="-my-6 py-6 min-h-screen bg-[#f8f9fa] text-slate-800 space-y-6">
       
       {/* Calm Operations Header (Light) */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
@@ -198,7 +198,7 @@ export default function CoachDashboard() {
                     type="email" 
                     value={inviteEmail} 
                     onChange={e => setInviteEmail(e.target.value)} 
-                    placeholder="e.g. marcus@reign.io" 
+                    placeholder="e.g. athlete@example.com"
                     className="bg-slate-50 border-slate-200 text-slate-800"
                   />
                 </div>
@@ -448,8 +448,8 @@ export default function CoachDashboard() {
               </div>
             </div>
 
-            <div className="overflow-hidden rounded-lg border border-slate-200">
-              <table className="w-full text-xs">
+            <div className="overflow-x-auto rounded-lg border border-slate-200">
+              <table className="min-w-[900px] w-full text-xs">
                 <thead className="bg-slate-50 text-[8.5px] uppercase tracking-wider text-slate-500 font-mono border-b border-slate-200">
                   <tr>
                     <th className="text-left px-3 py-2.5 font-semibold">Client</th>

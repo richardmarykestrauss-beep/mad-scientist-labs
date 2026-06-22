@@ -28,6 +28,7 @@ export function CheckInSubmissionForm({ clientId, onSubmitSuccess }: Props) {
   const [wins, setWins] = useState("");
   const [struggles, setStruggles] = useState("");
   const [question, setQuestion] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,6 +38,23 @@ export function CheckInSubmissionForm({ clientId, onSubmitSuccess }: Props) {
     const weightNum = parseFloat(weight);
     if (isNaN(weightNum) || weightNum <= 0) {
       toast.error("Please enter a valid positive body weight");
+      return;
+    }
+
+    const nextErrors: Record<string, string> = {};
+    const trimmedDigestion = digestion.trim();
+    const trimmedWins = wins.trim();
+    const trimmedStruggles = struggles.trim();
+    const trimmedQuestion = question.trim();
+
+    if (!trimmedDigestion) nextErrors.digestion = "Digestion and recovery reflection is required.";
+    if (!trimmedWins) nextErrors.wins = "Wins this week is required.";
+    if (!trimmedStruggles) nextErrors.struggles = "Struggles and bottlenecks is required.";
+    if (!trimmedQuestion) nextErrors.question = "Questions or concerns is required.";
+
+    setFieldErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      toast.error("Please complete all required reflections");
       return;
     }
 
@@ -51,10 +69,10 @@ export function CheckInSubmissionForm({ clientId, onSubmitSuccess }: Props) {
         stress,
         training,
         nutrition,
-        digestion.trim() || "No notes",
-        wins.trim() || "None",
-        struggles.trim() || "None",
-        question.trim() || "None"
+        trimmedDigestion,
+        trimmedWins,
+        trimmedStruggles,
+        trimmedQuestion
       );
       toast.success("Weekly check-in submitted successfully!");
       if (onSubmitSuccess) {
@@ -354,10 +372,16 @@ export function CheckInSubmissionForm({ clientId, onSubmitSuccess }: Props) {
             <Textarea
               id="digestion"
               value={digestion}
-              onChange={(e) => setDigestion(e.target.value)}
+              onChange={(e) => {
+                setDigestion(e.target.value);
+                if (fieldErrors.digestion) setFieldErrors((prev) => ({ ...prev, digestion: "" }));
+              }}
+              aria-invalid={!!fieldErrors.digestion}
+              aria-describedby={fieldErrors.digestion ? "digestion-error" : undefined}
               placeholder="e.g. Any bloating, stools frequency, indigestion issues..."
               className="bg-zinc-950/40 border-zinc-850 focus-visible:ring-zinc-700 text-zinc-200 min-h-[70px] rounded-xl"
             />
+            {fieldErrors.digestion && <p id="digestion-error" className="text-[11px] text-amber-400">{fieldErrors.digestion}</p>}
           </div>
 
           <div className="space-y-1.5">
@@ -365,10 +389,16 @@ export function CheckInSubmissionForm({ clientId, onSubmitSuccess }: Props) {
             <Textarea
               id="wins"
               value={wins}
-              onChange={(e) => setWins(e.target.value)}
+              onChange={(e) => {
+                setWins(e.target.value);
+                if (fieldErrors.wins) setFieldErrors((prev) => ({ ...prev, wins: "" }));
+              }}
+              aria-invalid={!!fieldErrors.wins}
+              aria-describedby={fieldErrors.wins ? "wins-error" : undefined}
               placeholder="What went well? Energy, lifts, consistency..."
               className="bg-zinc-950/40 border-zinc-850 focus-visible:ring-zinc-700 text-zinc-200 min-h-[70px] rounded-xl"
             />
+            {fieldErrors.wins && <p id="wins-error" className="text-[11px] text-amber-400">{fieldErrors.wins}</p>}
           </div>
 
           <div className="space-y-1.5">
@@ -376,10 +406,16 @@ export function CheckInSubmissionForm({ clientId, onSubmitSuccess }: Props) {
             <Textarea
               id="struggles"
               value={struggles}
-              onChange={(e) => setStruggles(e.target.value)}
+              onChange={(e) => {
+                setStruggles(e.target.value);
+                if (fieldErrors.struggles) setFieldErrors((prev) => ({ ...prev, struggles: "" }));
+              }}
+              aria-invalid={!!fieldErrors.struggles}
+              aria-describedby={fieldErrors.struggles ? "struggles-error" : undefined}
               placeholder="What did you struggle with? Sleep bottlenecks, skipped sessions, stress..."
               className="bg-zinc-950/40 border-zinc-850 focus-visible:ring-zinc-700 text-zinc-200 min-h-[70px] rounded-xl"
             />
+            {fieldErrors.struggles && <p id="struggles-error" className="text-[11px] text-amber-400">{fieldErrors.struggles}</p>}
           </div>
 
           <div className="space-y-1.5">
@@ -387,10 +423,16 @@ export function CheckInSubmissionForm({ clientId, onSubmitSuccess }: Props) {
             <Textarea
               id="question"
               value={question}
-              onChange={(e) => setQuestion(e.target.value)}
+              onChange={(e) => {
+                setQuestion(e.target.value);
+                if (fieldErrors.question) setFieldErrors((prev) => ({ ...prev, question: "" }));
+              }}
+              aria-invalid={!!fieldErrors.question}
+              aria-describedby={fieldErrors.question ? "question-error" : undefined}
               placeholder="Anything specific you'd like your coach to answer?"
               className="bg-zinc-950/40 border-zinc-850 focus-visible:ring-zinc-700 text-zinc-200 min-h-[70px] rounded-xl"
             />
+            {fieldErrors.question && <p id="question-error" className="text-[11px] text-amber-400">{fieldErrors.question}</p>}
           </div>
         </div>
 

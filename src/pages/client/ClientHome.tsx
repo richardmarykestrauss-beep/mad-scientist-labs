@@ -451,7 +451,7 @@ export default function ClientHome() {
                       onChange={(e) => setReplyText(e.target.value)}
                       className="flex-1 bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-zinc-700 text-white placeholder-zinc-500"
                     />
-                    <Button type="submit" size="sm" className="px-4 bg-zinc-100 hover:bg-white text-zinc-900 rounded-xl h-10">
+                    <Button type="submit" size="sm" aria-label="Send reply" className="px-4 bg-zinc-100 hover:bg-white text-zinc-900 rounded-xl h-10">
                       <Send className="h-4 w-4" />
                     </Button>
                   </form>

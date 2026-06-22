@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { actions } from "@/data/store";
+import { actions, useStore, getCurrentWeekCheckIn } from "@/data/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ClipboardCheck, Sparkles, Smile, BatteryCharging, Moon, AlertOctagon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Props {
   clientId: string;
@@ -13,6 +14,9 @@ interface Props {
 }
 
 export function CheckInSubmissionForm({ clientId, onSubmitSuccess }: Props) {
+  useStore();
+  const currentWeekCheckIn = getCurrentWeekCheckIn(clientId);
+
   const [weight, setWeight] = useState("");
   const [energy, setEnergy] = useState(7);
   const [sleep, setSleep] = useState(7);
@@ -24,33 +28,43 @@ export function CheckInSubmissionForm({ clientId, onSubmitSuccess }: Props) {
   const [wins, setWins] = useState("");
   const [struggles, setStruggles] = useState("");
   const [question, setQuestion] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
+
     const weightNum = parseFloat(weight);
     if (isNaN(weightNum) || weightNum <= 0) {
       toast.error("Please enter a valid positive body weight");
       return;
     }
 
-    actions.addCheckIn(
-      clientId,
-      weightNum,
-      energy,
-      sleep,
-      mood,
-      stress,
-      training,
-      nutrition,
-      digestion || "No notes",
-      wins || "None",
-      struggles || "None",
-      question || "None"
-    );
-
-    toast.success("Weekly check-in submitted successfully!");
-    if (onSubmitSuccess) {
-      onSubmitSuccess();
+    setSubmitting(true);
+    try {
+      await actions.submitCheckIn(
+        clientId,
+        weightNum,
+        energy,
+        sleep,
+        mood,
+        stress,
+        training,
+        nutrition,
+        digestion.trim() || "No notes",
+        wins.trim() || "None",
+        struggles.trim() || "None",
+        question.trim() || "None"
+      );
+      toast.success("Weekly check-in submitted successfully!");
+      if (onSubmitSuccess) {
+        onSubmitSuccess();
+      }
+    } catch (err) {
+      const error = err as Error;
+      toast.error(error.message || "Failed to submit check-in");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -59,6 +73,117 @@ export function CheckInSubmissionForm({ clientId, onSubmitSuccess }: Props) {
   const getSleepLabel = (val: number) => val <= 3 ? "Restless" : val <= 7 ? "Restful" : "Deep";
   const getMoodLabel = (val: number) => val <= 3 ? "Suboptimal" : val <= 7 ? "Stable" : "Excellent";
   const getStressLabel = (val: number) => val <= 3 ? "Low" : val <= 7 ? "Moderate" : "Burnout";
+
+  if (currentWeekCheckIn) {
+    const isReviewed = currentWeekCheckIn.status === "reviewed";
+    return (
+      <div className="space-y-6 max-w-2xl mx-auto pb-10">
+        <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-6 space-y-6 shadow-lg backdrop-blur-md">
+          {/* Header with Status */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-850/60 pb-4">
+            <div className="flex items-center gap-2">
+              <ClipboardCheck className="h-5 w-5 text-emerald-400" />
+              <h2 className="font-display text-lg font-bold text-white">Check-in Submitted</h2>
+            </div>
+            <span className={cn(
+              "text-[10px] font-bold border px-3 py-1 rounded-full uppercase tracking-wider self-start sm:self-center",
+              isReviewed
+                ? "border-emerald-700/50 bg-emerald-950/30 text-emerald-400"
+                : "border-amber-700/50 bg-amber-950/30 text-amber-400"
+            )}>
+              {isReviewed ? "Reviewed" : "Awaiting Coach Review"}
+            </span>
+          </div>
+
+          <div className="text-xs text-zinc-450 font-mono">
+            Submitted on: {currentWeekCheckIn.submittedAt ? new Date(currentWeekCheckIn.submittedAt).toLocaleString() : currentWeekCheckIn.date}
+          </div>
+
+          {/* Coach Feedback Area if Reviewed */}
+          {isReviewed && currentWeekCheckIn.coachFeedback && (
+            <div className="p-4 rounded-xl border border-emerald-900/30 bg-emerald-950/15 border-l-4 border-l-emerald-500/80 space-y-2">
+              <div className="text-xs font-bold text-emerald-400 uppercase tracking-widest font-mono">
+                Coach Feedback (Warren Germishuizen)
+              </div>
+              <p className="text-sm leading-relaxed text-zinc-200">
+                "{currentWeekCheckIn.coachFeedback}"
+              </p>
+              {currentWeekCheckIn.reviewedAt && (
+                <div className="text-[10px] text-zinc-550 font-mono">
+                  Reviewed on: {new Date(currentWeekCheckIn.reviewedAt).toLocaleString()}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Metrics summary */}
+          <div className="space-y-4">
+            <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest font-sans">Submitted Metrics</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="rounded-xl border border-zinc-850 bg-zinc-950/30 p-3">
+                <span className="text-[9px] font-mono uppercase text-zinc-500">Weight</span>
+                <div className="text-base font-bold text-white mt-0.5">{currentWeekCheckIn.bodyWeightKg} kg</div>
+              </div>
+              <div className="rounded-xl border border-zinc-850 bg-zinc-950/30 p-3">
+                <span className="text-[9px] font-mono uppercase text-zinc-500">Energy</span>
+                <div className="text-base font-bold text-white mt-0.5">{currentWeekCheckIn.energyScore}/10</div>
+              </div>
+              <div className="rounded-xl border border-zinc-850 bg-zinc-950/30 p-3">
+                <span className="text-[9px] font-mono uppercase text-zinc-500">Sleep</span>
+                <div className="text-base font-bold text-white mt-0.5">{currentWeekCheckIn.sleepQuality}/10</div>
+              </div>
+              <div className="rounded-xl border border-zinc-850 bg-zinc-950/30 p-3">
+                <span className="text-[9px] font-mono uppercase text-zinc-500">Mood</span>
+                <div className="text-base font-bold text-white mt-0.5">{currentWeekCheckIn.moodScore}/10</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-zinc-850 bg-zinc-950/30 p-3">
+                <span className="text-[9px] font-mono uppercase text-zinc-500">Training Adherence</span>
+                <div className="text-base font-bold text-emerald-400 mt-0.5">{currentWeekCheckIn.trainingAdherence}%</div>
+              </div>
+              <div className="rounded-xl border border-zinc-850 bg-zinc-950/30 p-3">
+                <span className="text-[9px] font-mono uppercase text-zinc-500">Nutrition Adherence</span>
+                <div className="text-base font-bold text-emerald-400 mt-0.5">{currentWeekCheckIn.nutritionAdherence}%</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Reflections Summary */}
+          <div className="space-y-4 border-t border-zinc-850/60 pt-4">
+            <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest font-sans">Reflection & Notes</h3>
+            <div className="space-y-3">
+              <div>
+                <span className="text-[10px] font-semibold text-zinc-400">Digestion & Gut Health</span>
+                <p className="text-xs text-zinc-200 mt-1 bg-zinc-950/20 p-2.5 rounded-lg border border-zinc-850/50 leading-relaxed">
+                  {currentWeekCheckIn.digestionNotes}
+                </p>
+              </div>
+              <div>
+                <span className="text-[10px] font-semibold text-zinc-400">Wins This Week</span>
+                <p className="text-xs text-zinc-200 mt-1 bg-zinc-950/20 p-2.5 rounded-lg border border-zinc-850/50 leading-relaxed">
+                  {currentWeekCheckIn.winsThisWeek}
+                </p>
+              </div>
+              <div>
+                <span className="text-[10px] font-semibold text-zinc-400">Struggles & Bottlenecks</span>
+                <p className="text-xs text-zinc-200 mt-1 bg-zinc-950/20 p-2.5 rounded-lg border border-zinc-850/50 leading-relaxed">
+                  {currentWeekCheckIn.strugglesThisWeek}
+                </p>
+              </div>
+              <div>
+                <span className="text-[10px] font-semibold text-zinc-400">Question for Coach</span>
+                <p className="text-xs text-zinc-200 mt-1 bg-zinc-950/20 p-2.5 rounded-lg border border-zinc-850/50 leading-relaxed">
+                  {currentWeekCheckIn.questionForCoach}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto pb-10">

@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import type { BloodPanel, BiomarkerResult, CheckIn, ExerciseLog, SupplementLog, NutritionPlan, Exercise, TrainingPlan, SupplementProtocol, SupplementProtocolItem, SupplementCategory, SupplementStatus, CoachNote } from "@/lib/types";
 import { CLIENTS, PANELS, COACH } from "./mock";
+import { BIOMARKERS, getStatus } from "@/lib/biomarkers";
 
 type State = {
   coach: typeof COACH;
@@ -742,7 +743,7 @@ export const actions = {
     emit();
     return id;
   },
-  addCheckIn(
+  submitCheckIn(
     clientId: string,
     bodyWeightKg: number,
     energyScore: number,
@@ -756,7 +757,25 @@ export const actions = {
     strugglesThisWeek: string,
     questionForCoach: string
   ) {
+    const client = state.clients.find((c) => c.id === clientId);
+    if (!client) {
+      throw new Error(`Client ${clientId} does not exist`);
+    }
+    if (isNaN(bodyWeightKg) || bodyWeightKg <= 0) {
+      throw new Error("Invalid body weight");
+    }
+
     const today = new Date().toISOString().slice(0, 10);
+    const weekKey = getWeekKey(today);
+
+    // Duplicate check
+    const duplicate = state.checkIns.some(
+      (ch) => ch.clientId === clientId && (ch.weekKey === weekKey || getWeekKey(ch.date) === weekKey)
+    );
+    if (duplicate) {
+      throw new Error("Weekly check-in already submitted for this week");
+    }
+
     const newCheckIn: CheckIn = {
       id: `ch-${Date.now()}`,
       clientId,
@@ -771,9 +790,12 @@ export const actions = {
       digestionNotes,
       winsThisWeek,
       strugglesThisWeek,
-      questionForCoach
+      questionForCoach,
+      submittedAt: new Date().toISOString(),
+      weekKey,
+      status: "needs_review"
     };
-    
+
     const updatedClients = state.clients.map((c) => {
       if (c.id === clientId) {
         return {
@@ -794,6 +816,113 @@ export const actions = {
     };
     emit();
     return newCheckIn;
+  },
+  addCheckIn(
+    clientId: string,
+    bodyWeightKg: number,
+    energyScore: number,
+    sleepQuality: number,
+    moodScore: number,
+    stressScore: number,
+    trainingAdherence: number,
+    nutritionAdherence: number,
+    digestionNotes: string,
+    winsThisWeek: string,
+    strugglesThisWeek: string,
+    questionForCoach: string
+  ) {
+    return this.submitCheckIn(
+      clientId,
+      bodyWeightKg,
+      energyScore,
+      sleepQuality,
+      moodScore,
+      stressScore,
+      trainingAdherence,
+      nutritionAdherence,
+      digestionNotes,
+      winsThisWeek,
+      strugglesThisWeek,
+      questionForCoach
+    );
+  },
+  reviewCheckIn(checkInId: string, feedback: string, reviewedBy: string) {
+    if (!checkInId) {
+      throw new Error("Check-in ID is required");
+    }
+    if (!feedback || !feedback.trim()) {
+      throw new Error("Feedback cannot be empty");
+    }
+
+    const checkInIndex = state.checkIns.findIndex((ch) => ch.id === checkInId);
+    if (checkInIndex === -1) {
+      throw new Error("Check-in not found");
+    }
+
+    const checkIn = state.checkIns[checkInIndex];
+    const updatedCheckIn: CheckIn = {
+      ...checkIn,
+      coachFeedback: feedback,
+      status: "reviewed",
+      reviewedAt: new Date().toISOString(),
+      reviewedBy
+    };
+
+    const updatedCheckIns = [...state.checkIns];
+    updatedCheckIns[checkInIndex] = updatedCheckIn;
+
+    const clientId = checkIn.clientId;
+    const client = state.clients.find((c) => c.id === clientId);
+
+    const updatedClients = state.clients.map((c) => {
+      if (c.id === clientId) {
+        // Check if other pending check-ins exist
+        const otherPending = updatedCheckIns.some(
+          (ch) => ch.clientId === clientId && ch.id !== checkInId && (ch.status === "needs_review" || ch.status === "submitted")
+        );
+
+        // Compliance checks
+        const lowTraining = c.trainingCompliance < 75;
+        const lowNutrition = c.nutritionCompliance < 75;
+
+        // Overdue check-in
+        const checkInOverdue = c.nextCheckIn <= "2026-05-26";
+
+        // Lab alerts from latest blood panel
+        const clientPanels = state.panels.filter((p) => p.clientId === c.id);
+        const latestPanel = clientPanels.length > 0
+          ? [...clientPanels].sort((a, b) => b.date.localeCompare(a.date))[0]
+          : null;
+
+        let hasLabAlerts = false;
+        if (latestPanel) {
+          for (const r of latestPanel.results) {
+            const def = BIOMARKERS.find((b) => b.key === r.key);
+            if (!def) continue;
+            const status = getStatus(def, r.value);
+            if (status === "high" || status === "low") {
+              hasLabAlerts = true;
+            }
+          }
+        }
+
+        const hasOtherAttentionConditions = otherPending || lowTraining || lowNutrition || checkInOverdue || hasLabAlerts;
+
+        return {
+          ...c,
+          status: hasOtherAttentionConditions ? ("review" as const) : ("active" as const)
+        };
+      }
+      return c;
+    });
+
+    state = {
+      ...state,
+      clients: updatedClients,
+      checkIns: updatedCheckIns
+    };
+    emit();
+    return updatedCheckIn;
   },
   toggleExerciseSet(clientId: string, exerciseName: string, setIndex: number) {
     const today = new Date().toISOString().slice(0, 10);
@@ -1158,4 +1287,45 @@ export function getClientSupplementProtocol(clientId: string) {
 
 export function getClientCoachNotes(clientId: string) {
   return state.coachNotes.filter((n) => n.clientId === clientId);
+}
+
+export function getWeekKey(dateStr?: string): string {
+  const date = dateStr ? new Date(dateStr) : new Date();
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return `${d.getUTCFullYear()}-W${weekNo.toString().padStart(2, "0")}`;
+}
+
+export function getCheckInsForClient(clientId: string): CheckIn[] {
+  return state.checkIns
+    .filter((c) => c.clientId === clientId)
+    .map((c) => ({
+      ...c,
+      weekKey: c.weekKey || getWeekKey(c.date),
+      status: c.status || "reviewed",
+      submittedAt: c.submittedAt || new Date(c.date).toISOString()
+    }))
+    .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
+}
+
+export function getLatestCheckInForClient(clientId: string): CheckIn | null {
+  const list = getCheckInsForClient(clientId);
+  return list.length > 0 ? list[0] : null;
+}
+
+export function getCurrentWeekCheckIn(clientId: string): CheckIn | null {
+  const currentWeek = getWeekKey();
+  const list = getCheckInsForClient(clientId);
+  return list.find((c) => c.weekKey === currentWeek) || null;
+}
+
+export function deriveNeedsReviewClients(): typeof state.clients {
+  return state.clients.filter((c) => {
+    if (c.status === "review") return true;
+    const clientCheckIns = state.checkIns.filter((ch) => ch.clientId === c.id);
+    return clientCheckIns.some((ch) => ch.status === "needs_review" || ch.status === "submitted");
+  });
 }

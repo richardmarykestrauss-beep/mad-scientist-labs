@@ -18,7 +18,7 @@ interface AttentionItem {
 }
 
 export function AttentionQueue() {
-  const { clients, panels } = useStore();
+  const { clients, panels, checkIns } = useStore();
   const TODAY = "2026-05-26";
 
   const attentionList = useMemo(() => {
@@ -30,7 +30,9 @@ export function AttentionQueue() {
       let actionText = "";
 
       // 1. Check-In submitted for review
-      const isReview = c.status === "review";
+      const clientCheckIns = checkIns.filter((ch) => ch.clientId === c.id);
+      const hasPendingCheckIn = clientCheckIns.some((ch) => ch.status === "needs_review" || ch.status === "submitted");
+      const isReview = c.status === "review" || hasPendingCheckIn;
       
       // 2. Lab alerts from latest blood panel
       const clientPanels = panels.filter((p) => p.clientId === c.id);
@@ -110,7 +112,12 @@ export function AttentionQueue() {
   }, [clients, panels]);
 
   const handleMarkReviewed = (clientId: string, clientName: string) => {
-    actions.setClientStatus(clientId, "active");
+    const pending = checkIns.find(ch => ch.clientId === clientId && (ch.status === "needs_review" || ch.status === "submitted"));
+    if (pending) {
+      actions.reviewCheckIn(pending.id, "Reviewed via attention queue", "Coach Warren");
+    } else {
+      actions.setClientStatus(clientId, "active");
+    }
     toast.success(`${clientName} marked reviewed`);
   };
 

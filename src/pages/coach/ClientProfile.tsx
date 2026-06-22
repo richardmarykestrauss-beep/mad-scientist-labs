@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link, useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { FeaturePlannedDialog } from "@/components/lab/FeaturePlannedDialog";
 import { 
   ArrowLeft, 
@@ -22,12 +23,17 @@ import {
   ArrowUpRight,
   TrendingUp,
   AlertTriangle,
-  Upload
+  Upload,
+  ChevronDown,
+  ChevronUp,
+  CheckSquare,
+  CheckCircle,
+  Check
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { useStore, getClientPanels, getClientCheckIns } from "@/data/store";
-import type { Client, BloodPanel } from "@/lib/types";
+import { useStore, getClientPanels, getCheckInsForClient, actions } from "@/data/store";
+import type { Client, BloodPanel, CheckIn } from "@/lib/types";
 import { BloodPanelDashboard } from "@/components/blood/BloodPanelDashboard";
 import { BloodReportUploadFlow } from "@/components/blood/BloodReportUploadFlow";
 import { Button } from "@/components/ui/button";
@@ -47,7 +53,7 @@ export default function ClientProfile() {
   const { clients, panels } = useStore();
   const client = clients.find((c) => c.id === id);
   const clientPanels = getClientPanels(id);
-  const checkIns = getClientCheckIns(id);
+  const checkIns = getCheckInsForClient(id);
 
   const [plannedFeature, setPlannedFeature] = useState<string | null>(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -375,7 +381,40 @@ export default function ClientProfile() {
         </TabsContent>
 
         <TabsContent value="checkins" className="mt-5">
-          <Scaffold title="Weekly Check-ins" desc="Bodyweight, energy, sleep, stress, mood, training and nutrition adherence." cta="Request Check-in" onCta={() => setPlannedFeature("Request Client Check-in")} />
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-border/60 pb-3">
+              <div>
+                <h3 className="font-display text-base font-bold text-foreground">Weekly Check-in Submissions</h3>
+                <p className="text-[10px] text-muted-foreground uppercase font-mono mt-0.5">
+                  Review historical metrics, adherence trends, and submit adjustments.
+                </p>
+              </div>
+            </div>
+
+            {checkIns.length === 0 ? (
+              <div className="lab-card-glow p-8 text-center text-muted-foreground border border-border/80 rounded-xl">
+                No check-in history found for this athlete.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {checkIns.map((ch) => (
+                  <CoachCheckInItem
+                    key={ch.id}
+                    checkIn={ch}
+                    onReview={(id, feedback) => {
+                      try {
+                        actions.reviewCheckIn(id, feedback, "Coach Warren");
+                        toast.success("Check-in reviewed successfully!");
+                      } catch (err) {
+                        const error = err as Error;
+                        toast.error(error.message || "Failed to submit review");
+                      }
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="notes" className="mt-5">
@@ -433,6 +472,159 @@ function Scaffold({ title, desc, cta, onCta }: { title: string; desc: string; ct
         <Button variant="neon" onClick={onCta} className="text-xs h-9 px-6 font-semibold">{cta}</Button>
       </div>
       <div className="mt-3 text-[10px] text-muted-foreground font-mono">Module scaffold — full builder ships in v2.</div>
+    </div>
+  );
+}
+
+function CoachCheckInItem({ checkIn, onReview }: { checkIn: CheckIn; onReview: (id: string, feedback: string) => void }) {
+  const [expanded, setExpanded] = useState(false);
+  const [feedback, setFeedback] = useState(checkIn.coachFeedback || "");
+
+  const isReviewed = checkIn.status === "reviewed";
+
+  const handleReviewSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedback.trim()) {
+      toast.error("Feedback cannot be empty");
+      return;
+    }
+    onReview(checkIn.id, feedback.trim());
+  };
+
+  return (
+    <div className="lab-card-glow border border-border/80 overflow-hidden text-xs transition duration-200 hover:border-primary/30 rounded-xl">
+      {/* Header */}
+      <div
+        onClick={() => setExpanded(!expanded)}
+        className="checkin-header flex items-center justify-between p-4 cursor-pointer bg-background/20 hover:bg-background/40 select-none"
+      >
+        <div className="flex items-center gap-3">
+          <Calendar className="h-4 w-4 text-primary" />
+          <div>
+            <div className="font-bold text-foreground text-sm">
+              Week: {checkIn.weekKey || "Legacy"}
+            </div>
+            <div className="text-[10px] text-muted-foreground mt-0.5">
+              Submitted: {checkIn.submittedAt ? new Date(checkIn.submittedAt).toLocaleDateString() : checkIn.date}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5">
+          <span className={cn(
+            "text-[9px] font-bold border px-2 py-0.5 rounded uppercase tracking-wider font-mono",
+            isReviewed
+              ? "border-emerald-500/25 bg-emerald-950/20 text-emerald-455"
+              : "border-amber-500/25 bg-amber-950/20 text-amber-455"
+          )}>
+            {isReviewed ? "Reviewed" : "Needs Review"}
+          </span>
+          {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+        </div>
+      </div>
+
+      {/* Expanded Details */}
+      {expanded && (
+        <div className="p-4 border-t border-border/60 bg-background/10 space-y-4">
+          {/* Metrics Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="rounded-xl border border-border/40 bg-background/40 px-3 py-2">
+              <span className="text-[9px] font-mono uppercase text-muted-foreground">Body Weight</span>
+              <div className="font-bold text-foreground text-sm mt-0.5">{checkIn.bodyWeightKg} kg</div>
+            </div>
+            <div className="rounded-xl border border-border/40 bg-background/40 px-3 py-2">
+              <span className="text-[9px] font-mono uppercase text-muted-foreground">Energy Level</span>
+              <div className="font-bold text-foreground text-sm mt-0.5">{checkIn.energyScore}/10</div>
+            </div>
+            <div className="rounded-xl border border-border/40 bg-background/40 px-3 py-2">
+              <span className="text-[9px] font-mono uppercase text-muted-foreground">Sleep Quality</span>
+              <div className="font-bold text-foreground text-sm mt-0.5">{checkIn.sleepQuality}/10</div>
+            </div>
+            <div className="rounded-xl border border-border/40 bg-background/40 px-3 py-2">
+              <span className="text-[9px] font-mono uppercase text-muted-foreground">Mood & Focus</span>
+              <div className="font-bold text-foreground text-sm mt-0.5">{checkIn.moodScore}/10</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-xl border border-border/40 bg-background/40 px-3 py-2">
+              <span className="text-[9px] font-mono uppercase text-muted-foreground">Stress Perception</span>
+              <div className="font-bold text-foreground text-sm mt-0.5">{checkIn.stressScore}/10</div>
+            </div>
+            <div className="rounded-xl border border-border/40 bg-background/40 px-3 py-2">
+              <span className="text-[9px] font-mono uppercase text-muted-foreground">Training Compliance</span>
+              <div className="font-bold text-emerald-450 text-sm mt-0.5">{checkIn.trainingAdherence}%</div>
+            </div>
+            <div className="col-span-2 rounded-xl border border-border/40 bg-background/40 px-3 py-2">
+              <span className="text-[9px] font-mono uppercase text-muted-foreground">Nutrition Adherence</span>
+              <div className="font-bold text-emerald-450 text-sm mt-0.5">{checkIn.nutritionAdherence}%</div>
+            </div>
+          </div>
+
+          {/* Reflections */}
+          <div className="space-y-2.5 pt-2 border-t border-border/40">
+            <div>
+              <div className="font-semibold text-muted-foreground text-[10px] uppercase font-mono tracking-wider">Digestion & Gut Health</div>
+              <p className="mt-1 leading-relaxed text-foreground bg-background/30 p-2.5 rounded-lg border border-border/30">{checkIn.digestionNotes}</p>
+            </div>
+            <div>
+              <div className="font-semibold text-muted-foreground text-[10px] uppercase font-mono tracking-wider">Wins This Week</div>
+              <p className="mt-1 leading-relaxed text-foreground bg-background/30 p-2.5 rounded-lg border border-border/30">{checkIn.winsThisWeek}</p>
+            </div>
+            <div>
+              <div className="font-semibold text-muted-foreground text-[10px] uppercase font-mono tracking-wider">Struggles & Bottlenecks</div>
+              <p className="mt-1 leading-relaxed text-foreground bg-background/30 p-2.5 rounded-lg border border-border/30">{checkIn.strugglesThisWeek}</p>
+            </div>
+            <div>
+              <div className="font-semibold text-muted-foreground text-[10px] uppercase font-mono tracking-wider">Question for Coach</div>
+              <p className="mt-1 leading-relaxed text-foreground bg-background/30 p-2.5 rounded-lg border border-border/30">{checkIn.questionForCoach}</p>
+            </div>
+          </div>
+
+          {/* Feedback Form / Display */}
+          <div className="pt-3 border-t border-border/60">
+            {isReviewed ? (
+              <div className="p-3 rounded-xl border border-emerald-500/20 bg-emerald-950/10 space-y-1.5">
+                <div className="font-bold text-emerald-400 text-[10px] uppercase tracking-wider font-mono flex items-center gap-1.5">
+                  <CheckCircle className="h-3.5 w-3.5" /> Reviewed Feedback
+                </div>
+                <p className="text-foreground text-xs italic">
+                  "{checkIn.coachFeedback}"
+                </p>
+                <div className="text-[9px] text-muted-foreground mt-2 font-mono">
+                  Reviewed by {checkIn.reviewedBy || "Coach Warren"} {checkIn.reviewedAt && `on ${new Date(checkIn.reviewedAt).toLocaleString()}`}
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleReviewSubmit} className="space-y-2.5">
+                <div className="space-y-1">
+                  <label htmlFor={`feedback-${checkIn.id}`} className="font-semibold text-[10px] text-muted-foreground uppercase font-mono tracking-wider">
+                    Coach Feedback & Protocol Adjustments
+                  </label>
+                  <textarea
+                    id={`feedback-${checkIn.id}`}
+                    rows={3}
+                    placeholder="Enter actionable feedback, protocol updates, or adjustments based on this check-in..."
+                    value={feedback}
+                    onChange={(e) => setFeedback(e.target.value)}
+                    className="w-full bg-background/60 border border-border/80 rounded-xl p-3 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground placeholder-muted-foreground"
+                    required
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <Button
+                    type="submit"
+                    variant="neon"
+                    className="text-xs h-9 px-4 font-semibold gap-1.5 flex items-center"
+                  >
+                    <CheckSquare className="h-3.5 w-3.5" /> Complete Review
+                  </Button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

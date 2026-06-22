@@ -52,7 +52,7 @@ function getClientAlerts(clientId: string, panels: BloodPanel[]) {
 }
 
 export default function ClientList() {
-  const { clients, panels } = useStore();
+  const { clients, panels, checkIns } = useStore();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "review" | "lab-alerts" | "check-in-due" | "low-adherence" | "inactive">("all");
   const [sortBy, setSortBy] = useState<string>("needs-attention");
@@ -483,7 +483,12 @@ export default function ClientList() {
                   variant="outline"
                   className="w-full h-10 text-xs font-semibold border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                   onClick={() => {
-                    actions.setClientStatus(selectedClient.id, "active");
+                    const pending = checkIns.find(ch => ch.clientId === selectedClient.id && (ch.status === "needs_review" || ch.status === "submitted"));
+                    if (pending) {
+                      actions.reviewCheckIn(pending.id, "Reviewed via client roster", "Coach Warren");
+                    } else {
+                      actions.setClientStatus(selectedClient.id, "active");
+                    }
                     setSelectedClient({ ...selectedClient, status: "active" });
                     toast.success("Client marked active/reviewed");
                   }}

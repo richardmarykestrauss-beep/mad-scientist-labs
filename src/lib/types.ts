@@ -90,6 +90,12 @@ export interface CheckIn {
   winsThisWeek: string;
   strugglesThisWeek: string;
   questionForCoach: string;
+  submittedAt?: string;
+  weekKey?: string;
+  status?: "submitted" | "needs_review" | "reviewed";
+  reviewedAt?: string;
+  reviewedBy?: string;
+  coachFeedback?: string;
 }
 
 export interface ExerciseLog {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useStore, getClientPanels, getClientCheckIns } from "@/data/store";
+import { useStore, getClientPanels, getClientCheckIns, getLatestActiveCoachNote, actions } from "@/data/store";
 import { BloodPanelDashboard } from "@/components/blood/BloodPanelDashboard";
 import { TrainingPlanCards } from "@/components/client/TrainingPlanCards";
 import { SupplementChecklist } from "@/components/client/SupplementChecklist";
@@ -23,15 +23,15 @@ export default function ClientHome() {
   
   const [activeTab, setActiveTab] = useState<"home" | "labs" | "program" | "checkin" | "notes">("home");
   const [programSubTab, setProgramSubTab] = useState<"workout" | "supplements">("workout");
-  const [isAcknowledged, setIsAcknowledged] = useState(false);
   const [replyText, setReplyText] = useState("");
-  const [replies, setReplies] = useState<string[]>([]);
 
   const today = new Date().toISOString().slice(0, 10);
   const { clients } = useStore();
   const client = clients.find((c) => c.id === id);
   const panels = getClientPanels(id);
   const checkIns = getClientCheckIns(id);
+  const activeNote = getLatestActiveCoachNote(id);
+  const isAcknowledged = !!activeNote?.acknowledgedByClient;
 
   if (!client) {
     return <div className="p-6 text-center text-muted-foreground">Client profile not found.</div>;
@@ -58,14 +58,15 @@ export default function ClientHome() {
   ) : 0;
 
   const handleAcknowledge = () => {
-    setIsAcknowledged(true);
+    if (!activeNote) return;
+    actions.acknowledgeCoachNote(activeNote.id);
     toast.success("Coach note acknowledged. Notification sent to Coach Warren!");
   };
 
   const handleSendReply = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!replyText.trim()) return;
-    setReplies([...replies, replyText.trim()]);
+    if (!replyText.trim() || !activeNote) return;
+    actions.replyToCoachNote(activeNote.id, replyText.trim());
     setReplyText("");
     toast.success("Response sent to your coach!");
   };
@@ -361,84 +362,102 @@ export default function ClientHome() {
               <CheckInSubmissionForm clientId={id} onSubmitSuccess={() => setActiveTab("home")} />
             </div>
           </div>
-        )}         {activeTab === "notes" && (
+        )}
+        {activeTab === "notes" && (
           <div className="space-y-6 animate-fade-in">
-            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-6 space-y-4 border-l-4 border-l-emerald-700/60 shadow-lg backdrop-blur-md">
-              <div className="flex items-center justify-between border-b border-zinc-850/60 pb-3">
-                <h3 className="font-display text-lg font-bold flex items-center gap-2 text-white">
-                  <StickyNote className="h-5 w-5 text-zinc-400" /> Coach Protocol Notes
-                </h3>
-                <span className="text-[9px] font-bold border border-zinc-800 bg-zinc-900 text-zinc-450 px-3 py-1 rounded-full uppercase tracking-wider">
-                  ACTIVE
-                </span>
+            {!activeNote ? (
+              <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-8 text-center text-zinc-450 shadow-lg backdrop-blur-md">
+                <StickyNote className="h-8 w-8 text-zinc-650 mx-auto mb-2.5" />
+                <h3 className="font-display text-sm font-bold text-zinc-300 uppercase tracking-wider mb-1">No Active Notes</h3>
+                <p className="text-xs text-zinc-500">There are no active feedback protocols or coach notes for you at this time.</p>
               </div>
-              <div className="space-y-2">
-                <p className="text-sm leading-relaxed text-zinc-200">
-                  "{client.notes || "Focus on hitting the correct tempos on your training splits. Let's keep hydration elevated."}"
-                </p>
-                <div className="text-[11px] text-zinc-500 font-sans">
-                  Recommended by Coach Warren Germishuizen on 2026-05-23
-                </div>
-              </div>
-
-              {/* Functional Acknowledge Button */}
-              <div className="pt-2 flex justify-start">
-                <Button 
-                  onClick={handleAcknowledge}
-                  disabled={isAcknowledged}
-                  variant={isAcknowledged ? "outline" : "hero"}
-                  className={cn(
-                    "w-full sm:w-auto font-bold rounded-xl text-xs h-10 px-5",
-                    isAcknowledged ? "border-zinc-800 text-zinc-500 bg-zinc-900/20" : "bg-zinc-100 hover:bg-white text-zinc-950"
-                  )}
-                >
-                  {isAcknowledged ? (
-                    <>
-                      <Check className="h-4 w-4 mr-2" /> Acknowledged by Athlete
-                    </>
-                  ) : (
-                    "Acknowledge Protocol"
-                  )}
-                </Button>
-              </div>
-            </div>
-
-            {/* Coach Messaging Thread */}
-            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-6 space-y-4 shadow-lg backdrop-blur-md">
-              <div className="flex items-center gap-2 border-b border-zinc-850/60 pb-3">
-                <MessageSquare className="h-5 w-5 text-zinc-400" />
-                <h3 className="font-display text-base font-bold text-white">Coach Feedback Thread</h3>
-              </div>
-              
-              <div className="space-y-3 max-h-60 overflow-y-auto pr-1 scrollbar-thin">
-                {/* Seed messages */}
-                <div className="bg-zinc-905 border border-zinc-850 p-4 rounded-2xl rounded-tl-sm max-w-[85%] self-start shadow-sm">
-                  <span className="block text-[9px] font-bold text-emerald-600/85 uppercase mb-1">Coach Warren</span>
-                  <p className="text-sm text-zinc-200">Marcus, let's push the incline DB press this week. How is your shoulder feeling on the concentric phase?</p>
-                </div>
-                
-                {replies.map((r, i) => (
-                  <div key={i} className="bg-zinc-800/80 border border-zinc-750 p-4 rounded-2xl rounded-tr-sm max-w-[85%] ml-auto text-right shadow-sm">
-                    <span className="block text-[9px] font-bold text-zinc-400 uppercase mb-1">You</span>
-                    <p className="text-sm text-zinc-200">{r}</p>
+            ) : (
+              <>
+                <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-6 space-y-4 border-l-4 border-l-emerald-700/60 shadow-lg backdrop-blur-md">
+                  <div className="flex items-center justify-between border-b border-zinc-850/60 pb-3">
+                    <h3 className="font-display text-lg font-bold flex items-center gap-2 text-white">
+                      <StickyNote className="h-5 w-5 text-zinc-400" /> {activeNote.title}
+                    </h3>
+                    <span className="text-[9px] font-bold border border-zinc-800 bg-zinc-900 text-zinc-450 px-3 py-1 rounded-full uppercase tracking-wider">
+                      {activeNote.category}
+                    </span>
                   </div>
-                ))}
-              </div>
+                  <div className="space-y-2">
+                    <p className="text-sm leading-relaxed text-zinc-200">
+                      "{activeNote.body}"
+                    </p>
+                    <div className="text-[11px] text-zinc-500 font-sans">
+                      Recommended on {new Date(activeNote.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                    </div>
+                  </div>
 
-              {/* Message Input */}
-              <form onSubmit={handleSendReply} className="flex gap-2 pt-2 border-t border-zinc-850/60">
-                <input
-                  type="text"
-                  placeholder="Type a response to your coach..."
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  className="flex-1 bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-zinc-700 text-white placeholder-zinc-500"
-                />
-                <Button type="submit" size="sm" className="px-4 bg-zinc-100 hover:bg-white text-zinc-900 rounded-xl h-10">
-                  <Send className="h-4 w-4" />
-                </Button>
-              </form>
-            </div>
+                  {/* Functional Acknowledge Button */}
+                  <div className="pt-2 flex justify-start">
+                    <Button
+                      onClick={handleAcknowledge}
+                      disabled={isAcknowledged}
+                      variant={isAcknowledged ? "outline" : "hero"}
+                      className={cn(
+                        "w-full sm:w-auto font-bold rounded-xl text-xs h-10 px-5",
+                        isAcknowledged ? "border-zinc-800 text-zinc-500 bg-zinc-900/20" : "bg-zinc-100 hover:bg-white text-zinc-950"
+                      )}
+                    >
+                      {isAcknowledged ? (
+                        <>
+                          <Check className="h-4 w-4 mr-2" /> Acknowledged by Athlete
+                        </>
+                      ) : (
+                        "Acknowledge Protocol"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Coach Messaging Thread */}
+                <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-6 space-y-4 shadow-lg backdrop-blur-md">
+                  <div className="flex items-center gap-2 border-b border-zinc-850/60 pb-3">
+                    <MessageSquare className="h-5 w-5 text-zinc-400" />
+                    <h3 className="font-display text-base font-bold text-white">Coach Feedback Thread</h3>
+                  </div>
+
+                  <div className="space-y-3 max-h-60 overflow-y-auto pr-1 scrollbar-thin flex flex-col">
+                    {(!activeNote.messages || activeNote.messages.length === 0) ? (
+                      <p className="text-xs text-zinc-550 italic text-center py-4">No conversation messages yet. Send a response to start the thread.</p>
+                    ) : (
+                      activeNote.messages.map((msg) => (
+                        msg.senderRole === "coach" ? (
+                          <div key={msg.id} className="bg-zinc-905 border border-zinc-850 p-4 rounded-2xl rounded-tl-sm max-w-[85%] self-start shadow-sm">
+                            <span className="block text-[9px] font-bold text-emerald-600/85 uppercase mb-1">Coach Warren</span>
+                            <p className="text-sm text-zinc-200">{msg.text}</p>
+                            <span className="block text-[7.5px] text-zinc-500 mt-1">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
+                        ) : (
+                          <div key={msg.id} className="bg-zinc-800/80 border border-zinc-750 p-4 rounded-2xl rounded-tr-sm max-w-[85%] self-end text-right shadow-sm">
+                            <span className="block text-[9px] font-bold text-zinc-400 uppercase mb-1">You</span>
+                            <p className="text-sm text-zinc-200">{msg.text}</p>
+                            <span className="block text-[7.5px] text-zinc-550 mt-1">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
+                        )
+                      ))
+                    )}
+                  </div>
+
+                  {/* Message Input */}
+                  <form onSubmit={handleSendReply} className="flex gap-2 pt-2 border-t border-zinc-850/60">
+                    <input
+                      type="text"
+                      placeholder="Type a response to your coach..."
+                      value={replyText}
+                      onChange={(e) => setReplyText(e.target.value)}
+                      className="flex-1 bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-zinc-700 text-white placeholder-zinc-500"
+                    />
+                    <Button type="submit" size="sm" className="px-4 bg-zinc-100 hover:bg-white text-zinc-900 rounded-xl h-10">
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </form>
+                </div>
+              </>
+            )}
           </div>
         )}
       </main>

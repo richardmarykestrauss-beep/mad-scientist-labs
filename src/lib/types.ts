@@ -220,6 +220,14 @@ export type CoachNoteCategory =
 
 export type CoachNoteVisibility = "private" | "client_safe";
 
+export interface CoachNoteMessage {
+  id: string;
+  senderRole: "coach" | "client";
+  text: string;
+  timestamp: string;
+  read?: boolean;
+}
+
 export interface CoachNote {
   id: string;
   clientId: string;
@@ -231,5 +239,7 @@ export interface CoachNote {
   updatedAt: string;
   pinned: boolean;
   followUpDate?: string;
+  acknowledgedByClient?: boolean;
+  acknowledgedAt?: string;
+  messages?: CoachNoteMessage[];
 }
-

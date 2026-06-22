@@ -461,6 +461,11 @@ export default function CoachNotesPanel({ clientId }: CoachNotesPanelProps) {
                     {note.body}
                   </p>
 
+                  {/* Conversation thread */}
+                  {note.visibility === "client_safe" && (
+                    <NoteConversation note={note} />
+                  )}
+
                   {/* Follow Up Date */}
                   {note.followUpDate && (
                     <div className="flex items-center gap-1.5 text-[8.5px] font-mono text-amber-300 bg-amber-500/5 border border-amber-500/10 px-2 py-0.5 rounded w-fit">
@@ -498,6 +503,11 @@ export default function CoachNotesPanel({ clientId }: CoachNotesPanelProps) {
                       <span className="text-[7px] font-mono text-muted-foreground uppercase">{note.category}</span>
                     </div>
                     <p className="text-[9px] text-muted-foreground line-clamp-3">{note.body}</p>
+                    {note.acknowledgedByClient && (
+                      <span className="text-[7.5px] text-emerald-450 font-bold flex items-center gap-0.5 mt-1 border-t border-border/10 pt-1">
+                        <CheckCircle2 className="h-2 w-2" /> Acknowledged
+                      </span>
+                    )}
                   </div>
                 ))
               )}
@@ -506,6 +516,86 @@ export default function CoachNotesPanel({ clientId }: CoachNotesPanelProps) {
         </div>
 
       </div>
+    </div>
+  );
+}
+
+function NoteConversation({ note }: { note: CoachNote }) {
+  const [reply, setReply] = useState("");
+
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reply.trim()) return;
+    actions.coachReplyToNote(note.id, reply.trim());
+    setReply("");
+  };
+
+  const formatDate = (isoString: string) => {
+    const d = new Date(isoString);
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  };
+
+  return (
+    <div className="mt-4 pt-3 border-t border-border/10 space-y-3">
+      <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+        <span>Athlete Conversation Thread</span>
+        {note.acknowledgedByClient ? (
+          <span className="text-emerald-450 flex items-center gap-1 font-bold">
+            <CheckCircle2 className="h-3 w-3" /> Acknowledged at {formatDate(note.acknowledgedAt!)}
+          </span>
+        ) : (
+          <span className="text-amber-500 font-semibold">
+            Pending Athlete Acknowledgment
+          </span>
+        )}
+      </div>
+
+      {/* Messages Thread */}
+      <div className="space-y-2 max-h-48 overflow-y-auto pr-1 flex flex-col">
+        {(!note.messages || note.messages.length === 0) ? (
+          <p className="text-[10px] italic text-muted-foreground py-1">No conversation messages yet.</p>
+        ) : (
+          note.messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={cn(
+                "p-2 rounded-lg text-[10.5px] max-w-[85%] space-y-0.5",
+                msg.senderRole === "coach"
+                  ? "bg-zinc-800/40 border border-border/20 self-end text-right"
+                  : "bg-background/40 border border-border/10 self-start text-left"
+              )}
+            >
+              <span className="block text-[8px] font-bold uppercase text-muted-foreground">
+                {msg.senderRole === "coach" ? "You (Coach)" : "Athlete"}
+              </span>
+              <p className="text-zinc-200">{msg.text}</p>
+              <span className="block text-[7px] text-zinc-500">
+                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Reply Form */}
+      <form onSubmit={handleSend} className="flex gap-2 pt-2 border-t border-border/10">
+        <input
+          type="text"
+          placeholder="Respond to athlete..."
+          value={reply}
+          onChange={(e) => setReply(e.target.value)}
+          className="flex-1 input-glass py-1.5 px-2.5 text-xs bg-background/50 border border-border/40 focus:border-primary/40 focus:outline-none"
+        />
+        <Button type="submit" size="sm" className="h-8 font-mono text-[10px] uppercase tracking-wider bg-zinc-100 hover:bg-white text-zinc-950 px-3">
+          Reply
+        </Button>
+      </form>
     </div>
   );
 }

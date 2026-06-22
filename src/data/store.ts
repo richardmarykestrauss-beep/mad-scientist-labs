@@ -588,7 +588,8 @@ const SEED_COACH_NOTES = (): CoachNote[] => {
       visibility: "private",
       createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
       updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      pinned: true
+      pinned: true,
+      messages: []
     },
     {
       id: "cn-2",
@@ -599,7 +600,29 @@ const SEED_COACH_NOTES = (): CoachNote[] => {
       visibility: "client_safe",
       createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
       updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-      pinned: false
+      pinned: false,
+      acknowledgedByClient: true,
+      acknowledgedAt: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString(), // 18 hours ago
+      messages: [
+        {
+          id: "msg-seed-1",
+          senderRole: "coach",
+          text: "Marcus, let's push the Magnesium Glycinate before bed this week. How has your sleep quality been?",
+          timestamp: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: "msg-seed-2",
+          senderRole: "client",
+          text: "Sleep latency has decreased significantly, waking up feeling refreshed.",
+          timestamp: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: "msg-seed-3",
+          senderRole: "coach",
+          text: "Excellent. Let's keep this protocol active for the next 14 days.",
+          timestamp: new Date(Date.now() - 16 * 60 * 60 * 1000).toISOString()
+        }
+      ]
     },
     {
       id: "cn-3",
@@ -610,7 +633,8 @@ const SEED_COACH_NOTES = (): CoachNote[] => {
       visibility: "private",
       createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
       updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      pinned: true
+      pinned: true,
+      messages: []
     }
   ];
 };
@@ -1021,8 +1045,76 @@ export const actions = {
     };
     saveState(state);
     emit();
+  },
+  acknowledgeCoachNote(noteId: string) {
+    state = {
+      ...state,
+      coachNotes: state.coachNotes.map((n) =>
+        n.id === noteId
+          ? { ...n, acknowledgedByClient: true, acknowledgedAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+          : n
+      )
+    };
+    saveState(state);
+    emit();
+  },
+  replyToCoachNote(noteId: string, text: string) {
+    const newMessage = {
+      id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      senderRole: "client" as const,
+      text: text.trim(),
+      timestamp: new Date().toISOString()
+    };
+    state = {
+      ...state,
+      coachNotes: state.coachNotes.map((n) =>
+        n.id === noteId
+          ? {
+              ...n,
+              messages: [...(n.messages || []), newMessage],
+              updatedAt: new Date().toISOString()
+            }
+          : n
+      )
+    };
+    saveState(state);
+    emit();
+  },
+  coachReplyToNote(noteId: string, text: string) {
+    const newMessage = {
+      id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      senderRole: "coach" as const,
+      text: text.trim(),
+      timestamp: new Date().toISOString()
+    };
+    state = {
+      ...state,
+      coachNotes: state.coachNotes.map((n) =>
+        n.id === noteId
+          ? {
+              ...n,
+              messages: [...(n.messages || []), newMessage],
+              updatedAt: new Date().toISOString()
+            }
+          : n
+      )
+    };
+    saveState(state);
+    emit();
   }
 };
+
+export function getLatestActiveCoachNote(clientId: string) {
+  const clientNotes = state.coachNotes.filter(
+    (n) => n.clientId === clientId && n.visibility === "client_safe"
+  );
+  if (clientNotes.length === 0) return null;
+  return clientNotes.sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  })[0];
+}
 
 export function getClient(id: string) {
   return state.clients.find((c) => c.id === id);

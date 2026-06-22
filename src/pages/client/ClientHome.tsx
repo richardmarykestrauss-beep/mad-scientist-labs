@@ -117,14 +117,14 @@ export default function ClientHome() {
         {activeTab === "home" && (
           <div className="space-y-6 animate-fade-in">
             {/* Branded Aspirational Welcome Hero */}
-            <div className="relative overflow-hidden rounded-2xl border border-zinc-800/80 bg-gradient-to-b from-zinc-900 to-zinc-950 p-6 shadow-xl">
+            <div className="relative overflow-hidden rounded-2xl border border-zinc-850 bg-gradient-to-b from-zinc-900/60 to-zinc-950/90 p-6 shadow-2xl backdrop-blur-md">
               {/* Subtle design gradient accent */}
-              <div className="absolute top-0 right-0 -mr-12 -mt-12 w-40 h-40 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none" />
+              <div className="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 rounded-full bg-zinc-800/10 blur-[80px] pointer-events-none" />
               
               <div className="relative z-10 space-y-4">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-emerald-400">WARREN ATHLETICS</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">WARREN ATHLETICS</span>
                     <h1 className="text-3xl font-bold text-white tracking-tight">
                       Hello, {client.name.split(" ")[0]}
                     </h1>
@@ -132,19 +132,19 @@ export default function ClientHome() {
                       Coached by <span className="text-zinc-200 font-medium">Warren Germishuizen</span>
                     </p>
                   </div>
-                  <span className="text-[10px] font-medium border border-zinc-800 bg-zinc-900 text-zinc-400 px-3 py-1 rounded-full uppercase tracking-wider">
+                  <span className="text-[10px] font-medium border border-zinc-850 bg-zinc-900/60 text-zinc-400 px-3 py-1 rounded-full uppercase tracking-wider">
                     Active Client
                   </span>
                 </div>
 
-                <div className="border-t border-zinc-800/80 pt-4 flex items-center justify-between gap-4">
+                <div className="border-t border-zinc-850/60 pt-4 flex items-center justify-between gap-4">
                   <div>
                     <span className="text-[9px] font-medium uppercase tracking-wider text-zinc-500">Program Focus</span>
                     <div className="text-sm font-semibold text-zinc-200 mt-0.5">{client.goal}</div>
                   </div>
                   <Button 
                     size="sm" 
-                    className="bg-emerald-500 hover:bg-emerald-600 text-zinc-950 text-xs font-semibold h-9 px-4 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    className="bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-bold h-9 px-4 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
                     onClick={() => { setActiveTab("program"); }}
                   >
                     View Today's Plan
@@ -155,40 +155,40 @@ export default function ClientHome() {
 
             {/* Performance SVG Rings Section */}
             <div className="space-y-3">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 ml-1">Daily Completion Status</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 ml-1">Daily Completion Status</span>
               <div className="grid grid-cols-4 gap-2.5">
                 {[
                   { 
                     label: "Bio Score", 
                     value: score, 
                     display: `${score}`, 
-                    color: "stroke-emerald-400",
+                    color: "stroke-emerald-600",
                     action: () => setActiveTab("labs") 
                   },
                   { 
                     label: "Training", 
                     value: client.trainingCompliance, 
                     display: `${client.trainingCompliance}%`, 
-                    color: "stroke-emerald-400",
+                    color: "stroke-emerald-600",
                     action: () => { setActiveTab("program"); }
                   },
                   { 
                     label: "Protocol", 
                     value: client.nutritionCompliance, 
                     display: `${client.nutritionCompliance}%`, 
-                    color: "stroke-emerald-400",
+                    color: "stroke-emerald-600",
                     action: () => { setActiveTab("program"); } 
                   },
                   { 
                     label: "Check-in", 
                     value: hasCheckedInToday ? 100 : 0, 
                     display: hasCheckedInToday ? "DONE" : "DUE", 
-                    color: hasCheckedInToday ? "stroke-emerald-400" : "stroke-amber-400",
+                    color: hasCheckedInToday ? "stroke-emerald-600" : "stroke-amber-600/90",
                     action: () => setActiveTab("checkin") 
                   }
                 ].map((ring, idx) => {
                   const size = 62;
-                  const strokeWidth = 3.5;
+                  const strokeWidth = 2.0;
                   const radius = (size - strokeWidth) / 2;
                   const circumference = radius * 2 * Math.PI;
                   const offset = circumference - (ring.value / 100) * circumference;
@@ -197,7 +197,7 @@ export default function ClientHome() {
                     <div 
                       key={idx}
                       onClick={ring.action}
-                      className="flex flex-col items-center justify-center p-4 rounded-2xl border border-zinc-800/60 bg-zinc-900/40 hover:border-zinc-700/60 transition-all cursor-pointer shadow-md"
+                      className="flex flex-col items-center justify-center p-4 rounded-2xl border border-zinc-850 bg-zinc-900/20 hover:border-zinc-800 hover:bg-zinc-900/40 transition-all cursor-pointer shadow-lg"
                     >
                       <div className="relative" style={{ width: size, height: size }}>
                         <svg className="w-full h-full transform -rotate-90">
@@ -205,7 +205,7 @@ export default function ClientHome() {
                             cx={size / 2}
                             cy={size / 2}
                             r={radius}
-                            className="stroke-zinc-850"
+                            className="stroke-zinc-850/60"
                             strokeWidth={strokeWidth}
                             fill="transparent"
                           />
@@ -235,31 +235,31 @@ export default function ClientHome() {
             </div>
 
             {/* Today's Focus Card */}
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 space-y-4">
+            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-5 space-y-4 shadow-lg">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Today's Focus Status</span>
-                <span className="text-[11px] text-emerald-400 flex items-center gap-1.5 font-medium">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" /> Active Protocol
+                <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Today's Focus Status</span>
+                <span className="text-[11px] text-zinc-400 flex items-center gap-1.5 font-semibold">
+                  <span className="w-2 h-2 rounded-full bg-emerald-600" /> Active Protocol
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="bg-zinc-900/60 p-3.5 rounded-xl border border-zinc-850">
+                <div className="bg-zinc-950/40 p-3.5 rounded-xl border border-zinc-850/60">
                   <span className="text-[10px] font-medium text-zinc-500 block">Training Target</span>
                   <span className="font-semibold text-zinc-200 mt-1 block">Pull Strength + Recovery</span>
                 </div>
-                <div className="bg-zinc-900/60 p-3.5 rounded-xl border border-zinc-850">
+                <div className="bg-zinc-950/40 p-3.5 rounded-xl border border-zinc-850/60">
                   <span className="text-[10px] font-medium text-zinc-500 block">Nutrition Intake</span>
                   <span className="font-semibold text-zinc-200 mt-1 block">Standard Protocol Targets</span>
                 </div>
-                <div className="bg-zinc-900/60 p-3.5 rounded-xl border border-zinc-850">
+                <div className="bg-zinc-950/40 p-3.5 rounded-xl border border-zinc-850/60">
                   <span className="text-[10px] font-medium text-zinc-500 block">Supplementation</span>
                   <span className="font-semibold text-zinc-200 mt-1 block">{client.nutritionCompliance}% Completed</span>
                 </div>
-                <div className="bg-zinc-900/60 p-3.5 rounded-xl border border-zinc-850">
+                <div className="bg-zinc-950/40 p-3.5 rounded-xl border border-zinc-850/60">
                   <span className="text-[10px] font-medium text-zinc-500 block">Weekly Review</span>
                   <span className={cn(
                     "font-semibold mt-1 block",
-                    hasCheckedInToday ? "text-emerald-400" : "text-amber-400"
+                    hasCheckedInToday ? "text-emerald-500" : "text-amber-500"
                   )}>
                     {hasCheckedInToday ? "Submitted" : "Action Needed"}
                   </span>
@@ -270,20 +270,20 @@ export default function ClientHome() {
             {/* Lab Snapshot Card */}
             <div 
               onClick={() => setActiveTab("labs")}
-              className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 hover:border-zinc-700/60 transition-all cursor-pointer shadow-md space-y-4"
+              className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-5 hover:border-zinc-800 hover:bg-zinc-900/30 transition-all cursor-pointer shadow-lg space-y-4"
             >
               <div className="flex justify-between items-center">
                 <h3 className="font-display text-sm font-bold flex items-center gap-1.5 text-zinc-200">
-                  <Beaker className="h-4 w-4 text-emerald-400" /> Performance Markers Snapshot
+                  <Beaker className="h-4 w-4 text-zinc-400" /> Performance Markers Snapshot
                 </h3>
-                <span className="text-[9px] text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded-full font-medium">
+                <span className="text-[9px] text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-full font-medium">
                   Read Only
                 </span>
               </div>
               <p className="text-xs text-zinc-450 leading-relaxed">
                 Biomarkers are verified against clinical health thresholds. Your metrics indicate stable metabolic and recovery status.
               </p>
-              <div className="flex items-center justify-between bg-zinc-950/60 border border-zinc-850 p-4 rounded-xl">
+              <div className="flex items-center justify-between bg-zinc-950/40 border border-zinc-850/60 p-4 rounded-xl">
                 <div>
                   <span className="text-[10px] font-medium text-zinc-500 block">Health Rating</span>
                   <div className="font-display text-2xl font-black text-white mt-1">
@@ -302,17 +302,17 @@ export default function ClientHome() {
             {/* Coach Note Overview */}
             <div 
               onClick={() => setActiveTab("notes")}
-              className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 hover:border-zinc-700/60 transition-all cursor-pointer shadow-md border-l-4 border-l-emerald-500 space-y-3"
+              className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-5 hover:border-zinc-800 hover:bg-zinc-900/30 transition-all cursor-pointer shadow-lg border-l-4 border-l-emerald-700/60 space-y-3"
             >
               <h3 className="font-display text-sm font-bold flex items-center gap-1.5 text-zinc-200">
-                <StickyNote className="h-4 w-4 text-emerald-400" /> Coach Guidance Note
+                <StickyNote className="h-4 w-4 text-zinc-400" /> Coach Guidance Note
               </h3>
               <p className="text-xs text-zinc-300 italic leading-relaxed">
                 "{client.notes || "Focus on hitting the correct tempos on your training splits. Let's keep hydration elevated."}"
               </p>
               <div className="text-[10px] flex items-center justify-between text-zinc-500">
                 <span>Updated recently</span>
-                <span className="text-emerald-400 font-semibold flex items-center gap-1 hover:underline">
+                <span className="text-zinc-450 hover:text-zinc-350 font-semibold flex items-center gap-1 hover:underline">
                   Read details & respond →
                 </span>
               </div>
@@ -361,16 +361,14 @@ export default function ClientHome() {
               <CheckInSubmissionForm clientId={id} onSubmitSuccess={() => setActiveTab("home")} />
             </div>
           </div>
-        )}
-
-        {activeTab === "notes" && (
+        )}         {activeTab === "notes" && (
           <div className="space-y-6 animate-fade-in">
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 space-y-4 border-l-4 border-l-emerald-500 shadow-md">
-              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-6 space-y-4 border-l-4 border-l-emerald-700/60 shadow-lg backdrop-blur-md">
+              <div className="flex items-center justify-between border-b border-zinc-850/60 pb-3">
                 <h3 className="font-display text-lg font-bold flex items-center gap-2 text-white">
-                  <StickyNote className="h-5 w-5 text-emerald-400" /> Coach Protocol Notes
+                  <StickyNote className="h-5 w-5 text-zinc-400" /> Coach Protocol Notes
                 </h3>
-                <span className="text-[10px] font-semibold border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 px-2.5 py-0.5 rounded-full uppercase">
+                <span className="text-[9px] font-bold border border-zinc-800 bg-zinc-900 text-zinc-450 px-3 py-1 rounded-full uppercase tracking-wider">
                   ACTIVE
                 </span>
               </div>
@@ -390,8 +388,8 @@ export default function ClientHome() {
                   disabled={isAcknowledged}
                   variant={isAcknowledged ? "outline" : "hero"}
                   className={cn(
-                    "w-full sm:w-auto font-semibold rounded-xl text-xs h-10 px-5",
-                    isAcknowledged ? "border-zinc-800 text-zinc-400" : "bg-emerald-500 text-zinc-950 hover:bg-emerald-600"
+                    "w-full sm:w-auto font-bold rounded-xl text-xs h-10 px-5",
+                    isAcknowledged ? "border-zinc-800 text-zinc-500 bg-zinc-900/20" : "bg-zinc-100 hover:bg-white text-zinc-950"
                   )}
                 >
                   {isAcknowledged ? (
@@ -406,35 +404,35 @@ export default function ClientHome() {
             </div>
 
             {/* Coach Messaging Thread */}
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 space-y-4 shadow-md">
-              <div className="flex items-center gap-2 border-b border-zinc-800/80 pb-3">
-                <MessageSquare className="h-5 w-5 text-emerald-400" />
+            <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-6 space-y-4 shadow-lg backdrop-blur-md">
+              <div className="flex items-center gap-2 border-b border-zinc-850/60 pb-3">
+                <MessageSquare className="h-5 w-5 text-zinc-400" />
                 <h3 className="font-display text-base font-bold text-white">Coach Feedback Thread</h3>
               </div>
               
               <div className="space-y-3 max-h-60 overflow-y-auto pr-1 scrollbar-thin">
                 {/* Seed messages */}
-                <div className="bg-zinc-900/80 rounded-xl p-3.5 max-w-[85%] self-start border border-zinc-800/80">
-                  <span className="block text-[9px] font-semibold text-emerald-400 uppercase mb-1">Coach Warren</span>
+                <div className="bg-zinc-905 border border-zinc-850 p-4 rounded-2xl rounded-tl-sm max-w-[85%] self-start shadow-sm">
+                  <span className="block text-[9px] font-bold text-emerald-600/85 uppercase mb-1">Coach Warren</span>
                   <p className="text-sm text-zinc-200">Marcus, let's push the incline DB press this week. How is your shoulder feeling on the concentric phase?</p>
                 </div>
                 
                 {replies.map((r, i) => (
-                  <div key={i} className="bg-zinc-800 border border-zinc-750 rounded-xl p-3.5 max-w-[85%] ml-auto text-right shadow-sm">
-                    <span className="block text-[9px] font-semibold text-zinc-400 uppercase mb-1">You</span>
+                  <div key={i} className="bg-zinc-800/80 border border-zinc-750 p-4 rounded-2xl rounded-tr-sm max-w-[85%] ml-auto text-right shadow-sm">
+                    <span className="block text-[9px] font-bold text-zinc-400 uppercase mb-1">You</span>
                     <p className="text-sm text-zinc-200">{r}</p>
                   </div>
                 ))}
               </div>
 
               {/* Message Input */}
-              <form onSubmit={handleSendReply} className="flex gap-2 pt-2 border-t border-zinc-800/80">
+              <form onSubmit={handleSendReply} className="flex gap-2 pt-2 border-t border-zinc-850/60">
                 <input
                   type="text"
                   placeholder="Type a response to your coach..."
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
-                  className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500/60 text-white placeholder-zinc-500"
+                  className="flex-1 bg-zinc-900 border border-zinc-850 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-zinc-700 text-white placeholder-zinc-500"
                 />
                 <Button type="submit" size="sm" className="px-4 bg-zinc-100 hover:bg-white text-zinc-900 rounded-xl h-10">
                   <Send className="h-4 w-4" />
@@ -446,7 +444,7 @@ export default function ClientHome() {
       </main>
 
       {/* Floating Bottom navigation bar for Mobile Viewports (< 768px) */}
-      <div className="md:hidden fixed bottom-5 left-5 right-5 border border-zinc-800 bg-zinc-950/90 backdrop-blur-md z-30 flex justify-around py-3 px-2 rounded-2xl shadow-xl">
+      <div className="md:hidden fixed bottom-5 left-5 right-5 border border-zinc-800/80 bg-zinc-900/85 backdrop-blur-lg z-30 flex justify-around py-2 px-1.5 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.8)]">
         {[
           { id: "home", label: "Home", icon: HomeIcon },
           { id: "labs", label: "Performance", icon: Beaker },
@@ -458,12 +456,14 @@ export default function ClientHome() {
             key={t.id}
             onClick={() => setActiveTab(t.id as "home" | "labs" | "program" | "checkin" | "notes")}
             className={cn(
-              "flex flex-col items-center gap-1 px-3 py-1 transition-all rounded-xl",
-              activeTab === t.id ? "text-emerald-400 scale-105" : "text-zinc-500"
+              "flex flex-col items-center justify-center gap-1 px-3.5 py-1.5 transition-all duration-300 rounded-xl min-w-[62px] h-12",
+              activeTab === t.id
+                ? "text-zinc-100 bg-zinc-800/60 shadow-inner scale-102"
+                : "text-zinc-500 hover:text-zinc-300"
             )}
           >
-            <t.icon className={cn("h-5 w-5", activeTab === t.id ? "stroke-[2.5]" : "stroke-[1.8]")} />
-            <span className="text-[9px] font-sans font-medium tracking-normal">{t.label}</span>
+            <t.icon className={cn("h-4.5 w-4.5", activeTab === t.id ? "stroke-[2.2]" : "stroke-[1.6]")} />
+            <span className="text-[8.5px] font-sans font-medium tracking-normal">{t.label}</span>
           </button>
         ))}
       </div>

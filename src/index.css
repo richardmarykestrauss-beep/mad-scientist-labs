@@ -4,62 +4,62 @@
 
 @layer base {
   :root {
-    /* Mad Scientist Coaching Lab — premium dark lab theme */
-    --background: 0 0% 4%;
+    /* Mad Scientist Coaching Lab — premium dark athlete portal theme */
+    --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 7%;
+    --card: 240 10% 6%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 6%;
+    --popover: 240 10% 5%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 150 100% 50%;            /* toxic neon green */
-    --primary-foreground: 0 0% 4%;
-    --primary-glow: 150 100% 60%;
+    --primary: 0 0% 98%;                  /* soft off-white text/brand */
+    --primary-foreground: 240 10% 3.9%;
+    --primary-glow: 0 0% 100% / 0.1;
 
-    --secondary: 0 0% 12%;
+    --secondary: 240 5.9% 10%;
     --secondary-foreground: 0 0% 96%;
 
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 240 5.9% 8%;
+    --muted-foreground: 240 5% 64.9%;
 
-    --accent: 150 100% 50%;
-    --accent-foreground: 0 0% 4%;
+    --accent: 240 5.9% 15%;
+    --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Clinical status palette */
-    --status-low: 217 91% 60%;          /* blue */
-    --status-below: 45 100% 55%;        /* yellow */
-    --status-optimal: 150 100% 50%;     /* neon green */
-    --status-above: 28 100% 58%;        /* orange */
-    --status-high: 0 84% 60%;           /* red */
-    --status-untested: 0 0% 30%;        /* grey */
+    /* Premium Athlete Status Palette */
+    --status-low: 217 91.2% 59.8%;          /* steel blue */
+    --status-below: 38 92% 50%;            /* warm gold */
+    --status-optimal: 142 45% 45%;         /* muted forest green */
+    --status-above: 38 92% 45%;            /* warm amber */
+    --status-high: 0 84.2% 60.2%;          /* crimson */
+    --status-untested: 240 5.9% 25%;       /* slate grey */
 
-    --border: 0 0% 14%;
-    --input: 0 0% 12%;
-    --ring: 150 100% 50%;
+    --border: 240 5.9% 13%;
+    --input: 240 5.9% 11%;
+    --ring: 240 5.9% 50%;
 
-    --radius: 0.875rem;
+    --radius: 1rem;
 
-    --gradient-primary: linear-gradient(135deg, hsl(150 100% 50%), hsl(170 100% 55%));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 8%), hsl(0 0% 5%));
-    --gradient-glow: radial-gradient(circle at 50% 0%, hsl(150 100% 50% / 0.15), transparent 70%);
+    --gradient-primary: linear-gradient(135deg, hsl(142 45% 45%), hsl(142 35% 35%));
+    --gradient-card: linear-gradient(180deg, hsl(240 10% 7.5%), hsl(240 10% 4.5%));
+    --gradient-glow: radial-gradient(circle at 50% 0%, hsl(240 5.9% 15% / 0.4), transparent 75%);
 
-    --shadow-elegant: 0 10px 40px -12px hsl(150 100% 50% / 0.25);
-    --shadow-card: 0 1px 0 hsl(0 0% 100% / 0.04) inset, 0 8px 24px -12px hsl(0 0% 0% / 0.6);
-    --shadow-glow: 0 0 32px hsl(150 100% 50% / 0.35);
+    --shadow-elegant: 0 10px 40px -12px rgba(0, 0, 0, 0.5);
+    --shadow-card: 0 1px 0 hsl(0 0% 100% / 0.02) inset, 0 8px 32px -16px hsl(0 0% 0% / 0.8);
+    --shadow-glow: 0 0 16px transparent;
 
-    --sidebar-background: 0 0% 5%;
-    --sidebar-foreground: 0 0% 80%;
-    --sidebar-primary: 150 100% 50%;
-    --sidebar-primary-foreground: 0 0% 4%;
-    --sidebar-accent: 0 0% 10%;
+    --sidebar-background: 240 10% 4.9%;
+    --sidebar-foreground: 240 5% 80%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 240 10% 3.9%;
+    --sidebar-accent: 240 5.9% 10%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 0 0% 12%;
-    --sidebar-ring: 150 100% 50%;
+    --sidebar-border: 240 5.9% 12%;
+    --sidebar-ring: 240 5.9% 50%;
   }
 
   .dark { color-scheme: dark; }
@@ -72,8 +72,8 @@
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "ss01", "cv11";
     background-image:
-      radial-gradient(1200px 600px at 80% -10%, hsl(150 100% 50% / 0.06), transparent 60%),
-      radial-gradient(800px 500px at 0% 100%, hsl(170 100% 50% / 0.04), transparent 60%);
+      radial-gradient(1200px 600px at 80% -10%, hsl(142 45% 45% / 0.03), transparent 60%),
+      radial-gradient(800px 500px at 0% 100%, hsl(240 5.9% 15% / 0.02), transparent 60%);
   }
   h1, h2, h3, h4 { @apply tracking-tight; font-family: 'Space Grotesk', ui-sans-serif, system-ui; }
   .font-mono-data { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-feature-settings: "tnum"; }

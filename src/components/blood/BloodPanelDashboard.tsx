@@ -25,6 +25,7 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [selected, setSelected] = useState<string | null>(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [mobileExpandAll, setMobileExpandAll] = useState(false);
 
   const latest = panels[panels.length - 1];
   const previous = panels[panels.length - 2];
@@ -178,13 +179,13 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
       </div>
 
       {/* Biomarker Constellation View Grid (Section 4) */}
-      <div className="lab-card-glow p-4 border border-border/80 space-y-3.5">
+      <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-4 space-y-3.5 shadow-lg backdrop-blur-md">
         <div>
-          <h3 className="text-[11.5px] font-semibold text-primary uppercase font-mono tracking-wider flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5" /> Biomarker Constellation View
+          <h3 className="text-xs font-bold text-zinc-300 uppercase font-sans tracking-widest flex items-center gap-1.5">
+            <Sparkles className="h-3.5 w-3.5 text-zinc-400" /> Biomarker Focus Areas
           </h3>
-          <p className="text-[9px] text-muted-foreground uppercase font-mono mt-0.5">
-            Interact with lenses to filter diagnostic categories
+          <p className="text-[9px] text-zinc-500 uppercase font-mono mt-0.5">
+            Filter dashboard tracking fields
           </p>
         </div>
 
@@ -204,25 +205,35 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
                 key={cat.key}
                 onClick={() => setActiveCategory(isActive ? "All" : cat.key)}
                 className={cn(
-                  "p-2 px-2.5 rounded-lg border bg-background/25 text-left transition duration-300 group flex flex-col justify-between hover:shadow-[0_0_10px_rgba(0,255,128,0.02)]",
-                  isActive 
-                    ? "border-primary bg-primary/5" 
-                    : "border-border/80 hover:border-primary/40 hover:bg-secondary/15"
+                  "p-2 px-2.5 rounded-lg border bg-zinc-950/20 text-left transition duration-300 group flex flex-col justify-between",
+                  isActive
+                    ? "border-zinc-500 bg-zinc-900/40"
+                    : "border-zinc-850 hover:border-zinc-800 hover:bg-zinc-900/10"
                 )}
               >
                 <div className="flex justify-between items-center w-full">
-                  <span className="text-[9px] font-bold font-mono text-muted-foreground uppercase tracking-wide group-hover:text-primary transition">{cat.label}</span>
+                  <span className="text-[9px] font-bold font-mono text-zinc-500 uppercase tracking-wide group-hover:text-zinc-350 transition">{cat.label}</span>
                   <span className={cn(
                     "h-1.5 w-1.5 rounded-full",
-                    result.status === "optimal" && "bg-status-optimal shadow-[0_0_4px_#00ff80]",
-                    result.status === "watch" && "bg-amber-500 shadow-[0_0_4px_#f59e0b]",
-                    result.status === "alert" && "bg-status-high shadow-[0_0_4px_#ef4444] animate-pulse",
-                    result.status === "untested" && "bg-secondary"
+                    result.status === "optimal" && "bg-status-optimal",
+                    result.status === "watch" && "bg-amber-500",
+                    result.status === "alert" && "bg-status-high animate-pulse",
+                    result.status === "untested" && "bg-zinc-800"
                   )} />
                 </div>
-                <div className="mt-1.5">
-                  <div className="text-[9.5px] text-foreground font-semibold truncate">{cat.desc}</div>
-                  <div className="text-[8px] font-mono text-muted-foreground mt-0.5">{result.count} markers loaded</div>
+                <div className="text-right mt-1 w-full flex justify-between items-end">
+                  <span className="text-[10px] text-zinc-500 font-sans tracking-wide">
+                    {result.status === "untested" ? "—" : `${result.count} markers`}
+                  </span>
+                  <span className={cn(
+                    "text-[10px] font-bold uppercase tracking-wider",
+                    result.status === "optimal" && "text-status-optimal",
+                    result.status === "watch" && "text-amber-500",
+                    result.status === "alert" && "text-status-high font-extrabold animate-pulse",
+                    result.status === "untested" && "text-zinc-650"
+                  )}>
+                    {result.status}
+                  </span>
                 </div>
               </button>
             );
@@ -238,10 +249,10 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
               key={c}
               onClick={() => setActiveCategory(c)}
               className={cn(
-                "rounded-full border px-3 py-1 text-[11px] font-semibold transition uppercase tracking-wider font-mono",
+                "rounded-full border px-3 py-1 text-[11px] font-semibold transition uppercase tracking-wider font-sans",
                 activeCategory === c
-                  ? "border-primary/60 bg-primary/10 text-primary"
-                  : "border-border bg-card/40 text-muted-foreground hover:text-foreground"
+                  ? "border-zinc-700 bg-zinc-800 text-zinc-100"
+                  : "border-zinc-850 bg-zinc-900/10 text-zinc-500 hover:text-zinc-300"
               )}
             >
               {c}
@@ -252,7 +263,7 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
           <div className="flex items-center gap-2">
             <Button
               variant="neon"
-              className="border-primary/60 bg-primary/10 text-primary hover:bg-primary/15 text-xs font-semibold h-8"
+              className="border-zinc-700 bg-zinc-800 text-zinc-100 hover:bg-zinc-700 text-xs font-semibold h-8"
               onClick={() => setIsUploadOpen(true)}
             >
               <Upload className="h-4 w-4 mr-1.5" /> Upload Blood Report
@@ -262,11 +273,75 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
         )}
       </div>
 
+      {/* Mobile-first Biomarker Card List (md:hidden) for Clients */}
+      {readOnly && (
+        <div className="md:hidden space-y-2">
+          <div className="flex justify-between items-center px-1 mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+              Active Category: {activeCategory}
+            </span>
+            <button
+              onClick={() => setMobileExpandAll(!mobileExpandAll)}
+              className="text-[10.5px] font-semibold text-zinc-400 hover:text-zinc-200 underline"
+            >
+              {mobileExpandAll ? "Hide All" : "Show All"}
+            </button>
+          </div>
+          {(mobileExpandAll || activeCategory !== "All") && (
+            <div className="space-y-2.5">
+              {filteredMarkers.map((r) => {
+                const def = BIOMARKER_MAP[r.key]; if (!def) return null;
+                const prev = previous?.results.find((x) => x.key === r.key)?.value;
+                const delta = prev != null ? pctChange(r.value, prev) : null;
+                const status = getStatus(def, r.value);
+                const dir = delta == null ? null : delta > 0.5 ? "up" : delta < -0.5 ? "down" : "flat";
+
+                return (
+                  <div
+                    key={r.key}
+                    onClick={() => setSelected(r.key)}
+                    className="p-4 rounded-xl border border-zinc-850 bg-zinc-900/10 hover:border-zinc-800 transition shadow-sm space-y-2.5"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-display text-sm font-bold text-white leading-none">{def.name}</h4>
+                        <span className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider block mt-1">{def.category}</span>
+                      </div>
+                      <StatusBadge status={status} />
+                    </div>
+
+                    <div className="flex justify-between items-center bg-zinc-950/40 p-2.5 rounded-lg border border-zinc-850/60 text-xs">
+                      <div>
+                        <span className="text-[9px] text-zinc-500 block">Current</span>
+                        <span className="font-semibold text-zinc-200 font-mono-data">{r.value} <span className="text-[10px] text-zinc-500 font-sans">{def.unit}</span></span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[9px] text-zinc-500 block">Delta</span>
+                        {delta == null ? <span className="text-zinc-550">—</span> : (
+                          <span className={cn("inline-flex items-center gap-0.5 font-semibold font-mono", dir === "up" ? "text-status-above" : dir === "down" ? "text-status-low" : "text-zinc-500")}>
+                            {delta > 0 ? "+" : ""}{delta.toFixed(1)}%
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {!mobileExpandAll && activeCategory === "All" && (
+            <div className="bg-zinc-900/20 border border-zinc-850 p-6 rounded-2xl text-center text-xs text-zinc-550 shadow-sm leading-relaxed">
+              Select a biomarker category filter above (e.g. Hormones, Lipids, Nutrients) to list performance markers, or tap "Show All" below.
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Biomarker table */}
-      <div className="lab-card-glow overflow-hidden">
+      <div className={cn("rounded-2xl border border-zinc-850 bg-zinc-900/20 overflow-hidden shadow-lg", readOnly ? "hidden md:block" : "block")}>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
-            <thead className="bg-secondary/40 text-[9px] uppercase tracking-wider text-muted-foreground font-mono">
+            <thead className="bg-zinc-950/40 text-[9px] uppercase tracking-wider text-zinc-500 font-mono">
               <tr>
                 <th className="text-left px-3.5 py-2">Biomarker</th>
                 <th className="text-left px-3 py-2">Category</th>
@@ -286,14 +361,14 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
                 const status = getStatus(def, r.value);
                 const dir = delta == null ? null : delta > 0.5 ? "up" : delta < -0.5 ? "down" : "flat";
                 return (
-                  <tr key={r.key} className="border-t border-border hover:bg-secondary/20 cursor-pointer" onClick={() => setSelected(r.key)}>
-                    <td className="px-3.5 py-2 font-medium text-[11.5px] text-foreground">{def.name}</td>
-                    <td className="px-3 py-2 text-xs text-muted-foreground">{def.category}</td>
-                    <td className="px-3 py-2 text-right font-mono-data text-xs">{r.value}<span className="text-muted-foreground text-[10px] ml-1">{def.unit}</span></td>
-                    <td className="px-3 py-2 text-right font-mono-data text-muted-foreground text-xs">{prev ?? "—"}</td>
-                    <td className="px-3 py-2 text-right font-mono-data text-xs">
+                  <tr key={r.key} className="border-t border-zinc-850 hover:bg-zinc-850/40 cursor-pointer transition duration-150" onClick={() => setSelected(r.key)}>
+                    <td className="px-3.5 py-2.5 font-medium text-[11.5px] text-zinc-200">{def.name}</td>
+                    <td className="px-3 py-2.5 text-xs text-zinc-500">{def.category}</td>
+                    <td className="px-3 py-2.5 text-right font-mono-data text-xs text-zinc-250">{r.value}<span className="text-zinc-500 text-[10px] ml-1">{def.unit}</span></td>
+                    <td className="px-3 py-2.5 text-right font-mono-data text-zinc-500 text-xs">{prev ?? "—"}</td>
+                    <td className="px-3 py-2.5 text-right font-mono-data text-xs">
                       {delta == null ? "—" : (
-                        <span className={cn("inline-flex items-center gap-1 text-[11px]", dir === "up" ? "text-status-above" : dir === "down" ? "text-status-low" : "text-muted-foreground")}>
+                        <span className={cn("inline-flex items-center gap-1 text-[11px]", dir === "up" ? "text-status-above" : dir === "down" ? "text-status-low" : "text-zinc-500")}>
                           {dir === "up" && <ArrowUp className="h-2.5 w-2.5" />}
                           {dir === "down" && <ArrowDown className="h-2.5 w-2.5" />}
                           {dir === "flat" && <ArrowRight className="h-2.5 w-2.5" />}
@@ -301,9 +376,9 @@ export function BloodPanelDashboard({ clientId, panels, readOnly = false }: Prop
                         </span>
                       )}
                     </td>
-                    <td className="px-3 py-2"><StatGauge def={def} value={r.value} /></td>
-                    <td className="px-3 py-2"><StatusBadge status={status} /></td>
-                    <td className="px-2 py-2 text-muted-foreground"><ChevronRight className="h-3.5 w-3.5" /></td>
+                    <td className="px-3 py-2.5"><StatGauge def={def} value={r.value} /></td>
+                    <td className="px-3 py-2.5"><StatusBadge status={status} /></td>
+                    <td className="px-2 py-2.5 text-zinc-500"><ChevronRight className="h-3.5 w-3.5" /></td>
                   </tr>
                 );
               })}

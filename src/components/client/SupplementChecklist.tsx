@@ -46,26 +46,26 @@ export function SupplementChecklist({ clientId }: Props) {
   return (
     <div className="space-y-4">
       {/* Summary Card */}
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md">
+      <div className="rounded-2xl border border-zinc-855 bg-zinc-900/20 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 grid place-items-center">
-            <Pill className="h-5 w-5 text-emerald-400" />
+          <div className="h-10 w-10 rounded-xl bg-zinc-900 border border-zinc-850 grid place-items-center">
+            <Pill className="h-4.5 w-4.5 text-zinc-400" />
           </div>
           <div>
-            <h3 className="font-display text-lg font-bold text-white">Supplement Protocol</h3>
-            <p className="text-xs text-zinc-400">
-              Follow timing guidelines. Supplements support biological pathways flagged in labs.
+            <h3 className="font-display text-base font-bold text-white">Supplement Protocol</h3>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Follow timing guidelines. Supplements support biological pathways.
             </p>
           </div>
         </div>
         <div className="space-y-1.5 min-w-[150px]">
           <div className="flex justify-between text-xs font-sans font-medium">
-            <span>Taken: {completedCount} / {totalCount}</span>
-            <span className="text-emerald-400 font-semibold">{progressPct}%</span>
+            <span className="text-zinc-400">Taken: {completedCount} / {totalCount}</span>
+            <span className="text-emerald-500 font-semibold">{progressPct}%</span>
           </div>
-          <div className="h-2 rounded-full bg-zinc-900 overflow-hidden">
+          <div className="h-1.5 rounded-full bg-zinc-950 overflow-hidden">
             <div
-              className="h-full bg-emerald-500 transition-all duration-300"
+              className="h-full bg-emerald-600 transition-all duration-300"
               style={{ width: `${progressPct}%` }}
             />
           </div>
@@ -83,16 +83,16 @@ export function SupplementChecklist({ clientId }: Props) {
               key={supp.name}
               onClick={() => actions.toggleSupplement(clientId, supp.name)}
               className={cn(
-                "rounded-xl border p-4 flex items-center justify-between gap-4 cursor-pointer hover:border-zinc-700/60 transition",
-                isCompleted ? "border-emerald-500/20 bg-emerald-500/5" : "border-zinc-800 bg-zinc-900/40"
+                "rounded-xl border p-4 flex items-center justify-between gap-4 cursor-pointer hover:border-zinc-800 transition-all duration-200",
+                isCompleted ? "border-emerald-700/20 bg-emerald-700/5 shadow-inner" : "border-zinc-850 bg-zinc-900/15"
               )}
             >
               <div className="flex items-start gap-3 min-w-0">
                 <div
                   className={cn(
-                    "h-5 w-5 rounded border shrink-0 mt-0.5 grid place-items-center transition",
+                    "h-5 w-5 rounded border shrink-0 mt-0.5 grid place-items-center transition duration-200",
                     isCompleted
-                      ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400"
+                      ? "bg-emerald-700/20 border-emerald-700/30 text-emerald-500"
                       : "border-zinc-800 bg-zinc-950/40"
                   )}
                 >
@@ -101,20 +101,20 @@ export function SupplementChecklist({ clientId }: Props) {
                 <div className="min-w-0">
                   <h4
                     className={cn(
-                      "font-display text-sm font-semibold truncate",
-                      isCompleted ? "text-emerald-400 font-semibold" : "text-zinc-200"
+                      "font-display text-sm font-semibold truncate transition",
+                      isCompleted ? "text-emerald-550 font-semibold" : "text-zinc-200"
                     )}
                   >
                     {supp.name}
                   </h4>
-                  <p className="text-xs text-zinc-400 truncate mt-0.5">
+                  <p className="text-xs text-zinc-500 truncate mt-0.5">
                     {supp.purpose}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5 text-zinc-400 font-sans text-[10px] uppercase shrink-0 bg-zinc-900/60 px-2.5 py-1 rounded-lg border border-zinc-800">
-                <Clock className="h-3.5 w-3.5 text-emerald-400" />
+              <div className="flex items-center gap-1.5 text-zinc-400 font-sans text-[9.5px] uppercase shrink-0 bg-zinc-950/40 px-2.5 py-1 rounded-xl border border-zinc-850">
+                <Clock className="h-3.5 w-3.5 text-zinc-400" />
                 <span className="max-w-[120px] truncate">{supp.timing.split(",")[0]}</span>
               </div>
             </div>
@@ -123,9 +123,9 @@ export function SupplementChecklist({ clientId }: Props) {
       </div>
 
       {/* Safety Notice */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-950/20 p-3 flex gap-2.5 items-start">
-        <ShieldAlert className="h-4 w-4 text-zinc-500 mt-0.5 shrink-0" />
-        <p className="text-[10px] text-zinc-500">
+      <div className="rounded-xl border border-zinc-850 bg-zinc-950/10 p-3.5 flex gap-2.5 items-start">
+        <ShieldAlert className="h-4 w-4 text-zinc-550 mt-0.5 shrink-0" />
+        <p className="text-[10px] text-zinc-550 leading-relaxed">
           Protocols are customized by your coach based on lab test results. Do not exceed suggested dosages without consulting your coach or physician.
         </p>
       </div>

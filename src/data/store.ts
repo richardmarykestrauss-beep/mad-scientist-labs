@@ -718,6 +718,39 @@ const requireReflection = (value: string, label: string) => {
   return trimmed;
 };
 
+const appendCoachNoteMessage = (note: CoachNote, senderRole: "coach" | "client", text: string): CoachNote => {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    throw new Error("Message cannot be empty");
+  }
+
+  const now = new Date();
+  const messages = note.messages || [];
+  const lastMessage = messages[messages.length - 1];
+  if (
+    lastMessage &&
+    lastMessage.senderRole === senderRole &&
+    lastMessage.text === trimmed &&
+    now.getTime() - new Date(lastMessage.timestamp).getTime() < 1500
+  ) {
+    return note;
+  }
+
+  return {
+    ...note,
+    messages: [
+      ...messages,
+      {
+        id: createId("msg"),
+        senderRole,
+        text: trimmed,
+        timestamp: now.toISOString()
+      }
+    ],
+    updatedAt: now.toISOString()
+  };
+};
+
 export function useStore() {
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
@@ -1201,44 +1234,20 @@ export const actions = {
     emit();
   },
   replyToCoachNote(noteId: string, text: string) {
-    const newMessage = {
-      id: createId("msg"),
-      senderRole: "client" as const,
-      text: text.trim(),
-      timestamp: new Date().toISOString()
-    };
     state = {
       ...state,
       coachNotes: state.coachNotes.map((n) =>
-        n.id === noteId
-          ? {
-              ...n,
-              messages: [...(n.messages || []), newMessage],
-              updatedAt: new Date().toISOString()
-            }
-          : n
+        n.id === noteId ? appendCoachNoteMessage(n, "client", text) : n
       )
     };
     saveState(state);
     emit();
   },
   coachReplyToNote(noteId: string, text: string) {
-    const newMessage = {
-      id: createId("msg"),
-      senderRole: "coach" as const,
-      text: text.trim(),
-      timestamp: new Date().toISOString()
-    };
     state = {
       ...state,
       coachNotes: state.coachNotes.map((n) =>
-        n.id === noteId
-          ? {
-              ...n,
-              messages: [...(n.messages || []), newMessage],
-              updatedAt: new Date().toISOString()
-            }
-          : n
+        n.id === noteId ? appendCoachNoteMessage(n, "coach", text) : n
       )
     };
     saveState(state);

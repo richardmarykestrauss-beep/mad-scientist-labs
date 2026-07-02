@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { getCheckInRepository } from "@/repositories/checkInRepository";
 import { localCheckInRepository } from "@/repositories/localCheckInRepository";
 import { supabaseCheckInRepository } from "@/repositories/supabaseCheckInRepository";
-import { validateSupabaseConfig } from "@/lib/supabase";
+import { resolveDataMode, validateSupabaseConfig } from "@/lib/supabase";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -15,6 +15,14 @@ describe("Remediation R3 - Configuration and Environment Guardrails", () => {
 
   afterEach(() => {
     Object.assign(import.meta.env, originalEnv);
+  });
+
+  it("fails closed when VITE_DATA_MODE is missing", () => {
+    expect(() => resolveDataMode(undefined)).toThrow(/must be explicitly set/);
+  });
+
+  it("fails closed when VITE_DATA_MODE is unknown", () => {
+    expect(() => resolveDataMode("production-demo")).toThrow(/must be explicitly set/);
   });
 
   it("local mode works without Supabase variables", () => {
@@ -39,6 +47,13 @@ describe("Remediation R3 - Configuration and Environment Guardrails", () => {
     import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY = "service_role_secret_key_prohibited";
     
     expect(() => validateSupabaseConfig()).toThrow(/service_role/);
+  });
+
+  it("supabase mode rejects malformed URLs and publishable keys", () => {
+    import.meta.env.VITE_DATA_MODE = "supabase";
+    import.meta.env.VITE_SUPABASE_URL = "not-a-url";
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY = "short";
+    expect(() => validateSupabaseConfig()).toThrow(/valid HTTPS URL/);
   });
 });
 

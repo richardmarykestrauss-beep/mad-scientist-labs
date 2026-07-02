@@ -25,10 +25,10 @@ Login URL: `<PILOT_LOGIN_URL>`
 | Warren's assigned-client roster | Live Supabase |
 | Weekly client check-in | Live Supabase |
 | Coach review and client feedback view | Live Supabase |
-| Training and nutrition plans | Demo/local-only |
-| Supplements | Demo/local-only |
-| Labs and biomarkers | Demo/local-only |
-| Coach notes, messaging, AI briefing | Demo/local-only |
+| Training and nutrition plans | Disabled for live clients |
+| Supplements | Disabled for live clients |
+| Labs and biomarkers | Disabled for live clients |
+| Coach notes, messaging, AI briefing | Disabled for live clients |
 | Invitations inside the app | Not connected; use Supabase admin |
 
 This prototype is for coaching and education. Do not use it for diagnosis, treatment, emergencies, medication changes, or other medical decisions.
@@ -37,7 +37,7 @@ This prototype is for coaching and education. Do not use it for diagnosis, treat
 
 - One check-in is allowed per client per ISO week and one review per check-in.
 - Submitted check-ins and reviews are immutable in R3.
-- Non-check-in modules may display clearly labelled demo/local-only UI and are not client records.
+- Non-check-in modules are blocked in Supabase mode and receive no live client identity or client data.
 - Report bugs with the user label, time, page, action, and screenshot/error text. Never include passwords, keys, or tokens.
 
 ## Deactivate or roll back

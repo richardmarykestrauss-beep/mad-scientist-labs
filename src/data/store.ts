@@ -3,6 +3,7 @@ import type { BloodPanel, BiomarkerResult, CheckIn, ExerciseLog, SupplementLog, 
 import { CLIENTS, PANELS, COACH } from "./mock";
 import { BIOMARKERS, getStatus } from "@/lib/biomarkers";
 import { createId } from "@/lib/id";
+import { getActiveDataMode } from "@/lib/supabase";
 
 type State = {
   coach: typeof COACH;
@@ -655,6 +656,21 @@ const loadInitialState = (): State => {
     supplementProtocols: SEED_SUPPLEMENT_PROTOCOLS(),
     coachNotes: SEED_COACH_NOTES()
   };
+  if (getActiveDataMode() === "supabase") {
+    return {
+      ...defaultState,
+      clients: [],
+      panels: [],
+      checkIns: [],
+      exerciseLogs: [],
+      supplementLogs: [],
+      nutritionPlans: [],
+      masterExercises: [],
+      trainingPlans: [],
+      supplementProtocols: [],
+      coachNotes: [],
+    };
+  }
   try {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (stored) {
@@ -685,6 +701,7 @@ let state: State = loadInitialState();
 const listeners = new Set<() => void>();
 
 const saveState = (newState: State) => {
+  if (getActiveDataMode() === "supabase") return;
   try {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({
       clients: newState.clients,

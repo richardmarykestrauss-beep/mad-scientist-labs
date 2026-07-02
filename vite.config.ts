@@ -6,7 +6,9 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
+    // Keep the vulnerable Vite 5/esbuild development chain local-only. Pilot
+    // hosting must use the production build, never this development server.
+    host: "127.0.0.1",
     port: 8080,
     hmr: {
       overlay: false,

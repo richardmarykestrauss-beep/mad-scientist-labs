@@ -29,6 +29,7 @@ import type { Client, BloodPanel } from "@/lib/types";
 import { toast } from "sonner";
 import { dataMode } from "@/lib/supabase";
 import { getCheckInRepository } from "@/repositories/checkInRepository";
+import { useAuth } from "@/context/AuthContext";
 
 const repository = getCheckInRepository();
 
@@ -56,6 +57,7 @@ function getClientAlerts(clientId: string, panels: BloodPanel[]) {
 }
 
 export default function ClientList() {
+  const { profile } = useAuth();
   const { clients: localClients, panels, checkIns } = useStore();
   const [liveClients, setLiveClients] = useState<Client[]>([]);
   const [liveError, setLiveError] = useState<string | null>(null);
@@ -80,6 +82,9 @@ export default function ClientList() {
 
   useEffect(() => {
     if (dataMode !== "supabase") return;
+    setLiveClients([]);
+    setLiveError(null);
+    setLiveLoading(true);
     repository.listAssignedClients()
       .then((profiles) => {
         setLiveClients(profiles.map((profile) => {
@@ -103,7 +108,7 @@ export default function ClientList() {
       })
       .catch((error: unknown) => setLiveError(error instanceof Error ? error.message : "Unable to load assigned clients."))
       .finally(() => setLiveLoading(false));
-  }, []);
+  }, [profile?.id]);
 
   const clients = dataMode === "supabase" ? liveClients : localClients;
 
@@ -140,6 +145,7 @@ export default function ClientList() {
       if (filter === "inactive") return c.status === "inactive";
       
       if (filter === "lab-alerts") {
+        if (dataMode === "supabase") return false;
         const { hasAlerts } = getClientAlerts(c.id, panels);
         return hasAlerts;
       }
@@ -197,7 +203,7 @@ export default function ClientList() {
 
   // Loaded alerts for selected preview client
   const selectedClientAlerts = useMemo(() => {
-    if (!selectedClient) return { hasAlerts: false, markers: [], latestDate: null };
+    if (!selectedClient || dataMode === "supabase") return { hasAlerts: false, markers: [], latestDate: null };
     return getClientAlerts(selectedClient.id, panels);
   }, [selectedClient, panels]);
 
@@ -344,7 +350,9 @@ export default function ClientList() {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 min-w-0">
           {paginatedClients.map((c) => {
-            const { hasAlerts, markers } = getClientAlerts(c.id, panels);
+            const { hasAlerts, markers } = dataMode === "local"
+              ? getClientAlerts(c.id, panels)
+              : { hasAlerts: false, markers: [] as string[] };
             return (
               <div
                 key={c.id}

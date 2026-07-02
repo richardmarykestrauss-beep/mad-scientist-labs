@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import type { User } from "@supabase/supabase-js";
 import { getSupabaseClient, dataMode } from "@/lib/supabase";
 import { getCheckInRepository, type UserProfile } from "@/repositories/checkInRepository";
+import { clearPilotSessionCaches } from "@/lib/pilotSession";
 
 interface AuthContextType {
   user: User | { email: string } | null;
@@ -26,6 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [error, setError] = useState<string | null>(null);
 
   const loadProfile = useCallback(async (sessionUser: User): Promise<UserProfile> => {
+    clearPilotSessionCaches();
     const nextProfile = await repository.getCurrentUserProfile();
     if (!nextProfile || nextProfile.status !== "active") {
       throw new Error("This account does not have an active pilot profile.");
@@ -127,6 +129,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
     setUser(null);
     setProfile(null);
+    clearPilotSessionCaches();
     if (dataMode !== "supabase") {
       localStorage.removeItem("demo-session-role");
       localStorage.removeItem("demo-session-user-id");

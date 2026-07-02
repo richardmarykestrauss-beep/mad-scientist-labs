@@ -46,6 +46,8 @@ import { BIOMARKERS, getStatus, STATUS_META } from "@/lib/biomarkers";
 import { cn } from "@/lib/utils";
 import { getCheckInRepository, type CheckInWithReview } from "@/repositories/checkInRepository";
 import { dataMode } from "@/lib/supabase";
+import { PrototypeFeatureNotice } from "@/components/pilot/PrototypeFeatureNotice";
+import { PILOT_DISCLAIMER, PILOT_STATUS_COPY } from "@/lib/pilotFeatures";
 
 const repository = getCheckInRepository();
 
@@ -55,8 +57,11 @@ export default function ClientProfile() {
   const [params, setParams] = useSearchParams();
   const tab = params.get("tab") ?? "overview";
   const { clients, panels } = useStore();
-  const localClient = clients.find((c) => c.id === id);
-  const clientPanels = getClientPanels(id);
+  const localClient = dataMode === "local" ? clients.find((c) => c.id === id) : undefined;
+  const clientPanels = useMemo(
+    () => dataMode === "local" ? getClientPanels(id) : [],
+    [id],
+  );
 
   const [rawCheckIns, setRawCheckIns] = useState<CheckInWithReview[]>([]);
   const [loadingCheckIns, setLoadingCheckIns] = useState(true);
@@ -66,6 +71,9 @@ export default function ClientProfile() {
 
   useEffect(() => {
     const load = async () => {
+      setRawCheckIns([]);
+      setLiveClient(null);
+      setLoadingCheckIns(true);
       const [data, assignedProfiles] = await Promise.all([
         repository.listAssignedClientCheckIns(id),
         dataMode === "supabase" ? repository.listAssignedClients() : Promise.resolve([]),
@@ -235,17 +243,49 @@ export default function ClientProfile() {
 
   if (!client) return <div className="text-muted-foreground p-6 text-center">Athlete not found.</div>;
 
+  if (dataMode === "supabase") {
+    return (
+      <div className="space-y-5 pb-8">
+        <Link to="/coach/clients" className="text-sm text-primary underline">Back to live assigned roster</Link>
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
+          <h1 className="text-xl font-bold">{client.name}</h1>
+          <p className="mt-1 text-sm">{PILOT_STATUS_COPY}</p>
+          <p className="mt-2 text-xs">{PILOT_DISCLAIMER}</p>
+        </div>
+        <section className="space-y-3">
+          <h2 className="font-bold">Live weekly check-ins</h2>
+          {checkIns.length === 0 ? (
+            <div className="rounded-xl border border-border p-6 text-center text-muted-foreground">No check-in history found for this assigned client.</div>
+          ) : checkIns.map((ch) => (
+            <CoachCheckInItem
+              key={ch.id}
+              checkIn={ch}
+              onReview={async (checkInId, feedback) => {
+                try {
+                  await repository.reviewAssignedCheckIn({ checkInId, feedback });
+                  const updated = await repository.listAssignedClientCheckIns(id);
+                  setRawCheckIns(updated);
+                  toast.success("Check-in reviewed successfully!");
+                } catch (error: unknown) {
+                  const message = error && typeof error === "object" && "code" in error && error.code === "23505"
+                    ? "This check-in has already been reviewed."
+                    : error instanceof Error ? error.message : "Failed to submit review";
+                  toast.error(message);
+                }
+              }}
+            />
+          ))}
+        </section>
+        <PrototypeFeatureNotice feature="Labs, biomarkers, training, nutrition, supplements, AI recommendations, notes, and messaging" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 animate-fade-in pb-8">
       <Link to="/coach/clients" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition">
         <ArrowLeft className="h-3 w-3" /> Back to Roster
       </Link>
-
-      {dataMode === "supabase" && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
-          Pilot: identity, weekly check-ins, and insert-once feedback are live. Labs, training, nutrition, supplements, AI briefing, notes, and messaging are demo/local-only and are not client data.
-        </div>
-      )}
 
       {/* Premium Identity Card */}
       <div className="lab-card-glow p-4 flex flex-col xl:flex-row gap-5 items-start xl:items-center justify-between border border-border/80">

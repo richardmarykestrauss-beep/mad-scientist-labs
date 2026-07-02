@@ -81,6 +81,10 @@ export function CheckInSubmissionForm({ clientId, onSubmitSuccess }: Props) {
   }, []);
 
   useEffect(() => {
+    if (dataMode === "supabase") {
+      setCurrentWeekCheckIn(null);
+      setLoading(true);
+    }
     if (dataMode !== "supabase" && clientId) {
       localStorage.setItem("demo-session-user-id", clientId);
       localStorage.setItem("demo-session-role", "client");

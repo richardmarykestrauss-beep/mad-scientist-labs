@@ -8,6 +8,9 @@ import { COACH } from "@/data/mock";
 import { actions } from "@/data/store";
 import { toast } from "sonner";
 import { User, Palette, Database, Sliders, RotateCcw, AlertTriangle } from "lucide-react";
+import { dataMode } from "@/lib/supabase";
+import { PILOT_DISCLAIMER, PILOT_STATUS_COPY } from "@/lib/pilotFeatures";
+import { PrototypeFeatureNotice } from "@/components/pilot/PrototypeFeatureNotice";
 
 export default function Settings() {
   const [open, setOpen] = useState(false);
@@ -16,6 +19,20 @@ export default function Settings() {
     actions.resetStore();
     toast.success("Demo data reset to default seed values");
   };
+
+  if (dataMode === "supabase") {
+    return (
+      <div className="space-y-5 max-w-3xl">
+        <h1 className="font-display text-2xl font-bold text-slate-900">Pilot Settings</h1>
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
+          <h2 className="font-bold">{PILOT_STATUS_COPY}</h2>
+          <p className="mt-2 text-sm">Authentication, client identity, weekly check-ins, and coach reviews sync through Supabase.</p>
+          <p className="mt-2 text-xs">{PILOT_DISCLAIMER}</p>
+        </div>
+        <PrototypeFeatureNotice feature="Profile editing, branding, labs, protocols, local reset controls, and other workspace settings" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4.5 animate-fade-in max-w-3xl pb-10">

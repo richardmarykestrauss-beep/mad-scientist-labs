@@ -30,12 +30,12 @@ export interface CheckInRepository {
 }
 
 // Global factory accessor
-import { dataMode } from "@/lib/supabase";
+import { dataMode, type DataMode } from "@/lib/supabase";
 import { localCheckInRepository } from "./localCheckInRepository";
 import { supabaseCheckInRepository } from "./supabaseCheckInRepository";
 
-export function getCheckInRepository(): CheckInRepository {
-  if (dataMode === "supabase") {
+export function getCheckInRepository(mode: DataMode = dataMode): CheckInRepository {
+  if (mode === "supabase") {
     return supabaseCheckInRepository;
   }
   return localCheckInRepository;

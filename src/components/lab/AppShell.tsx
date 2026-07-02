@@ -9,6 +9,7 @@ import { useStore } from "@/data/store";
 import { useAuth } from "@/context/AuthContext";
 import { dataMode } from "@/lib/supabase";
 import { toast } from "sonner";
+import { PILOT_DISCLAIMER, PILOT_STATUS_COPY } from "@/lib/pilotFeatures";
 
 const NAV = [
   { to: "/coach", icon: LayoutDashboard, label: "Dashboard", end: true },
@@ -223,7 +224,7 @@ export function AppShell() {
         <main className="flex-1 px-4 md:px-6 py-6">
           {dataMode === "supabase" && (
             <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
-              Warren Pilot: assigned roster and weekly check-ins/feedback are live. Dashboard metrics, labs, training, nutrition, supplements, notes, AI, and settings are demo/local-only.
+              <strong>{PILOT_STATUS_COPY}.</strong> Live: login, assigned client identity, weekly check-ins, and coach review/feedback. Prototype features are disabled for live clients. {PILOT_DISCLAIMER}
             </div>
           )}
           <Outlet />

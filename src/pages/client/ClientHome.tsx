@@ -17,6 +17,8 @@ import { BIOMARKER_MAP, getStatus } from "@/lib/biomarkers";
 import { useAuth } from "@/context/AuthContext";
 import { getCheckInRepository, type CheckInWithReview } from "@/repositories/checkInRepository";
 import { dataMode } from "@/lib/supabase";
+import { localPrototypeClientId, PILOT_DISCLAIMER, PILOT_STATUS_COPY } from "@/lib/pilotFeatures";
+import { PrototypeFeatureNotice } from "@/components/pilot/PrototypeFeatureNotice";
 
 const repository = getCheckInRepository();
 
@@ -41,6 +43,8 @@ export default function ClientHome() {
   const [loadingHistory, setLoadingHistory] = useState(true);
 
   useEffect(() => {
+    setCheckInHistory([]);
+    setLoadingHistory(true);
     repository.listOwnCheckIns()
       .then((history) => {
         setCheckInHistory(history);
@@ -61,7 +65,8 @@ export default function ClientHome() {
   }
 
   // Identity derivation: derive active athlete ID from authenticated profile
-  const activeClientId = dataMode === "supabase" ? profile.id : (id || "c-001");
+  const prototypeClientId = localPrototypeClientId(dataMode, id);
+  const activeClientId = dataMode === "supabase" ? profile.id : prototypeClientId!;
 
   // In supabase mode, reject/redirect legacy mismatched route IDs
   if (dataMode === "supabase" && id && id !== profile.id) {
@@ -71,7 +76,7 @@ export default function ClientHome() {
   const { clients } = store;
   
   // Map local client or fallback for layout fields
-  const localClient = clients.find((c) => c.id === activeClientId);
+  const localClient = prototypeClientId ? clients.find((c) => c.id === prototypeClientId) : undefined;
   if (!localClient && dataMode !== "supabase") {
     return <div className="p-6 text-center text-muted-foreground">Client profile not found.</div>;
   }
@@ -83,8 +88,8 @@ export default function ClientHome() {
     notes: dataMode === "supabase" ? "Coach notes are not yet connected." : localClient?.notes || "Demo coach note"
   };
 
-  const panels = getClientPanels(activeClientId);
-  const activeNote = getLatestActiveCoachNote(activeClientId);
+  const panels = prototypeClientId ? getClientPanels(prototypeClientId) : [];
+  const activeNote = prototypeClientId ? getLatestActiveCoachNote(prototypeClientId) : undefined;
   const isAcknowledged = !!activeNote?.acknowledgedByClient;
 
   const latestPanel = panels[panels.length - 1];
@@ -177,10 +182,24 @@ export default function ClientHome() {
       <main className="max-w-md md:max-w-lg w-full mx-auto p-4 flex-1 flex flex-col justify-start space-y-6">
         <div className="rounded-xl border border-amber-700/40 bg-amber-950/20 p-3 text-xs text-amber-200">
           {dataMode === "supabase"
-            ? "Weekly check-ins and coach feedback are live. Training, nutrition, supplements, labs, notes, and messaging are demo/local-only and not connected to this account."
+            ? `${PILOT_STATUS_COPY}. Prototype features are disabled and receive no live client data. ${PILOT_DISCLAIMER}`
             : "Demo/local-only workspace. Nothing on this screen is connected to a live client account."}
         </div>
-        {activeTab === "home" && (
+        {activeTab === "home" && dataMode === "supabase" && (
+          <div className="space-y-4 animate-fade-in">
+            <div className="rounded-2xl border border-emerald-800/50 bg-emerald-950/20 p-6">
+              <h1 className="text-xl font-bold">Welcome, {clientInfo.name}</h1>
+              <p className="mt-2 text-sm text-zinc-300">Your identity, weekly check-ins, and coach feedback are live.</p>
+              <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div className="rounded-xl border border-zinc-800 p-3">This week: {hasCheckedInThisWeek ? "Submitted" : "Not submitted"}</div>
+                <div className="rounded-xl border border-zinc-800 p-3">History: {loadingHistory ? "Loading" : `${checkInHistory.length} check-in(s)`}</div>
+              </div>
+              <Button className="mt-4" onClick={() => setActiveTab("checkin")}>Open weekly check-in</Button>
+            </div>
+            <PrototypeFeatureNotice feature="Training, nutrition, supplements, labs, recommendations, notes, and messaging" dark />
+          </div>
+        )}
+        {activeTab === "home" && dataMode === "local" && (
           <div className="space-y-6 animate-fade-in">
             {/* Branded Aspirational Welcome Hero */}
             <div className="relative overflow-hidden rounded-2xl border border-zinc-850 bg-gradient-to-b from-zinc-900/60 to-zinc-950/90 p-6 shadow-2xl backdrop-blur-md">
@@ -385,7 +404,8 @@ export default function ClientHome() {
           </div>
         )}
 
-        {activeTab === "labs" && (
+        {activeTab === "labs" && dataMode === "supabase" && <PrototypeFeatureNotice feature="Labs and biomarker analysis" dark />}
+        {activeTab === "labs" && dataMode === "local" && (
           <div className="space-y-5 animate-fade-in">
             <div className="flex items-center gap-2 mb-2">
               <Beaker className="h-5 w-5 text-emerald-400" />
@@ -397,7 +417,8 @@ export default function ClientHome() {
           </div>
         )}
 
-        {activeTab === "program" && (
+        {activeTab === "program" && dataMode === "supabase" && <PrototypeFeatureNotice feature="Training, nutrition, and supplement protocols" dark />}
+        {activeTab === "program" && dataMode === "local" && (
           <div className="space-y-6 animate-fade-in">
             <div className="flex items-center gap-2 border-b border-zinc-900 pb-3">
               <Dumbbell className="h-5 w-5 text-emerald-400" />
@@ -428,7 +449,8 @@ export default function ClientHome() {
           </div>
         )}
 
-        {activeTab === "notes" && (
+        {activeTab === "notes" && dataMode === "supabase" && <PrototypeFeatureNotice feature="Coach notes and messaging" dark />}
+        {activeTab === "notes" && dataMode === "local" && (
           <div className="space-y-6 animate-fade-in">
             {!activeNote ? (
               <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-8 text-center text-zinc-450 shadow-lg backdrop-blur-md">

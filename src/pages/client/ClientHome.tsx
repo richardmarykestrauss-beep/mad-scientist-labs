@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { useStore, getClientPanels, getClientCheckIns, getLatestActiveCoachNote, actions } from "@/data/store";
+import { useState, useEffect } from "react";
+import { useParams, Link, Navigate, useNavigate } from "react-router-dom";
+import { useStore, getClientPanels, getLatestActiveCoachNote, actions } from "@/data/store";
 import { BloodPanelDashboard } from "@/components/blood/BloodPanelDashboard";
 import { TrainingPlanCards } from "@/components/client/TrainingPlanCards";
 import { SupplementChecklist } from "@/components/client/SupplementChecklist";
@@ -9,36 +9,77 @@ import { Logo } from "@/components/lab/Logo";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { 
-  ArrowLeft, Beaker, Dumbbell, MessageSquare, Pill, Salad, 
-  Home as HomeIcon, ClipboardCheck, LayoutDashboard, StickyNote, Check, Send 
+  ArrowLeft, Beaker, Dumbbell, MessageSquare, Pill, 
+  Home as HomeIcon, ClipboardCheck, StickyNote, Check, Send 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BIOMARKER_MAP, getStatus } from "@/lib/biomarkers";
+import { useAuth } from "@/context/AuthContext";
+import { getCheckInRepository, type CheckInWithReview } from "@/repositories/checkInRepository";
+import { dataMode } from "@/lib/supabase";
 
 export default function ClientHome() {
-  const { id = "c-001" } = useParams();
-  
-  // Hook store state
-  useStore();
-  
+  const { id } = useParams();
+  const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
   const [activeTab, setActiveTab] = useState<"home" | "labs" | "program" | "checkin" | "notes">("home");
-  const [programSubTab, setProgramSubTab] = useState<"workout" | "supplements">("workout");
   const [replyText, setReplyText] = useState("");
+  const [checkInHistory, setCheckInHistory] = useState<CheckInWithReview[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
 
-  const today = new Date().toISOString().slice(0, 10);
-  const { clients } = useStore();
-  const client = clients.find((c) => c.id === id);
-  const panels = getClientPanels(id);
-  const checkIns = getClientCheckIns(id);
-  const activeNote = getLatestActiveCoachNote(id);
-  const isAcknowledged = !!activeNote?.acknowledgedByClient;
+  const repository = getCheckInRepository();
 
-  if (!client) {
-    return <div className="p-6 text-center text-muted-foreground">Client profile not found.</div>;
+  useEffect(() => {
+    repository.listOwnCheckIns()
+      .then((history) => {
+        setCheckInHistory(history);
+      })
+      .catch((err) => {
+        console.error("Failed to load client check-ins:", err);
+      })
+      .finally(() => {
+        setLoadingHistory(false);
+      });
+  }, [profile?.id, id, activeTab]);
+
+  const store = useStore();
+
+  // Enforce auth role checks and identity boundary
+  if (!profile) {
+    return <Navigate to="/" replace />;
   }
 
+  // Identity derivation: derive active athlete ID from authenticated profile
+  const activeClientId = dataMode === "supabase" ? profile.id : (id || "c-001");
+
+  // In supabase mode, reject/redirect legacy mismatched route IDs
+  if (dataMode === "supabase" && id && id !== profile.id) {
+    return <Navigate to="/client" replace />;
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const { clients } = store;
+  
+  // Map local client or fallback for layout fields
+  const localClient = clients.find((c) => c.id === activeClientId);
+  if (!localClient && dataMode !== "supabase") {
+    return <div className="p-6 text-center text-muted-foreground">Client profile not found.</div>;
+  }
+  const clientInfo = {
+    name: profile.fullName || localClient?.name || "Marcus Reign",
+    goal: localClient?.goal || "Recomp + raise free testosterone",
+    trainingCompliance: localClient?.trainingCompliance || 92,
+    nutritionCompliance: localClient?.nutritionCompliance || 86,
+    notes: localClient?.notes || "Focus on hitting the correct tempos on your training splits."
+  };
+
+  const panels = getClientPanels(activeClientId);
+  const activeNote = getLatestActiveCoachNote(activeClientId);
+  const isAcknowledged = !!activeNote?.acknowledgedByClient;
+
   const latestPanel = panels[panels.length - 1];
-  const hasCheckedInToday = checkIns.some((c) => c.date === today);
+  const hasCheckedInToday = checkInHistory.some((c) => c.checkIn.date === today);
 
   // Calculate lab summary stats
   const score = latestPanel ? Math.round(
@@ -72,7 +113,7 @@ export default function ClientHome() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col pb-28 md:pb-12 font-sans">
+    <div className="min-h-screen bg-zinc-955 text-zinc-100 flex flex-col pb-28 md:pb-12 font-sans">
       {/* Header */}
       <header className="border-b border-zinc-900/60 px-6 py-4 flex items-center gap-3 sticky top-0 bg-zinc-950/90 backdrop-blur-md z-30">
         <div className="flex items-center gap-3">
@@ -108,9 +149,12 @@ export default function ClientHome() {
           ))}
         </nav>
 
-        <Link to="/" className="text-xs text-zinc-400 hover:text-zinc-100 inline-flex items-center gap-1.5 border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 rounded-xl transition">
-          <ArrowLeft className="h-3.5 w-3.5" /> Exit Portal
-        </Link>
+        <button 
+          onClick={() => { signOut(); navigate("/"); }} 
+          className="text-xs text-zinc-400 hover:text-zinc-100 inline-flex items-center gap-1.5 border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 rounded-xl transition"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" /> Log Out
+        </button>
       </header>
 
       {/* Main viewport wrapped in a centered max-width mobile column */}
@@ -119,7 +163,6 @@ export default function ClientHome() {
           <div className="space-y-6 animate-fade-in">
             {/* Branded Aspirational Welcome Hero */}
             <div className="relative overflow-hidden rounded-2xl border border-zinc-850 bg-gradient-to-b from-zinc-900/60 to-zinc-950/90 p-6 shadow-2xl backdrop-blur-md">
-              {/* Subtle design gradient accent */}
               <div className="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 rounded-full bg-zinc-800/10 blur-[80px] pointer-events-none" />
               
               <div className="relative z-10 space-y-4">
@@ -127,7 +170,7 @@ export default function ClientHome() {
                   <div className="space-y-1">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">WARREN ATHLETICS</span>
                     <h1 className="text-3xl font-bold text-white tracking-tight">
-                      Hello, {client.name.split(" ")[0]}
+                      Hello, {clientInfo.name.split(" ")[0]}
                     </h1>
                     <p className="text-sm text-zinc-400">
                       Coached by <span className="text-zinc-200 font-medium">Warren Germishuizen</span>
@@ -141,11 +184,11 @@ export default function ClientHome() {
                 <div className="border-t border-zinc-850/60 pt-4 flex items-center justify-between gap-4">
                   <div>
                     <span className="text-[9px] font-medium uppercase tracking-wider text-zinc-500">Program Focus</span>
-                    <div className="text-sm font-semibold text-zinc-200 mt-0.5">{client.goal}</div>
+                    <div className="text-sm font-semibold text-zinc-200 mt-0.5">{clientInfo.goal}</div>
                   </div>
                   <Button 
                     size="sm" 
-                    className="bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-bold h-9 px-4 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    className="bg-zinc-100 hover:bg-white text-zinc-955 text-xs font-bold h-9 px-4 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
                     onClick={() => { setActiveTab("program"); }}
                   >
                     View Today's Plan
@@ -154,7 +197,7 @@ export default function ClientHome() {
               </div>
             </div>
 
-            {/* Performance SVG Rings Section */}
+            {/* Performance Status Section */}
             <div className="space-y-3">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 ml-1">Daily Completion Status</span>
               <div className="grid grid-cols-4 gap-2.5">
@@ -168,22 +211,22 @@ export default function ClientHome() {
                   },
                   { 
                     label: "Training", 
-                    value: client.trainingCompliance, 
-                    display: `${client.trainingCompliance}%`, 
+                    value: clientInfo.trainingCompliance, 
+                    display: `${clientInfo.trainingCompliance}%`, 
                     color: "stroke-emerald-600",
                     action: () => { setActiveTab("program"); }
                   },
                   { 
                     label: "Protocol", 
-                    value: client.nutritionCompliance, 
-                    display: `${client.nutritionCompliance}%`, 
+                    value: clientInfo.nutritionCompliance, 
+                    display: `${clientInfo.nutritionCompliance}%`, 
                     color: "stroke-emerald-600",
                     action: () => { setActiveTab("program"); } 
                   },
                   { 
                     label: "Check-in", 
                     value: hasCheckedInToday ? 100 : 0, 
-                    display: hasCheckedInToday ? "DONE" : "DUE", 
+                    display: loadingHistory ? "..." : hasCheckedInToday ? "DONE" : "DUE", 
                     color: hasCheckedInToday ? "stroke-emerald-600" : "stroke-amber-600/90",
                     action: () => setActiveTab("checkin") 
                   }
@@ -254,7 +297,7 @@ export default function ClientHome() {
                 </div>
                 <div className="bg-zinc-950/40 p-3.5 rounded-xl border border-zinc-850/60">
                   <span className="text-[10px] font-medium text-zinc-500 block">Supplementation</span>
-                  <span className="font-semibold text-zinc-200 mt-1 block">{client.nutritionCompliance}% Completed</span>
+                  <span className="font-semibold text-zinc-200 mt-1 block">{clientInfo.nutritionCompliance}% Completed</span>
                 </div>
                 <div className="bg-zinc-950/40 p-3.5 rounded-xl border border-zinc-850/60">
                   <span className="text-[10px] font-medium text-zinc-500 block">Weekly Review</span>
@@ -308,8 +351,8 @@ export default function ClientHome() {
               <h3 className="font-display text-sm font-bold flex items-center gap-1.5 text-zinc-200">
                 <StickyNote className="h-4 w-4 text-zinc-400" /> Coach Guidance Note
               </h3>
-              <p className="text-xs text-zinc-300 italic leading-relaxed">
-                "{client.notes || "Focus on hitting the correct tempos on your training splits. Let's keep hydration elevated."}"
+              <p className="text-xs text-zinc-350 italic leading-relaxed">
+                "{clientInfo.notes}"
               </p>
               <div className="text-[10px] flex items-center justify-between text-zinc-500">
                 <span>Updated recently</span>
@@ -328,7 +371,7 @@ export default function ClientHome() {
               <h2 className="font-display text-xl font-bold text-white">Performance Markers History</h2>
             </div>
             <div className="bg-zinc-900/30 border border-zinc-800/80 rounded-2xl p-5 shadow-lg">
-              <BloodPanelDashboard clientId={id} panels={panels} readOnly={true} />
+              <BloodPanelDashboard clientId={activeClientId} panels={panels} readOnly={true} />
             </div>
           </div>
         )}
@@ -340,14 +383,14 @@ export default function ClientHome() {
               <h2 className="font-display text-xl font-bold text-white">Active Coaching Protocol</h2>
             </div>
 
-            <TrainingPlanCards clientId={id} />
+            <TrainingPlanCards clientId={activeClientId} />
 
             <div className="pt-6 border-t border-zinc-800">
               <div className="flex items-center gap-2 mb-3">
                 <Pill className="h-4 w-4 text-emerald-400" />
                 <h3 className="font-display text-sm font-bold uppercase tracking-wider text-zinc-300">Today's Supplement Protocol</h3>
               </div>
-              <SupplementChecklist clientId={id} />
+              <SupplementChecklist clientId={activeClientId} />
             </div>
           </div>
         )}
@@ -359,17 +402,18 @@ export default function ClientHome() {
               <h2 className="font-display text-xl font-bold text-white">Weekly Performance Reflection</h2>
             </div>
             <div className="bg-zinc-900/30 border border-zinc-800/80 rounded-2xl p-5 shadow-lg">
-              <CheckInSubmissionForm clientId={id} onSubmitSuccess={() => setActiveTab("home")} />
+              <CheckInSubmissionForm clientId={activeClientId} onSubmitSuccess={() => setActiveTab("home")} />
             </div>
           </div>
         )}
+
         {activeTab === "notes" && (
           <div className="space-y-6 animate-fade-in">
             {!activeNote ? (
               <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-8 text-center text-zinc-450 shadow-lg backdrop-blur-md">
                 <StickyNote className="h-8 w-8 text-zinc-650 mx-auto mb-2.5" />
                 <h3 className="font-display text-sm font-bold text-zinc-300 uppercase tracking-wider mb-1">No Active Notes</h3>
-                <p className="text-xs text-zinc-500">There are no active feedback protocols or coach notes for you at this time.</p>
+                <p className="text-xs text-zinc-550">There are no active feedback protocols or coach notes for you at this time.</p>
               </div>
             ) : (
               <>
@@ -378,7 +422,7 @@ export default function ClientHome() {
                     <h3 className="font-display text-lg font-bold flex items-center gap-2 text-white">
                       <StickyNote className="h-5 w-5 text-zinc-400" /> {activeNote.title}
                     </h3>
-                    <span className="text-[9px] font-bold border border-zinc-800 bg-zinc-900 text-zinc-450 px-3 py-1 rounded-full uppercase tracking-wider">
+                    <span className="text-[9px] font-bold border border-zinc-800 bg-zinc-900 text-zinc-455 px-3 py-1 rounded-full uppercase tracking-wider">
                       {activeNote.category}
                     </span>
                   </div>
@@ -386,12 +430,11 @@ export default function ClientHome() {
                     <p className="text-sm leading-relaxed text-zinc-200">
                       "{activeNote.body}"
                     </p>
-                    <div className="text-[11px] text-zinc-500 font-sans">
+                    <div className="text-[11px] text-zinc-550 font-mono">
                       Recommended on {new Date(activeNote.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
                     </div>
                   </div>
 
-                  {/* Functional Acknowledge Button */}
                   <div className="pt-2 flex justify-start">
                     <Button
                       onClick={handleAcknowledge}
@@ -413,7 +456,6 @@ export default function ClientHome() {
                   </div>
                 </div>
 
-                {/* Coach Messaging Thread */}
                 <div className="rounded-2xl border border-zinc-850 bg-zinc-900/20 p-6 space-y-4 shadow-lg backdrop-blur-md">
                   <div className="flex items-center gap-2 border-b border-zinc-850/60 pb-3">
                     <MessageSquare className="h-5 w-5 text-zinc-400" />
@@ -429,7 +471,7 @@ export default function ClientHome() {
                           <div key={msg.id} className="bg-zinc-905 border border-zinc-850 p-4 rounded-2xl rounded-tl-sm max-w-[85%] self-start shadow-sm">
                             <span className="block text-[9px] font-bold text-emerald-600/85 uppercase mb-1">Coach Warren</span>
                             <p className="text-sm text-zinc-200">{msg.text}</p>
-                            <span className="block text-[7.5px] text-zinc-500 mt-1">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span className="block text-[7.5px] text-zinc-550 mt-1">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                           </div>
                         ) : (
                           <div key={msg.id} className="bg-zinc-800/80 border border-zinc-750 p-4 rounded-2xl rounded-tr-sm max-w-[85%] self-end text-right shadow-sm">
@@ -442,7 +484,6 @@ export default function ClientHome() {
                     )}
                   </div>
 
-                  {/* Message Input */}
                   <form onSubmit={handleSendReply} className="flex gap-2 pt-2 border-t border-zinc-850/60">
                     <input
                       type="text"

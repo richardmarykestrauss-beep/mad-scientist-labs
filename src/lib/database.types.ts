@@ -1,0 +1,160 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export interface Database {
+  public: {
+    Tables: {
+      profiles: {
+        Row: {
+          id: string
+          full_name: string | null
+          role: 'client' | 'coach' | 'admin'
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          full_name?: string | null
+          role?: 'client' | 'coach' | 'admin'
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          full_name?: string | null
+          role?: 'client' | 'coach' | 'admin'
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      coach_client_assignments: {
+        Row: {
+          id: string
+          coach_id: string
+          client_id: string
+          status: string
+          assigned_at: string
+        }
+        Insert: {
+          id?: string
+          coach_id: string
+          client_id: string
+          status?: string
+          assigned_at?: string
+        }
+        Update: {
+          id?: string
+          coach_id?: string
+          client_id?: string
+          status?: string
+          assigned_at?: string
+        }
+      }
+      check_ins: {
+        Row: {
+          id: string
+          client_id: string
+          week_key: string
+          submitted_at: string
+          weight: number
+          energy: number
+          sleep: number
+          mood: number
+          stress: number
+          training: number
+          nutrition: number
+          digestion: string
+          wins: string
+          struggles: string
+          questions: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          client_id: string
+          week_key: string
+          submitted_at?: string
+          weight: number
+          energy: number
+          sleep: number
+          mood: number
+          stress: number
+          training: number
+          nutrition: number
+          digestion: string
+          wins: string
+          struggles: string
+          questions: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          client_id?: string
+          week_key?: string
+          submitted_at?: string
+          weight?: number
+          energy?: number
+          sleep?: number
+          mood?: number
+          stress?: number
+          training?: number
+          nutrition?: number
+          digestion?: string
+          wins?: string
+          struggles?: string
+          questions?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      check_in_reviews: {
+        Row: {
+          id: string
+          check_in_id: string
+          coach_id: string
+          feedback: string
+          reviewed_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          check_in_id: string
+          coach_id: string
+          feedback: string
+          reviewed_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          check_in_id?: string
+          coach_id?: string
+          feedback?: string
+          reviewed_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+  }
+}

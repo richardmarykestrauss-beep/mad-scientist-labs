@@ -1,12 +1,59 @@
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { Logo } from "@/components/lab/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowRight, ShieldCheck, Beaker, Activity } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { dataMode } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { signIn } = useAuth();
+  const [email, setEmail] = useState("warren@madscientist.lab");
+  const [password, setPassword] = useState("demoaccess");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await signIn(email, password);
+      toast.success("Signed in successfully");
+      if (email.includes("warren") || email.includes("coach")) {
+        navigate("/coach");
+      } else {
+        navigate("/client");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Invalid credentials");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleContinueAsClient = async () => {
+    setLoading(true);
+    try {
+      if (dataMode === "supabase") {
+        // Must use auth.users flow in supabase mode
+        await signIn("client@madscientist.lab", "demoaccess");
+        toast.success("Signed in as Client");
+        navigate("/client");
+      } else {
+        await signIn("marcus.reign@example.com", "demoaccess");
+        toast.success("Signed in as Client (Demo)");
+        navigate("/client");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Client demo login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen relative overflow-hidden bg-background text-foreground">
       <div className="absolute inset-0 grid-bg opacity-40" />
@@ -46,25 +93,40 @@ export default function Login() {
             <div className="lg:hidden mb-6"><Logo /></div>
             <div className="space-y-1.5">
               <h2 className="font-display text-2xl font-bold">Enter the Lab</h2>
-              <p className="text-sm text-muted-foreground">Coach and client access. Demo mode — any credentials work.</p>
+              <p className="text-sm text-muted-foreground">
+                {dataMode === "supabase" ? "Production Supabase mode. Real credentials required." : "Demo mode — any credentials work."}
+              </p>
             </div>
-            <form
-              className="mt-6 space-y-4"
-              onSubmit={(e) => { e.preventDefault(); navigate("/coach"); }}
-            >
+            <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="warren@madscientist.lab" defaultValue="warren@madscientist.lab" className="bg-background/60" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="warren@madscientist.lab"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-background/60"
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" placeholder="••••••••" defaultValue="demoaccess" className="bg-background/60" />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-background/60"
+                  required
+                />
               </div>
-              <Button type="submit" variant="hero" size="lg" className="w-full group">
-                Sign in as Coach <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+              <Button type="submit" variant="hero" size="lg" className="w-full group" disabled={loading}>
+                {loading ? "Signing in..." : "Sign in"} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
               </Button>
-              <Button type="button" variant="outline" size="lg" className="w-full" onClick={() => navigate("/client/c-001")}>
-                Continue as Client (Demo)
+              <Button type="button" variant="outline" size="lg" className="w-full" onClick={handleContinueAsClient} disabled={loading}>
+                Continue as Client
               </Button>
             </form>
             <div className="mt-6 text-[11px] text-muted-foreground text-center">

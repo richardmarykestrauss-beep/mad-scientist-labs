@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link, useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { FeaturePlannedDialog } from "@/components/lab/FeaturePlannedDialog";
@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { useStore, getClientPanels, getCheckInsForClient, actions } from "@/data/store";
+import { useStore, getClientPanels, actions } from "@/data/store";
 import type { Client, BloodPanel, CheckIn } from "@/lib/types";
 import { BloodPanelDashboard } from "@/components/blood/BloodPanelDashboard";
 import { BloodReportUploadFlow } from "@/components/blood/BloodReportUploadFlow";
@@ -44,6 +44,7 @@ import SupplementProtocolPanel from "@/components/coach/SupplementProtocolPanel"
 import CoachNotesPanel from "@/components/coach/CoachNotesPanel";
 import { BIOMARKERS, getStatus, STATUS_META } from "@/lib/biomarkers";
 import { cn } from "@/lib/utils";
+import { getCheckInRepository, type CheckInWithReview } from "@/repositories/checkInRepository";
 
 export default function ClientProfile() {
   const { id = "" } = useParams();
@@ -53,7 +54,36 @@ export default function ClientProfile() {
   const { clients, panels } = useStore();
   const client = clients.find((c) => c.id === id);
   const clientPanels = getClientPanels(id);
-  const checkIns = getCheckInsForClient(id);
+
+  const [rawCheckIns, setRawCheckIns] = useState<CheckInWithReview[]>([]);
+  const [loadingCheckIns, setLoadingCheckIns] = useState(true);
+  const [errorState, setErrorState] = useState<string | null>(null);
+  const repository = getCheckInRepository();
+
+  useEffect(() => {
+    repository.listAssignedClientCheckIns(id)
+      .then((data) => {
+        setRawCheckIns(data);
+        setErrorState(null);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch client checkins", err);
+        setErrorState(err.message || "Failed to load check-ins");
+      })
+      .finally(() => {
+        setLoadingCheckIns(false);
+      });
+  }, [id, tab]);
+
+  const checkIns = useMemo(() => {
+    return rawCheckIns.map(item => ({
+      ...item.checkIn,
+      coachFeedback: item.review?.feedback,
+      reviewedAt: item.review?.reviewedAt,
+      reviewedBy: item.review?.coachId,
+      status: item.review ? ("reviewed" as const) : ("needs_review" as const)
+    }));
+  }, [rawCheckIns]);
 
   const [plannedFeature, setPlannedFeature] = useState<string | null>(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -154,6 +184,21 @@ export default function ClientProfile() {
     // Sort descending by date
     return list.sort((a, b) => b.date.localeCompare(a.date));
   }, [client, checkIns, clientPanels]);
+
+  if (errorState) {
+    return (
+      <div className="p-10 text-center max-w-md mx-auto space-y-4">
+        <div className="h-12 w-12 rounded-full bg-destructive/15 text-destructive grid place-items-center mx-auto mb-3">
+          <AlertTriangle className="h-6 w-6" />
+        </div>
+        <h3 className="text-lg font-bold text-foreground">Access Denied</h3>
+        <p className="text-sm text-muted-foreground">{errorState}</p>
+        <Link to="/coach/clients" className="inline-block mt-4 text-xs font-semibold text-primary underline">
+          Back to Roster
+        </Link>
+      </div>
+    );
+  }
 
   if (!client) return <div className="text-muted-foreground p-6 text-center">Athlete not found.</div>;
 
@@ -401,13 +446,14 @@ export default function ClientProfile() {
                   <CoachCheckInItem
                     key={ch.id}
                     checkIn={ch}
-                    onReview={(id, feedback) => {
+                    onReview={async (checkInId, feedback) => {
                       try {
-                        actions.reviewCheckIn(id, feedback, "Coach Warren");
+                        await repository.reviewAssignedCheckIn({ checkInId, feedback });
                         toast.success("Check-in reviewed successfully!");
-                      } catch (err) {
-                        const error = err as Error;
-                        toast.error(error.message || "Failed to submit review");
+                        const updated = await repository.listAssignedClientCheckIns(id);
+                        setRawCheckIns(updated);
+                      } catch (err: any) {
+                        toast.error(err.message || "Failed to submit review");
                       }
                     }}
                   />

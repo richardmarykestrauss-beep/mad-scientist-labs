@@ -1,10 +1,15 @@
 import type { CheckIn } from "@/lib/types";
+import type { Database } from "@/lib/database.types";
 import type { CheckInRepository, UserProfile, CheckInWithReview, CheckInReview } from "./checkInRepository";
 import { getSupabaseClient } from "@/lib/supabase";
 
+type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
+type CheckInRow = Database["public"]["Tables"]["check_ins"]["Row"];
+type ReviewRow = Database["public"]["Tables"]["check_in_reviews"]["Row"];
+
 function getWeekKey(dateStr?: string): string {
-  const date = dateStr ? new Date(dateStr) : new Date();
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const date = dateStr ? new Date(`${dateStr}T12:00:00Z`) : new Date();
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
@@ -12,94 +17,118 @@ function getWeekKey(dateStr?: string): string {
   return `${d.getUTCFullYear()}-W${weekNo.toString().padStart(2, "0")}`;
 }
 
+function toProfile(row: ProfileRow): UserProfile {
+  return { id: row.id, fullName: row.full_name, role: row.role, status: row.status };
+}
+
+function toReview(row: ReviewRow): CheckInReview {
+  return {
+    id: row.id,
+    checkInId: row.check_in_id,
+    coachId: row.coach_id,
+    feedback: row.feedback,
+    reviewedAt: row.reviewed_at,
+  };
+}
+
+function toCheckIn(row: CheckInRow, review?: ReviewRow): CheckInWithReview {
+  const checkIn: CheckIn = {
+    id: row.id,
+    clientId: row.client_id,
+    date: row.submitted_at.slice(0, 10),
+    bodyWeightKg: Number(row.weight),
+    energyScore: row.energy,
+    sleepQuality: row.sleep,
+    moodScore: row.mood,
+    stressScore: row.stress,
+    trainingAdherence: row.training,
+    nutritionAdherence: row.nutrition,
+    digestionNotes: row.digestion,
+    winsThisWeek: row.wins,
+    strugglesThisWeek: row.struggles,
+    questionForCoach: row.questions,
+    submittedAt: row.submitted_at,
+    weekKey: row.week_key,
+    status: review ? "reviewed" : "needs_review",
+  };
+  return { checkIn, review: review ? toReview(review) : undefined };
+}
+
+function requireClient() {
+  const client = getSupabaseClient();
+  if (!client) throw new Error("Supabase mode is not configured.");
+  return client;
+}
+
+async function getAuthenticatedUser() {
+  const supabase = requireClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error) throw error;
+  if (!user) throw new Error("Not authenticated.");
+  return { supabase, user };
+}
+
+async function attachReviews(rows: CheckInRow[]): Promise<CheckInWithReview[]> {
+  if (rows.length === 0) return [];
+  const supabase = requireClient();
+  const { data: reviews, error } = await supabase
+    .from("check_in_reviews")
+    .select("*")
+    .in("check_in_id", rows.map((row) => row.id));
+  if (error) throw error;
+  const byCheckIn = new Map((reviews ?? []).map((review) => [review.check_in_id, review]));
+  return rows.map((row) => toCheckIn(row, byCheckIn.get(row.id)));
+}
+
 export const supabaseCheckInRepository: CheckInRepository = {
   async getCurrentUserProfile(): Promise<UserProfile | null> {
-    const supabase = getSupabaseClient();
-    if (!supabase) return null;
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) return null;
-
-    const { data: profile, error: dbError } = await (supabase as any)
+    const { supabase, user } = await getAuthenticatedUser();
+    const { data, error } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
+    if (error) throw error;
+    return data ? toProfile(data) : null;
+  },
 
-    if (dbError || !profile) return null;
-
-    return {
-      id: profile.id,
-      fullName: profile.full_name,
-      role: profile.role,
-      status: profile.status
-    };
+  async listAssignedClients(): Promise<UserProfile[]> {
+    const { supabase } = await getAuthenticatedUser();
+    const { data: assignments, error: assignmentError } = await supabase
+      .from("coach_client_assignments")
+      .select("client_id")
+      .eq("status", "active");
+    if (assignmentError) throw assignmentError;
+    const clientIds = (assignments ?? []).map((row) => row.client_id);
+    if (clientIds.length === 0) return [];
+    const { data: profiles, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .in("id", clientIds)
+      .eq("role", "client")
+      .eq("status", "active");
+    if (profileError) throw profileError;
+    return (profiles ?? []).map(toProfile);
   },
 
   async listOwnCheckIns(): Promise<CheckInWithReview[]> {
-    const supabase = getSupabaseClient();
-    if (!supabase) throw new Error("Supabase mode is not configured");
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Not authenticated");
-
-    const { data, error } = await (supabase as any)
+    const { supabase, user } = await getAuthenticatedUser();
+    const { data, error } = await supabase
       .from("check_ins")
-      .select("*, check_in_reviews(*)")
+      .select("*")
       .eq("client_id", user.id)
       .order("submitted_at", { ascending: false });
-
     if (error) throw error;
-    if (!data) return [];
-
-    return data.map((row: any) => {
-      const reviewRow = row.check_in_reviews;
-      const checkIn: CheckIn = {
-        id: row.id,
-        clientId: row.client_id,
-        date: row.submitted_at.slice(0, 10),
-        bodyWeightKg: Number(row.weight),
-        energyScore: row.energy,
-        sleepQuality: row.sleep,
-        moodScore: row.mood,
-        stressScore: row.stress,
-        trainingAdherence: row.training,
-        nutritionAdherence: row.nutrition,
-        digestionNotes: row.digestion,
-        winsThisWeek: row.wins,
-        strugglesThisWeek: row.struggles,
-        questionForCoach: row.questions,
-        submittedAt: row.submitted_at,
-        weekKey: row.week_key,
-        status: reviewRow ? "reviewed" : "needs_review"
-      };
-
-      const review: CheckInReview | undefined = reviewRow ? {
-        id: reviewRow.id,
-        checkInId: reviewRow.check_in_id,
-        coachId: reviewRow.coach_id,
-        feedback: reviewRow.feedback,
-        reviewedAt: reviewRow.reviewed_at
-      } : undefined;
-
-      return { checkIn, review };
-    });
+    return attachReviews(data ?? []);
   },
 
-  async submitOwnCheckIn(input: Omit<CheckIn, "id" | "clientId" | "submittedAt" | "status" | "reviewedAt" | "reviewedBy" | "coachFeedback">): Promise<CheckIn> {
-    const supabase = getSupabaseClient();
-    if (!supabase) throw new Error("Supabase mode is not configured");
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Not authenticated");
-
-    const weekKey = getWeekKey(input.date);
-
-    const { data, error } = await (supabase as any)
+  async submitOwnCheckIn(input): Promise<CheckIn> {
+    const { supabase, user } = await getAuthenticatedUser();
+    const { data, error } = await supabase
       .from("check_ins")
       .insert({
         client_id: user.id,
-        week_key: weekKey,
+        week_key: getWeekKey(input.date),
         weight: input.bodyWeightKg,
         energy: input.energyScore,
         sleep: input.sleepQuality,
@@ -110,108 +139,35 @@ export const supabaseCheckInRepository: CheckInRepository = {
         digestion: input.digestionNotes,
         wins: input.winsThisWeek,
         struggles: input.strugglesThisWeek,
-        questions: input.questionForCoach
+        questions: input.questionForCoach,
       })
-      .select()
+      .select("*")
       .single();
-
     if (error) throw error;
-    if (!data) throw new Error("Failed to retrieve inserted check-in data");
-
-    return {
-      id: data.id,
-      clientId: data.client_id,
-      date: data.submitted_at.slice(0, 10),
-      bodyWeightKg: Number(data.weight),
-      energyScore: data.energy,
-      sleepQuality: data.sleep,
-      moodScore: data.mood,
-      stressScore: data.stress,
-      trainingAdherence: data.training,
-      nutritionAdherence: data.nutrition,
-      digestionNotes: data.digestion,
-      winsThisWeek: data.wins,
-      strugglesThisWeek: data.struggles,
-      questionForCoach: data.questions,
-      submittedAt: data.submitted_at,
-      weekKey: data.week_key,
-      status: "needs_review"
-    };
+    return toCheckIn(data).checkIn;
   },
 
   async listAssignedClientCheckIns(clientId: string): Promise<CheckInWithReview[]> {
-    const supabase = getSupabaseClient();
-    if (!supabase) throw new Error("Supabase mode is not configured");
-
-    const { data, error } = await (supabase as any)
+    const { supabase } = await getAuthenticatedUser();
+    const { data, error } = await supabase
       .from("check_ins")
-      .select("*, check_in_reviews(*)")
+      .select("*")
       .eq("client_id", clientId)
       .order("submitted_at", { ascending: false });
-
     if (error) throw error;
-    if (!data) return [];
-
-    return data.map((row: any) => {
-      const reviewRow = row.check_in_reviews;
-      const checkIn: CheckIn = {
-        id: row.id,
-        clientId: row.client_id,
-        date: row.submitted_at.slice(0, 10),
-        bodyWeightKg: Number(row.weight),
-        energyScore: row.energy,
-        sleepQuality: row.sleep,
-        moodScore: row.mood,
-        stressScore: row.stress,
-        trainingAdherence: row.training,
-        nutritionAdherence: row.nutrition,
-        digestionNotes: row.digestion,
-        winsThisWeek: row.wins,
-        strugglesThisWeek: row.struggles,
-        questionForCoach: row.questions,
-        submittedAt: row.submitted_at,
-        weekKey: row.week_key,
-        status: reviewRow ? "reviewed" : "needs_review"
-      };
-
-      const review: CheckInReview | undefined = reviewRow ? {
-        id: reviewRow.id,
-        checkInId: reviewRow.check_in_id,
-        coachId: reviewRow.coach_id,
-        feedback: reviewRow.feedback,
-        reviewedAt: reviewRow.reviewed_at
-      } : undefined;
-
-      return { checkIn, review };
-    });
+    return attachReviews(data ?? []);
   },
 
-  async reviewAssignedCheckIn(input: { checkInId: string; feedback: string }): Promise<CheckInReview> {
-    const supabase = getSupabaseClient();
-    if (!supabase) throw new Error("Supabase mode is not configured");
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Not authenticated");
-
-    const { data, error } = await (supabase as any)
+  async reviewAssignedCheckIn(input): Promise<CheckInReview> {
+    const { supabase, user } = await getAuthenticatedUser();
+    const feedback = input.feedback.trim();
+    if (!feedback) throw new Error("Feedback is required.");
+    const { data, error } = await supabase
       .from("check_in_reviews")
-      .insert({
-        check_in_id: input.checkInId,
-        coach_id: user.id,
-        feedback: input.feedback
-      })
-      .select()
+      .insert({ check_in_id: input.checkInId, coach_id: user.id, feedback })
+      .select("*")
       .single();
-
     if (error) throw error;
-    if (!data) throw new Error("Failed to retrieve inserted review data");
-
-    return {
-      id: data.id,
-      checkInId: data.check_in_id,
-      coachId: data.coach_id,
-      feedback: data.feedback,
-      reviewedAt: data.reviewed_at
-    };
-  }
+    return toReview(data);
+  },
 };

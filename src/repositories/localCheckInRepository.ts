@@ -1,4 +1,4 @@
-import type { CheckIn, Client } from "@/lib/types";
+import type { CheckIn } from "@/lib/types";
 import type { CheckInRepository, UserProfile, CheckInWithReview, CheckInReview } from "./checkInRepository";
 import { actions } from "@/data/store";
 
@@ -24,11 +24,15 @@ export const localCheckInRepository: CheckInRepository = {
     }
   },
 
+  async listAssignedClients(): Promise<UserProfile[]> {
+    return [];
+  },
+
   async listOwnCheckIns(): Promise<CheckInWithReview[]> {
     const profile = await this.getCurrentUserProfile();
     if (!profile) return [];
     
-    const state = (window as any).__madScientistState || JSON.parse(localStorage.getItem("mad-scientist-lab-state") || "{}");
+    const state = JSON.parse(localStorage.getItem("mad-scientist-lab-state") || "{}") as { checkIns?: CheckIn[] };
     const checkIns: CheckIn[] = state.checkIns || [];
     
     return checkIns
@@ -74,7 +78,7 @@ export const localCheckInRepository: CheckInRepository = {
       throw new Error("Access denied: only coaches can view client check-ins");
     }
 
-    const state = JSON.parse(localStorage.getItem("mad-scientist-lab-state") || "{}");
+    const state = JSON.parse(localStorage.getItem("mad-scientist-lab-state") || "{}") as { checkIns?: CheckIn[] };
     const checkIns: CheckIn[] = state.checkIns || [];
     
     return checkIns

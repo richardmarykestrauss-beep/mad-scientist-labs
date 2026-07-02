@@ -18,6 +18,18 @@ import { useAuth } from "@/context/AuthContext";
 import { getCheckInRepository, type CheckInWithReview } from "@/repositories/checkInRepository";
 import { dataMode } from "@/lib/supabase";
 
+const repository = getCheckInRepository();
+
+function currentWeekKey(): string {
+  const d = new Date();
+  const utc = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const day = utc.getUTCDay() || 7;
+  utc.setUTCDate(utc.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((utc.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return `${utc.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
+}
+
 export default function ClientHome() {
   const { id } = useParams();
   const { profile, signOut } = useAuth();
@@ -28,15 +40,13 @@ export default function ClientHome() {
   const [checkInHistory, setCheckInHistory] = useState<CheckInWithReview[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
 
-  const repository = getCheckInRepository();
-
   useEffect(() => {
     repository.listOwnCheckIns()
       .then((history) => {
         setCheckInHistory(history);
       })
-      .catch((err) => {
-        console.error("Failed to load client check-ins:", err);
+      .catch((error: unknown) => {
+        toast.error(error instanceof Error ? error.message : "Failed to load check-ins.");
       })
       .finally(() => {
         setLoadingHistory(false);
@@ -58,7 +68,6 @@ export default function ClientHome() {
     return <Navigate to="/client" replace />;
   }
 
-  const today = new Date().toISOString().slice(0, 10);
   const { clients } = store;
   
   // Map local client or fallback for layout fields
@@ -67,11 +76,11 @@ export default function ClientHome() {
     return <div className="p-6 text-center text-muted-foreground">Client profile not found.</div>;
   }
   const clientInfo = {
-    name: profile.fullName || localClient?.name || "Marcus Reign",
-    goal: localClient?.goal || "Recomp + raise free testosterone",
-    trainingCompliance: localClient?.trainingCompliance || 92,
-    nutritionCompliance: localClient?.nutritionCompliance || 86,
-    notes: localClient?.notes || "Focus on hitting the correct tempos on your training splits."
+    name: profile.fullName || (dataMode === "supabase" ? "Pilot Client" : localClient?.name || "Demo Client"),
+    goal: dataMode === "supabase" ? "Not yet connected" : localClient?.goal || "Demo coaching goal",
+    trainingCompliance: dataMode === "supabase" ? 0 : localClient?.trainingCompliance ?? 0,
+    nutritionCompliance: dataMode === "supabase" ? 0 : localClient?.nutritionCompliance ?? 0,
+    notes: dataMode === "supabase" ? "Coach notes are not yet connected." : localClient?.notes || "Demo coach note"
   };
 
   const panels = getClientPanels(activeClientId);
@@ -79,7 +88,7 @@ export default function ClientHome() {
   const isAcknowledged = !!activeNote?.acknowledgedByClient;
 
   const latestPanel = panels[panels.length - 1];
-  const hasCheckedInToday = checkInHistory.some((c) => c.checkIn.date === today);
+  const hasCheckedInThisWeek = checkInHistory.some((c) => c.checkIn.weekKey === currentWeekKey());
 
   // Calculate lab summary stats
   const score = latestPanel ? Math.round(
@@ -119,7 +128,7 @@ export default function ClientHome() {
         <div className="flex items-center gap-3">
           <Logo compact />
           <span className="text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/60 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-            Athlete OS
+            Pilot
           </span>
         </div>
         <div className="flex-1" />
@@ -150,7 +159,14 @@ export default function ClientHome() {
         </nav>
 
         <button 
-          onClick={() => { signOut(); navigate("/"); }} 
+          onClick={async () => {
+            try {
+              await signOut();
+              navigate("/");
+            } catch (error: unknown) {
+              toast.error(error instanceof Error ? error.message : "Sign-out failed.");
+            }
+          }}
           className="text-xs text-zinc-400 hover:text-zinc-100 inline-flex items-center gap-1.5 border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 rounded-xl transition"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Log Out
@@ -159,6 +175,11 @@ export default function ClientHome() {
 
       {/* Main viewport wrapped in a centered max-width mobile column */}
       <main className="max-w-md md:max-w-lg w-full mx-auto p-4 flex-1 flex flex-col justify-start space-y-6">
+        <div className="rounded-xl border border-amber-700/40 bg-amber-950/20 p-3 text-xs text-amber-200">
+          {dataMode === "supabase"
+            ? "Weekly check-ins and coach feedback are live. Training, nutrition, supplements, labs, notes, and messaging are demo/local-only and not connected to this account."
+            : "Demo/local-only workspace. Nothing on this screen is connected to a live client account."}
+        </div>
         {activeTab === "home" && (
           <div className="space-y-6 animate-fade-in">
             {/* Branded Aspirational Welcome Hero */}
@@ -225,9 +246,9 @@ export default function ClientHome() {
                   },
                   { 
                     label: "Check-in", 
-                    value: hasCheckedInToday ? 100 : 0, 
-                    display: loadingHistory ? "..." : hasCheckedInToday ? "DONE" : "DUE", 
-                    color: hasCheckedInToday ? "stroke-emerald-600" : "stroke-amber-600/90",
+                    value: hasCheckedInThisWeek ? 100 : 0,
+                    display: loadingHistory ? "..." : hasCheckedInThisWeek ? "DONE" : "DUE",
+                    color: hasCheckedInThisWeek ? "stroke-emerald-600" : "stroke-amber-600/90",
                     action: () => setActiveTab("checkin") 
                   }
                 ].map((ring, idx) => {
@@ -303,9 +324,9 @@ export default function ClientHome() {
                   <span className="text-[10px] font-medium text-zinc-500 block">Weekly Review</span>
                   <span className={cn(
                     "font-semibold mt-1 block",
-                    hasCheckedInToday ? "text-emerald-500" : "text-amber-500"
+                    hasCheckedInThisWeek ? "text-emerald-500" : "text-amber-500"
                   )}>
-                    {hasCheckedInToday ? "Submitted" : "Action Needed"}
+                    {hasCheckedInThisWeek ? "Submitted" : "Action Needed"}
                   </span>
                 </div>
               </div>

@@ -22,6 +22,7 @@ export interface CheckInWithReview {
 
 export interface CheckInRepository {
   getCurrentUserProfile(): Promise<UserProfile | null>;
+  listAssignedClients(): Promise<UserProfile[]>;
   listOwnCheckIns(): Promise<CheckInWithReview[]>;
   submitOwnCheckIn(input: Omit<CheckIn, "id" | "clientId" | "submittedAt" | "status" | "reviewedAt" | "reviewedBy" | "coachFeedback">): Promise<CheckIn>;
   listAssignedClientCheckIns(clientId: string): Promise<CheckInWithReview[]>;

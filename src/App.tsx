@@ -31,14 +31,16 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode;
   if (!user) {
     return <Navigate to="/" replace />;
   }
-  if (allowedRoles && (!profile || !allowedRoles.includes(profile.role))) {
+  if (!profile || profile.status !== "active") {
+    return <Navigate to="/" replace />;
+  }
+  if (allowedRoles && !allowedRoles.includes(profile.role)) {
     return <Navigate to="/" replace />;
   }
   return <>{children}</>;
 };
 
 const AppRoutes = () => {
-  const { profile } = useAuth();
   return (
     <Routes>
       <Route path="/" element={<Login />} />

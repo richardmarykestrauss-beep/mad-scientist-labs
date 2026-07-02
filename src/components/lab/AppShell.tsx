@@ -6,6 +6,9 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { COACH } from "@/data/mock";
 import { useStore } from "@/data/store";
+import { useAuth } from "@/context/AuthContext";
+import { dataMode } from "@/lib/supabase";
+import { toast } from "sonner";
 
 const NAV = [
   { to: "/coach", icon: LayoutDashboard, label: "Dashboard", end: true },
@@ -18,6 +21,7 @@ export function AppShell() {
   const loc = useLocation();
   const navigate = useNavigate();
   const { clients } = useStore();
+  const { profile, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
 
   const isCoachWorkspaceLight =
@@ -38,7 +42,7 @@ export function AppShell() {
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
-  const matchedClients = normalizedQuery
+  const matchedClients = dataMode !== "supabase" && normalizedQuery
     ? clients.filter(
         (c) =>
           c.name.toLowerCase().includes(normalizedQuery) ||
@@ -91,13 +95,25 @@ export function AppShell() {
         <div className={cn("p-3", isCoachWorkspaceLight ? "border-t border-slate-100" : "border-t border-border")}>
           <div className={cn("flex items-center gap-3 rounded-xl p-2.5", isCoachWorkspaceLight ? "border border-slate-200 bg-white shadow-sm" : "border border-border bg-card/60")}>
             <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-primary text-primary-foreground font-bold text-sm">
-              {COACH.initials}
+              {profile?.fullName?.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase() || COACH.initials}
             </div>
             <div className="min-w-0 flex-1">
-              <div className={cn("truncate text-sm font-semibold", isCoachWorkspaceLight ? "text-slate-800" : "text-foreground")}>{COACH.name}</div>
-              <div className={cn("truncate text-[11px]", isCoachWorkspaceLight ? "text-slate-400" : "text-muted-foreground")}>Coach · Admin</div>
+              <div className={cn("truncate text-sm font-semibold", isCoachWorkspaceLight ? "text-slate-800" : "text-foreground")}>{profile?.fullName || COACH.name}</div>
+              <div className={cn("truncate text-[11px]", isCoachWorkspaceLight ? "text-slate-400" : "text-muted-foreground")}>Coach · Pilot</div>
             </div>
-            <LogOut className={cn("h-4 w-4", isCoachWorkspaceLight ? "text-slate-400" : "text-muted-foreground")} />
+            <button
+              aria-label="Sign out"
+              onClick={async () => {
+                try {
+                  await signOut();
+                  navigate("/");
+                } catch (error: unknown) {
+                  toast.error(error instanceof Error ? error.message : "Sign-out failed.");
+                }
+              }}
+            >
+              <LogOut className={cn("h-4 w-4", isCoachWorkspaceLight ? "text-slate-400" : "text-muted-foreground")} />
+            </button>
           </div>
         </div>
       </aside>
@@ -200,11 +216,16 @@ export function AppShell() {
               <Bell className="h-4 w-4" />
             </button>
             <div className="md:hidden grid h-9 w-9 place-items-center rounded-full bg-gradient-primary text-primary-foreground font-bold text-sm">
-              {COACH.initials}
+              {profile?.fullName?.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase() || COACH.initials}
             </div>
           </div>
         </header>
         <main className="flex-1 px-4 md:px-6 py-6">
+          {dataMode === "supabase" && (
+            <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+              Warren Pilot: assigned roster and weekly check-ins/feedback are live. Dashboard metrics, labs, training, nutrition, supplements, notes, AI, and settings are demo/local-only.
+            </div>
+          )}
           <Outlet />
         </main>
         <footer className={cn("px-6 py-4 text-[11px] flex items-center gap-2 justify-between", isCoachWorkspaceLight ? "border-t border-slate-200 bg-white text-slate-500" : "border-t border-border text-muted-foreground")}>

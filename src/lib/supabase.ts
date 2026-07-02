@@ -4,7 +4,7 @@ import type { Database } from "./database.types";
 // Validation helper for Supabase configuration (reads dynamically to be testable)
 export function validateSupabaseConfig() {
   const url = import.meta.env.VITE_SUPABASE_URL || "";
-  const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+  const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
   const mode = import.meta.env.VITE_DATA_MODE || "local";
 
   if (mode === "supabase") {
@@ -14,8 +14,9 @@ export function validateSupabaseConfig() {
     if (!key) {
       throw new Error("Missing environment variable VITE_SUPABASE_PUBLISHABLE_KEY in supabase mode.");
     }
-    if (key.includes("service_role") || key.length > 200 && key.toLowerCase().includes("service")) {
-      throw new Error("Security Alert: Exposing service_role key on the client is prohibited.");
+    const normalizedKey = key.toLowerCase();
+    if (normalizedKey.includes("service_role") || normalizedKey.startsWith("sb_secret_")) {
+      throw new Error("Security alert: a secret or service_role key cannot be used by the browser.");
     }
   }
 }
@@ -31,7 +32,7 @@ export function getSupabaseClient(): ReturnType<typeof createClient<Database>> |
   validateSupabaseConfig();
   if (!supabaseInstance) {
     const url = import.meta.env.VITE_SUPABASE_URL || "";
-    const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+    const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
     supabaseInstance = createClient<Database>(url, key, {
       auth: {
         persistSession: true,

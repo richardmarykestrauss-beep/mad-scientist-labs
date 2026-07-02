@@ -34,6 +34,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       coach_client_assignments: {
         Row: {
@@ -57,6 +58,22 @@ export interface Database {
           status?: string
           assigned_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'coach_client_assignments_coach_id_fkey'
+            columns: ['coach_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'coach_client_assignments_client_id_fkey'
+            columns: ['client_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
       }
       check_ins: {
         Row: {
@@ -116,6 +133,15 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'check_ins_client_id_fkey'
+            columns: ['client_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
       }
       check_in_reviews: {
         Row: {
@@ -145,6 +171,22 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'check_in_reviews_check_in_id_fkey'
+            columns: ['check_in_id']
+            isOneToOne: true
+            referencedRelation: 'check_ins'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'check_in_reviews_coach_id_fkey'
+            columns: ['coach_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
       }
     }
     Views: {

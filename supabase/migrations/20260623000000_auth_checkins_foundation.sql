@@ -1,6 +1,8 @@
 -- Migration: Auth and Check-ins Foundation
 -- Created at: 2026-06-23
 
+BEGIN;
+
 -- Create private schema for security helpers (not exposed in Supabase Data API / schema list)
 CREATE SCHEMA IF NOT EXISTS private;
 
@@ -31,6 +33,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 
 -- Triggers for updated_at
+DROP TRIGGER IF EXISTS tr_profiles_updated_at ON public.profiles;
 CREATE TRIGGER tr_profiles_updated_at
   BEFORE UPDATE ON public.profiles
   FOR EACH ROW EXECUTE FUNCTION private.handle_updated_at();
@@ -58,8 +61,8 @@ CREATE TABLE IF NOT EXISTS public.check_ins (
   sleep integer NOT NULL CHECK (sleep BETWEEN 1 AND 10),
   mood integer NOT NULL CHECK (mood BETWEEN 1 AND 10),
   stress integer NOT NULL CHECK (stress BETWEEN 1 AND 10),
-  training integer NOT NULL CHECK (training BETWEEN 1 AND 10),
-  nutrition integer NOT NULL CHECK (nutrition BETWEEN 1 AND 10),
+  training integer NOT NULL CHECK (training BETWEEN 0 AND 100),
+  nutrition integer NOT NULL CHECK (nutrition BETWEEN 0 AND 100),
   digestion text NOT NULL CHECK (length(trim(digestion)) > 0),
   wins text NOT NULL CHECK (length(trim(wins)) > 0),
   struggles text NOT NULL CHECK (length(trim(struggles)) > 0),
@@ -70,6 +73,7 @@ CREATE TABLE IF NOT EXISTS public.check_ins (
   CONSTRAINT check_week_key_format CHECK (week_key ~ '^\d{4}-W(0[1-9]|[1-4]\d|5[0-3])$')
 );
 
+DROP TRIGGER IF EXISTS tr_check_ins_updated_at ON public.check_ins;
 CREATE TRIGGER tr_check_ins_updated_at
   BEFORE UPDATE ON public.check_ins
   FOR EACH ROW EXECUTE FUNCTION private.handle_updated_at();
@@ -85,6 +89,7 @@ CREATE TABLE IF NOT EXISTS public.check_in_reviews (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
+DROP TRIGGER IF EXISTS tr_check_in_reviews_updated_at ON public.check_in_reviews;
 CREATE TRIGGER tr_check_in_reviews_updated_at
   BEFORE UPDATE ON public.check_in_reviews
   FOR EACH ROW EXECUTE FUNCTION private.handle_updated_at();
@@ -111,7 +116,8 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- Trigger assignment
-CREATE OR REPLACE TRIGGER on_auth_user_created
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION private.handle_new_user();
 
@@ -178,6 +184,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
 
 -- Trigger for assignments validation
+DROP TRIGGER IF EXISTS tr_coach_client_assignments_validation ON public.coach_client_assignments;
 CREATE TRIGGER tr_coach_client_assignments_validation
   BEFORE INSERT OR UPDATE ON public.coach_client_assignments
   FOR EACH ROW EXECUTE FUNCTION private.validate_coach_client_assignment();
@@ -202,10 +209,10 @@ ALTER TABLE public.check_ins ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.check_in_reviews ENABLE ROW LEVEL SECURITY;
 
 -- Explicit table grants (Restrict public, allow authenticated)
-REVOKE ALL ON public.profiles FROM public, anon;
-REVOKE ALL ON public.coach_client_assignments FROM public, anon;
-REVOKE ALL ON public.check_ins FROM public, anon;
-REVOKE ALL ON public.check_in_reviews FROM public, anon;
+REVOKE ALL ON public.profiles FROM public, anon, authenticated;
+REVOKE ALL ON public.coach_client_assignments FROM public, anon, authenticated;
+REVOKE ALL ON public.check_ins FROM public, anon, authenticated;
+REVOKE ALL ON public.check_in_reviews FROM public, anon, authenticated;
 
 GRANT SELECT ON public.profiles TO authenticated;
 GRANT SELECT ON public.coach_client_assignments TO authenticated;
@@ -214,15 +221,18 @@ GRANT SELECT, INSERT ON public.check_in_reviews TO authenticated;
 
 -- RLS Policies
 -- Profiles Policies
+DROP POLICY IF EXISTS profiles_read_self ON public.profiles;
 CREATE POLICY profiles_read_self ON public.profiles
   FOR SELECT TO authenticated
-  USING (auth.uid() = id);
+  USING (auth.uid() = id AND status = 'active');
 
+DROP POLICY IF EXISTS profiles_read_coach_assigned ON public.profiles;
 CREATE POLICY profiles_read_coach_assigned ON public.profiles
   FOR SELECT TO authenticated
   USING (private.is_coach() AND private.coach_is_assigned_to(id));
 
 -- Coach-Client Assignments Policies
+DROP POLICY IF EXISTS assignments_read ON public.coach_client_assignments;
 CREATE POLICY assignments_read ON public.coach_client_assignments
   FOR SELECT TO authenticated
   USING (
@@ -241,6 +251,7 @@ CREATE POLICY assignments_read ON public.coach_client_assignments
   );
 
 -- Check-ins Policies
+DROP POLICY IF EXISTS check_ins_client_read ON public.check_ins;
 CREATE POLICY check_ins_client_read ON public.check_ins
   FOR SELECT TO authenticated
   USING (
@@ -248,6 +259,7 @@ CREATE POLICY check_ins_client_read ON public.check_ins
     AND private.is_active_client()
   );
 
+DROP POLICY IF EXISTS check_ins_client_insert ON public.check_ins;
 CREATE POLICY check_ins_client_insert ON public.check_ins
   FOR INSERT TO authenticated
   WITH CHECK (
@@ -255,11 +267,13 @@ CREATE POLICY check_ins_client_insert ON public.check_ins
     AND private.is_active_client()
   );
 
+DROP POLICY IF EXISTS check_ins_coach_read ON public.check_ins;
 CREATE POLICY check_ins_coach_read ON public.check_ins
   FOR SELECT TO authenticated
   USING (private.is_coach() AND private.coach_is_assigned_to(client_id));
 
 -- Check-in Reviews Policies
+DROP POLICY IF EXISTS reviews_client_read ON public.check_in_reviews;
 CREATE POLICY reviews_client_read ON public.check_in_reviews
   FOR SELECT TO authenticated
   USING (
@@ -270,6 +284,7 @@ CREATE POLICY reviews_client_read ON public.check_in_reviews
     )
   );
 
+DROP POLICY IF EXISTS reviews_coach_read ON public.check_in_reviews;
 CREATE POLICY reviews_coach_read ON public.check_in_reviews
   FOR SELECT TO authenticated
   USING (
@@ -280,6 +295,7 @@ CREATE POLICY reviews_coach_read ON public.check_in_reviews
     )
   );
 
+DROP POLICY IF EXISTS reviews_coach_insert ON public.check_in_reviews;
 CREATE POLICY reviews_coach_insert ON public.check_in_reviews
   FOR INSERT TO authenticated
   WITH CHECK (
@@ -290,3 +306,5 @@ CREATE POLICY reviews_coach_insert ON public.check_in_reviews
       WHERE public.check_ins.id = check_in_id AND private.coach_is_assigned_to(public.check_ins.client_id)
     )
   );
+
+COMMIT;

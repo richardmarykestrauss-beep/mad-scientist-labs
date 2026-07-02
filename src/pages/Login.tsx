@@ -12,23 +12,23 @@ import { toast } from "sonner";
 export default function Login() {
   const navigate = useNavigate();
   const { signIn } = useAuth();
-  const [email, setEmail] = useState("warren@madscientist.lab");
-  const [password, setPassword] = useState("demoaccess");
+  const [email, setEmail] = useState(dataMode === "supabase" ? "" : "warren@madscientist.lab");
+  const [password, setPassword] = useState(dataMode === "supabase" ? "" : "demoaccess");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await signIn(email, password);
+      const profile = await signIn(email, password);
       toast.success("Signed in successfully");
-      if (email.includes("warren") || email.includes("coach")) {
+      if (profile.role === "coach" || profile.role === "admin") {
         navigate("/coach");
       } else {
         navigate("/client");
       }
-    } catch (err: any) {
-      toast.error(err.message || "Invalid credentials");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Invalid credentials");
     } finally {
       setLoading(false);
     }
@@ -37,18 +37,11 @@ export default function Login() {
   const handleContinueAsClient = async () => {
     setLoading(true);
     try {
-      if (dataMode === "supabase") {
-        // Must use auth.users flow in supabase mode
-        await signIn("client@madscientist.lab", "demoaccess");
-        toast.success("Signed in as Client");
-        navigate("/client");
-      } else {
-        await signIn("marcus.reign@example.com", "demoaccess");
-        toast.success("Signed in as Client (Demo)");
-        navigate("/client");
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Client demo login failed");
+      await signIn("marcus.reign@example.com", "demoaccess");
+      toast.success("Signed in as Client (Demo)");
+      navigate("/client");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Client demo login failed");
     } finally {
       setLoading(false);
     }
@@ -92,9 +85,12 @@ export default function Login() {
           <div className="lab-card-glow w-full max-w-md p-8">
             <div className="lg:hidden mb-6"><Logo /></div>
             <div className="space-y-1.5">
-              <h2 className="font-display text-2xl font-bold">Enter the Lab</h2>
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="font-display text-2xl font-bold">Enter the Lab</h2>
+                <span className="chip">Pilot</span>
+              </div>
               <p className="text-sm text-muted-foreground">
-                {dataMode === "supabase" ? "Production Supabase mode. Real credentials required." : "Demo mode — any credentials work."}
+                {dataMode === "supabase" ? "Secure pilot. Use your individual account." : "Demo mode — any credentials work."}
               </p>
             </div>
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
@@ -125,9 +121,11 @@ export default function Login() {
               <Button type="submit" variant="hero" size="lg" className="w-full group" disabled={loading}>
                 {loading ? "Signing in..." : "Sign in"} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
               </Button>
-              <Button type="button" variant="outline" size="lg" className="w-full" onClick={handleContinueAsClient} disabled={loading}>
-                Continue as Client
-              </Button>
+              {dataMode !== "supabase" && (
+                <Button type="button" variant="outline" size="lg" className="w-full" onClick={handleContinueAsClient} disabled={loading}>
+                  Continue as Demo Client
+                </Button>
+              )}
             </form>
             <div className="mt-6 text-[11px] text-muted-foreground text-center">
               By continuing you agree to coaching-use only. Not a medical device.

@@ -1,143 +1,141 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 import { getSupabaseClient, dataMode } from "@/lib/supabase";
 import { getCheckInRepository, type UserProfile } from "@/repositories/checkInRepository";
 
 interface AuthContextType {
-  user: any | null;
+  user: User | { email: string } | null;
   profile: UserProfile | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<UserProfile>;
   signOut: () => Promise<void>;
   error: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const repository = getCheckInRepository();
+
+function messageFrom(error: unknown): string {
+  return error instanceof Error ? error.message : "Authentication failed.";
+}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<AuthContextType["user"]>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const repo = getCheckInRepository();
+  const loadProfile = useCallback(async (sessionUser: User): Promise<UserProfile> => {
+    const nextProfile = await repository.getCurrentUserProfile();
+    if (!nextProfile || nextProfile.status !== "active") {
+      throw new Error("This account does not have an active pilot profile.");
+    }
+    setUser(sessionUser);
+    setProfile(nextProfile);
+    setError(null);
+    return nextProfile;
+  }, []);
 
   useEffect(() => {
+    let active = true;
     if (dataMode !== "supabase") {
-      // Local Mode: derive current profile from localRepository
-      repo.getCurrentUserProfile().then((p) => {
-        setProfile(p);
-        setUser(p ? { email: p.role === "coach" ? "warren@example.com" : "marcus.reign@example.com" } : null);
+      repository.getCurrentUserProfile().then((nextProfile) => {
+        if (!active) return;
+        setProfile(nextProfile);
+        setUser(nextProfile ? { email: nextProfile.role === "coach" ? "warren@example.com" : "marcus.reign@example.com" } : null);
         setLoading(false);
       });
-      return;
+      return () => { active = false; };
     }
 
     const supabase = getSupabaseClient();
     if (!supabase) {
+      setError("Supabase mode is not configured.");
       setLoading(false);
-      return;
+      return () => { active = false; };
     }
 
-    // Fetch profile for an authenticated user
-    const fetchProfile = async (sessionUser: any) => {
+    void supabase.auth.getSession().then(async ({ data: { session }, error: sessionError }) => {
+      if (!active) return;
       try {
-                const { data: dbProfile, error: profileError } = await (supabase as any)
-          .from("profiles")
-          .select("*")
-          .eq("id", sessionUser.id)
-          .single();
-
-        if (profileError || !dbProfile) {
-          setError("Profile not found.");
+        if (sessionError) throw sessionError;
+        if (session?.user) await loadProfile(session.user);
+      } catch (caught) {
+        if (active) {
+          setUser(null);
           setProfile(null);
-        } else if ((dbProfile as any).status === "inactive") {
-          setError("Account is suspended.");
-          setProfile(null);
-        } else {
-          setProfile({
-            id: (dbProfile as any).id,
-            fullName: (dbProfile as any).full_name,
-            role: (dbProfile as any).role,
-            status: (dbProfile as any).status
-          });
+          setError(messageFrom(caught));
+          await supabase.auth.signOut();
         }
-      } catch (err: any) {
-        setError(err.message || "Failed to load profile.");
-      }
-    };
-
-    // Get current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-        fetchProfile(session.user).finally(() => setLoading(false));
-      } else {
-        setLoading(false);
+      } finally {
+        if (active) setLoading(false);
       }
     });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        setLoading(true);
-        fetchProfile(session.user).finally(() => setLoading(false));
-      } else {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!active) return;
+      if (event === "SIGNED_OUT" || !session?.user) {
         setUser(null);
         setProfile(null);
         setLoading(false);
+        return;
       }
+      setLoading(true);
+      void loadProfile(session.user)
+        .catch((caught) => {
+          if (!active) return;
+          setUser(null);
+          setProfile(null);
+          setError(messageFrom(caught));
+        })
+        .finally(() => { if (active) setLoading(false); });
     });
 
     return () => {
+      active = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [loadProfile]);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<UserProfile> => {
     setError(null);
     if (dataMode !== "supabase") {
-      // Simulated login inside local mode
-      if (email.includes("warren") || email.includes("coach")) {
-        localStorage.setItem("demo-session-role", "coach");
-        localStorage.setItem("demo-session-user-id", "coach-1");
-      } else {
-        localStorage.setItem("demo-session-role", "client");
-        localStorage.setItem("demo-session-user-id", "c-001");
-      }
-      const p = await repo.getCurrentUserProfile();
-      setProfile(p);
+      const role = email.toLowerCase().includes("warren") || email.toLowerCase().includes("coach") ? "coach" : "client";
+      localStorage.setItem("demo-session-role", role);
+      localStorage.setItem("demo-session-user-id", role === "coach" ? "coach-1" : "c-001");
+      const nextProfile = await repository.getCurrentUserProfile();
+      if (!nextProfile) throw new Error("Demo profile not found.");
+      setProfile(nextProfile);
       setUser({ email });
-      return;
+      return nextProfile;
     }
 
     const supabase = getSupabaseClient();
-    if (!supabase) throw new Error("Supabase is not configured.");
-
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (signInError) {
-      throw signInError;
+    if (!supabase) throw new Error("Supabase mode is not configured.");
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInError) throw signInError;
+    if (!data.user) throw new Error("Authentication succeeded without a user session.");
+    try {
+      return await loadProfile(data.user);
+    } catch (caught) {
+      await supabase.auth.signOut();
+      throw caught;
     }
   };
 
   const signOut = async () => {
     setError(null);
+    setUser(null);
+    setProfile(null);
     if (dataMode !== "supabase") {
       localStorage.removeItem("demo-session-role");
       localStorage.removeItem("demo-session-user-id");
-      setUser(null);
-      setProfile(null);
       return;
     }
-
     const supabase = getSupabaseClient();
-    if (supabase) {
-      await supabase.auth.signOut();
-    }
+    if (!supabase) throw new Error("Supabase mode is not configured.");
+    const { error: signOutError } = await supabase.auth.signOut();
+    if (signOutError) throw signOutError;
   };
 
   return (
@@ -147,18 +145,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    // Return a safe mock fallback for tests rendering components directly without AuthProvider wrapper
-    return {
-      user: { email: "marcus.reign@example.com" },
-      profile: { id: "c-001", fullName: "Marcus Reign", role: "client" as const, status: "active" },
-      loading: false,
-      signIn: async () => {},
-      signOut: async () => {},
-      error: null
-    };
+  if (context) return context;
+  if (dataMode === "supabase") {
+    throw new Error("useAuth must be used within AuthProvider in Supabase mode.");
   }
-  return context;
+  return {
+    user: { email: "demo-client@example.invalid" },
+    profile: { id: "c-001", fullName: "Demo Client", role: "client", status: "active" },
+    loading: false,
+    signIn: async () => ({ id: "c-001", fullName: "Demo Client", role: "client", status: "active" }),
+    signOut: async () => undefined,
+    error: null,
+  };
 };

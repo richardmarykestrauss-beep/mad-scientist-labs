@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { 
   Copy, 
@@ -27,6 +27,10 @@ import { useStore, actions } from "@/data/store";
 import { BIOMARKERS, getStatus } from "@/lib/biomarkers";
 import type { Client, BloodPanel } from "@/lib/types";
 import { toast } from "sonner";
+import { dataMode } from "@/lib/supabase";
+import { getCheckInRepository } from "@/repositories/checkInRepository";
+
+const repository = getCheckInRepository();
 
 // Helper to detect if client has lab alerts in latest panel
 function getClientAlerts(clientId: string, panels: BloodPanel[]) {
@@ -52,7 +56,10 @@ function getClientAlerts(clientId: string, panels: BloodPanel[]) {
 }
 
 export default function ClientList() {
-  const { clients, panels, checkIns } = useStore();
+  const { clients: localClients, panels, checkIns } = useStore();
+  const [liveClients, setLiveClients] = useState<Client[]>([]);
+  const [liveError, setLiveError] = useState<string | null>(null);
+  const [liveLoading, setLiveLoading] = useState(dataMode === "supabase");
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "review" | "lab-alerts" | "check-in-due" | "low-adherence" | "inactive">("all");
   const [sortBy, setSortBy] = useState<string>("needs-attention");
@@ -70,6 +77,35 @@ export default function ClientList() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const inviteCode = useMemo(() => "MSL-" + Math.random().toString(36).slice(2, 8).toUpperCase(), [open]);
   const TODAY = "2026-05-26";
+
+  useEffect(() => {
+    if (dataMode !== "supabase") return;
+    repository.listAssignedClients()
+      .then((profiles) => {
+        setLiveClients(profiles.map((profile) => {
+          const name = profile.fullName?.trim() || "Pilot Client";
+          return {
+            id: profile.id,
+            name,
+            email: "Individual pilot account",
+            avatarColor: "from-emerald-500 to-teal-700",
+            initials: name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase(),
+            goal: "Not yet connected",
+            bodyWeightKg: 0,
+            startedAt: "",
+            status: "active",
+            trainingCompliance: 0,
+            nutritionCompliance: 0,
+            nextCheckIn: "Weekly",
+          };
+        }));
+        setLiveError(null);
+      })
+      .catch((error: unknown) => setLiveError(error instanceof Error ? error.message : "Unable to load assigned clients."))
+      .finally(() => setLiveLoading(false));
+  }, []);
+
+  const clients = dataMode === "supabase" ? liveClients : localClients;
 
   const handleFilterChange = (f: typeof filter) => {
     setFilter(f);
@@ -174,13 +210,15 @@ export default function ClientList() {
           <h1 className="font-display text-3xl font-bold flex items-center gap-2 text-slate-900">
             Clients
             <span className="text-xs font-mono text-slate-500 font-normal border border-slate-200 px-2 py-0.5 rounded-full bg-white">
-              Mock Demo Roster
+              {dataMode === "supabase" ? "Live assigned roster" : "Mock demo roster"}
             </span>
           </h1>
-          <p className="text-slate-500 text-sm mt-1">Manage and monitor compliance across approximately 250 athletes.</p>
+          <p className="text-slate-500 text-sm mt-1">
+            {dataMode === "supabase" ? "Only clients actively assigned to this coach are shown." : "Prototype roster with local demo data."}
+          </p>
         </div>
         <div className="flex gap-2 shrink-0">
-          <Dialog open={open} onOpenChange={setOpen}>
+          {dataMode !== "supabase" && <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="border-slate-300 bg-white text-slate-700 hover:bg-slate-50 font-mono text-[10px] uppercase tracking-wider h-9">
                 <UserPlus className="h-4 w-4 mr-1 text-emerald-600" /> Invite Client
@@ -216,9 +254,18 @@ export default function ClientList() {
                 }}><Plus className="h-4 w-4 mr-1" /> Add</Button>
               </DialogFooter>
             </DialogContent>
-          </Dialog>
+          </Dialog>}
         </div>
       </div>
+
+      {dataMode === "supabase" && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+          Pilot: roster identity and weekly check-ins are live. Compliance, training, nutrition, labs, and invitation controls are not yet connected.
+        </div>
+      )}
+
+      {liveLoading && <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">Loading assigned pilot clients…</div>}
+      {liveError && <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{liveError}</div>}
 
       {/* Search and Filters */}
       <div className="bg-white p-4 flex flex-col xl:flex-row gap-4 items-stretch xl:items-center justify-between border border-slate-200 rounded-xl shadow-sm min-w-0">
@@ -478,7 +525,7 @@ export default function ClientList() {
                 </Link>
               </Button>
               
-              {selectedClient.status === "review" && (
+              {dataMode !== "supabase" && selectedClient.status === "review" && (
                 <Button
                   variant="outline"
                   className="w-full h-10 text-xs font-semibold border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"

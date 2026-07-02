@@ -45,6 +45,9 @@ import CoachNotesPanel from "@/components/coach/CoachNotesPanel";
 import { BIOMARKERS, getStatus, STATUS_META } from "@/lib/biomarkers";
 import { cn } from "@/lib/utils";
 import { getCheckInRepository, type CheckInWithReview } from "@/repositories/checkInRepository";
+import { dataMode } from "@/lib/supabase";
+
+const repository = getCheckInRepository();
 
 export default function ClientProfile() {
   const { id = "" } = useParams();
@@ -52,23 +55,47 @@ export default function ClientProfile() {
   const [params, setParams] = useSearchParams();
   const tab = params.get("tab") ?? "overview";
   const { clients, panels } = useStore();
-  const client = clients.find((c) => c.id === id);
+  const localClient = clients.find((c) => c.id === id);
   const clientPanels = getClientPanels(id);
 
   const [rawCheckIns, setRawCheckIns] = useState<CheckInWithReview[]>([]);
   const [loadingCheckIns, setLoadingCheckIns] = useState(true);
   const [errorState, setErrorState] = useState<string | null>(null);
-  const repository = getCheckInRepository();
+  const [liveClient, setLiveClient] = useState<Client | null>(null);
+  const client = dataMode === "supabase" ? liveClient : localClient;
 
   useEffect(() => {
-    repository.listAssignedClientCheckIns(id)
-      .then((data) => {
-        setRawCheckIns(data);
-        setErrorState(null);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch client checkins", err);
-        setErrorState(err.message || "Failed to load check-ins");
+    const load = async () => {
+      const [data, assignedProfiles] = await Promise.all([
+        repository.listAssignedClientCheckIns(id),
+        dataMode === "supabase" ? repository.listAssignedClients() : Promise.resolve([]),
+      ]);
+      if (dataMode === "supabase") {
+        const assigned = assignedProfiles.find((profile) => profile.id === id);
+        if (!assigned) throw new Error("Assigned client not found.");
+        const name = assigned.fullName?.trim() || "Pilot Client";
+        setLiveClient({
+          id: assigned.id,
+          name,
+          email: "Individual pilot account",
+          avatarColor: "from-emerald-500 to-teal-700",
+          initials: name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase(),
+          goal: "Not yet connected",
+          bodyWeightKg: data[0]?.checkIn.bodyWeightKg ?? 0,
+          startedAt: "Pilot",
+          status: data.some((item) => !item.review) ? "review" : "active",
+          trainingCompliance: 0,
+          nutritionCompliance: 0,
+          nextCheckIn: "Weekly",
+        });
+      }
+      setRawCheckIns(data);
+      setErrorState(null);
+    };
+    void load()
+      .catch((error: unknown) => {
+        setLiveClient(null);
+        setErrorState(error instanceof Error ? error.message : "Failed to load assigned client.");
       })
       .finally(() => {
         setLoadingCheckIns(false);
@@ -91,7 +118,7 @@ export default function ClientProfile() {
   // Calculate Biology Score & out of range count dynamically
   const latestPanel = clientPanels[clientPanels.length - 1];
   const { biologyScore, outOfRangeCount, outOfRangeMarkers } = useMemo(() => {
-    if (!latestPanel) return { biologyScore: 75, outOfRangeCount: 0, outOfRangeMarkers: [] };
+    if (!latestPanel) return { biologyScore: dataMode === "supabase" ? 0 : 75, outOfRangeCount: 0, outOfRangeMarkers: [] };
     let optimal = 0, total = 0, alertCount = 0;
     const alertMarkers: { name: string; value: number; unit: string; statusLabel: string; color: string }[] = [];
 
@@ -127,7 +154,7 @@ export default function ClientProfile() {
   // Derived metrics
   const trainingAdherence = client ? client.trainingCompliance : 0;
   const nutritionAdherence = client ? client.nutritionCompliance : 0;
-  const sleepAdherence = checkIns[0] ? Math.round(checkIns[0].sleepQuality * 10) : 68;
+  const sleepAdherence = checkIns[0] ? Math.round(checkIns[0].sleepQuality * 10) : (dataMode === "supabase" ? 0 : 68);
   const combinedAdherence = Math.round((trainingAdherence + nutritionAdherence) / 2);
 
   // Dynamic Timeline events
@@ -135,13 +162,14 @@ export default function ClientProfile() {
     if (!client) return [];
     const list: { date: string; title: string; desc: string; type: "checkin" | "upload" | "protocol" | "note" | "onboard" }[] = [];
     
-    // StartedAt onboarded event
-    list.push({
-      date: client.startedAt,
-      title: "Client onboarded",
-      desc: "Welcome to the Bio-Performance Lab",
-      type: "onboard"
-    });
+    if (dataMode !== "supabase") {
+      list.push({
+        date: client.startedAt,
+        title: "Client onboarded",
+        desc: "Welcome to the Bio-Performance Lab",
+        type: "onboard"
+      });
+    }
 
     // Checkins events
     checkIns.forEach(c => {
@@ -173,13 +201,14 @@ export default function ClientProfile() {
       });
     }
 
-    // Protocol updates
-    list.push({
-      date: "2026-05-20",
-      title: "Protocol updated",
-      desc: "Adjusted training volume and supplement schedules",
-      type: "protocol"
-    });
+    if (dataMode !== "supabase") {
+      list.push({
+        date: "2026-05-20",
+        title: "Protocol updated",
+        desc: "Adjusted training volume and supplement schedules",
+        type: "protocol"
+      });
+    }
 
     // Sort descending by date
     return list.sort((a, b) => b.date.localeCompare(a.date));
@@ -200,6 +229,10 @@ export default function ClientProfile() {
     );
   }
 
+  if (loadingCheckIns && dataMode === "supabase") {
+    return <div className="text-muted-foreground p-10 text-center">Loading assigned pilot client…</div>;
+  }
+
   if (!client) return <div className="text-muted-foreground p-6 text-center">Athlete not found.</div>;
 
   return (
@@ -207,6 +240,12 @@ export default function ClientProfile() {
       <Link to="/coach/clients" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition">
         <ArrowLeft className="h-3 w-3" /> Back to Roster
       </Link>
+
+      {dataMode === "supabase" && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+          Pilot: identity, weekly check-ins, and insert-once feedback are live. Labs, training, nutrition, supplements, AI briefing, notes, and messaging are demo/local-only and are not client data.
+        </div>
+      )}
 
       {/* Premium Identity Card */}
       <div className="lab-card-glow p-4 flex flex-col xl:flex-row gap-5 items-start xl:items-center justify-between border border-border/80">
@@ -452,8 +491,11 @@ export default function ClientProfile() {
                         toast.success("Check-in reviewed successfully!");
                         const updated = await repository.listAssignedClientCheckIns(id);
                         setRawCheckIns(updated);
-                      } catch (err: any) {
-                        toast.error(err.message || "Failed to submit review");
+                      } catch (error: unknown) {
+                        const message = error && typeof error === "object" && "code" in error && error.code === "23505"
+                          ? "This check-in has already been reviewed."
+                          : error instanceof Error ? error.message : "Failed to submit review";
+                        toast.error(message);
                       }
                     }}
                   />

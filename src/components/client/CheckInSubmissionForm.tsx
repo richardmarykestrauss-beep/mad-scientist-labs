@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,15 @@ import { getCurrentWeekCheckIn } from "@/data/store";
 interface Props {
   clientId: string;
   onSubmitSuccess?: () => void;
+}
+
+const repository = getCheckInRepository();
+
+function errorMessage(error: unknown, fallback: string): string {
+  if (error && typeof error === "object" && "code" in error && error.code === "23505") {
+    return "A check-in has already been submitted for this week.";
+  }
+  return error instanceof Error ? error.message : fallback;
 }
 
 function getWeekKey(dateStr?: string): string {
@@ -49,9 +58,7 @@ export function CheckInSubmissionForm({ clientId, onSubmitSuccess }: Props) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
-  const repository = getCheckInRepository();
-
-  const fetchCurrentWeekCheckIn = async () => {
+  const fetchCurrentWeekCheckIn = useCallback(async () => {
     try {
       const list = await repository.listOwnCheckIns();
       const currentWeekKey = getWeekKey();
@@ -66,12 +73,12 @@ export function CheckInSubmissionForm({ clientId, onSubmitSuccess }: Props) {
       } else {
         setCurrentWeekCheckIn(null);
       }
-    } catch (err: any) {
-      console.error("Failed to load check-ins:", err);
+    } catch (error: unknown) {
+      toast.error(errorMessage(error, "Failed to load check-ins."));
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (dataMode !== "supabase" && clientId) {
@@ -79,7 +86,7 @@ export function CheckInSubmissionForm({ clientId, onSubmitSuccess }: Props) {
       localStorage.setItem("demo-session-role", "client");
     }
     fetchCurrentWeekCheckIn();
-  }, [clientId]);
+  }, [clientId, fetchCurrentWeekCheckIn]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,8 +136,8 @@ export function CheckInSubmissionForm({ clientId, onSubmitSuccess }: Props) {
       if (onSubmitSuccess) {
         onSubmitSuccess();
       }
-    } catch (err: any) {
-      toast.error(err.message || "Failed to submit check-in");
+    } catch (error: unknown) {
+      toast.error(errorMessage(error, "Failed to submit check-in."));
     } finally {
       setSubmitting(false);
     }

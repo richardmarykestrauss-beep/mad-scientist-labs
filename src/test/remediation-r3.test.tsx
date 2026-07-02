@@ -45,6 +45,7 @@ describe("Remediation R3 - Configuration and Environment Guardrails", () => {
 describe("Remediation R3 - Repository Contracts", () => {
   it("local repository implements check-in repository interface", () => {
     expect(localCheckInRepository.getCurrentUserProfile).toBeDefined();
+    expect(localCheckInRepository.listAssignedClients).toBeDefined();
     expect(localCheckInRepository.listOwnCheckIns).toBeDefined();
     expect(localCheckInRepository.submitOwnCheckIn).toBeDefined();
     expect(localCheckInRepository.listAssignedClientCheckIns).toBeDefined();
@@ -53,6 +54,7 @@ describe("Remediation R3 - Repository Contracts", () => {
 
   it("supabase repository implements same interface", () => {
     expect(supabaseCheckInRepository.getCurrentUserProfile).toBeDefined();
+    expect(supabaseCheckInRepository.listAssignedClients).toBeDefined();
     expect(supabaseCheckInRepository.listOwnCheckIns).toBeDefined();
     expect(supabaseCheckInRepository.submitOwnCheckIn).toBeDefined();
     expect(supabaseCheckInRepository.listAssignedClientCheckIns).toBeDefined();
@@ -191,5 +193,53 @@ describe("Remediation R3 - Static SQL Migration Security Audit Checks", () => {
   it("proves week_key constraint permits only valid weeks between 01 and 53", () => {
     const normalizedSql = sql.replace(/\s+/g, " ");
     expect(normalizedSql).toContain("CONSTRAINT check_week_key_format CHECK (week_key ~ '^\\d{4}-W(0[1-9]|[1-4]\\d|5[0-3])$')");
+  });
+
+  it("revokes inherited table privileges before granting the minimum authenticated access", () => {
+    for (const table of ["profiles", "coach_client_assignments", "check_ins", "check_in_reviews"]) {
+      expect(sql).toContain(`REVOKE ALL ON public.${table} FROM public, anon, authenticated;`);
+    }
+    expect(sql).not.toMatch(/GRANT\s+(UPDATE|DELETE|ALL).*TO authenticated/i);
+  });
+
+  it("denies inactive profiles from the self-profile policy", () => {
+    const normalizedSql = sql.replace(/\s+/g, " ");
+    expect(normalizedSql).toContain("USING (auth.uid() = id AND status = 'active')");
+  });
+
+  it("matches percentage semantics for training and nutrition", () => {
+    expect(sql).toContain("training integer NOT NULL CHECK (training BETWEEN 0 AND 100)");
+    expect(sql).toContain("nutrition integer NOT NULL CHECK (nutrition BETWEEN 0 AND 100)");
+  });
+
+  it("has no update or delete policy for submitted check-ins or insert-once reviews", () => {
+    expect(sql).not.toMatch(/CREATE POLICY\s+\S+\s+ON public\.check_ins\s+FOR (UPDATE|DELETE)/i);
+    expect(sql).not.toMatch(/CREATE POLICY\s+\S+\s+ON public\.check_in_reviews\s+FOR (UPDATE|DELETE)/i);
+  });
+});
+
+describe("Remediation R3 - Source security regression checks", () => {
+  const authSource = fs.readFileSync(path.resolve(__dirname, "../context/AuthContext.tsx"), "utf8");
+  const repositorySource = fs.readFileSync(path.resolve(__dirname, "../repositories/supabaseCheckInRepository.ts"), "utf8");
+  const loginSource = fs.readFileSync(path.resolve(__dirname, "../pages/Login.tsx"), "utf8");
+
+  it("does not bypass generated Supabase typing", () => {
+    expect(repositorySource).not.toContain("as any");
+    expect(repositorySource).not.toMatch(/:\s*any\b/);
+  });
+
+  it("derives client and coach IDs from the authenticated Supabase user", () => {
+    expect(repositorySource).toContain("client_id: user.id");
+    expect(repositorySource).toContain("coach_id: user.id");
+  });
+
+  it("does not route a live user by matching their email text", () => {
+    expect(loginSource).toContain("profile.role === \"coach\"");
+    expect(loginSource).not.toContain("email.includes(\"warren\")");
+  });
+
+  it("allows a demo fallback only outside Supabase mode", () => {
+    expect(authSource).toContain("if (dataMode === \"supabase\")");
+    expect(authSource).toContain("useAuth must be used within AuthProvider in Supabase mode");
   });
 });
